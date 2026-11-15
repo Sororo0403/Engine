@@ -1,5 +1,6 @@
 #include "TutorialScene.h"
 #include "BoxLesson.h"
+#include "CameraLesson.h"
 #include "MovementLesson.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
@@ -14,6 +15,7 @@ namespace {
 
 constexpr ImVec4 kAccent{0.44f, 0.82f, 0.73f, 1.0f};
 constexpr std::array kUpdateRates{30, 60, 120};
+constexpr CameraPose kFixedCamera{{4.4f, 3.4f, -7.0f}, {0, 0.4f, 0}};
 
 } // namespace
 
@@ -30,7 +32,7 @@ bool TutorialScene::Initialize() {
 	LightingSettings lighting;
 	lighting.ambient = 0.36f;
 	if (!renderer_.Initialize() || !renderer_.SetLighting(lighting) ||
-	    !renderer_.SetCameraPose({{4.4f, 3.4f, -7.0f}, {0, 0.4f, 0}})) {
+	    !renderer_.SetCameraPose(kFixedCamera)) {
 		return false;
 	}
 	Logger::Info("EngineTutorial: Initialize");
@@ -67,9 +69,14 @@ bool TutorialScene::Update(float seconds) {
 		if (ImGui::Button("3  入力と移動")) {
 			chapter_ = Chapter::MOVEMENT;
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("4  カメラ")) {
+			chapter_ = Chapter::CAMERA;
+		}
 		if (chapter_ != previous) {
 			scene_.FindObject(box_)->transform = initialBoxTransform_;
 			previewYaw_ = 0;
+			ready = renderer_.SetCameraPose(kFixedCamera);
 		}
 		ImGui::Separator();
 		ImGui::PushID(static_cast<int>(chapter_));
@@ -78,15 +85,17 @@ bool TutorialScene::Update(float seconds) {
 		} else {
 			const float previewWidth = ImGui::GetContentRegionAvail().x * 0.59f;
 			if (ImGui::BeginChild("Preview", {previewWidth, 0}, ImGuiChildFlags_Borders)) {
-				ready = DrawPreview();
+				ready = DrawPreview() && ready;
 			}
 			ImGui::EndChild();
 			ImGui::SameLine();
 			if (ImGui::BeginChild("Lesson", {0, 0}, ImGuiChildFlags_Borders)) {
 				if (chapter_ == Chapter::BOX) {
 					DrawBoxLesson();
-				} else {
+				} else if (chapter_ == Chapter::MOVEMENT) {
 					DrawMovementLesson(seconds);
+				} else {
+					ready = DrawCameraLesson(seconds) && ready;
 				}
 			}
 			ImGui::EndChild();
@@ -161,10 +170,8 @@ void TutorialScene::DrawMovementLesson(float seconds) {
 	auto &transform = scene_.FindObject(box_)->transform;
 	if (ImGui::Button("箱を初期位置に戻す")) {
 		transform = initialBoxTransform_;
-	} else if (input_.IsActive() && !ui_.IsTextInputActive()) {
-		MoveLessonBox(transform, input_.GetKeyboard(), seconds);
-		transform.translation.x = std::clamp(transform.translation.x, -3.5f, 3.5f);
-		transform.translation.z = std::clamp(transform.translation.z, -3.5f, 3.5f);
+	} else {
+		UpdateFreeMovement(seconds);
 	}
 	ImGui::Text("箱の位置  X %.2f / Z %.2f",
 	            double(transform.translation.x), double(transform.translation.z));
@@ -204,6 +211,39 @@ void TutorialScene::DrawMovementLesson(float seconds) {
 	ImGui::SeparatorText("C++を書き換える");
 	ImGui::TextWrapped("src/MovementLesson.cpp の StepDistance() を開き、speed / 60.f を speed * seconds に変えてビルドします。");
 	ImGui::TextWrapped("もう一度測定し、どの更新回数でも約3.00になるか確認してください。");
+}
+
+bool TutorialScene::DrawCameraLesson(float seconds) {
+	ImGui::SeparatorText("第4章  カメラ");
+	ImGui::TextWrapped("WASDで箱を動かし、同じ位置で追従を切り替えて、固定カメラとの違いを見比べます。");
+	ImGui::Checkbox("箱を追いかける", &followCamera_);
+	if (ImGui::Button("箱を初期位置に戻す")) {
+		scene_.FindObject(box_)->transform = initialBoxTransform_;
+	} else {
+		UpdateFreeMovement(seconds);
+	}
+
+	const auto &target = scene_.FindObject(box_)->transform.translation;
+	const auto pose = followCamera_ ? MakeFollowCamera(target) : kFixedCamera;
+	ImGui::Text("位置     (%.2f, %.2f, %.2f)",
+	            double(pose.position.x), double(pose.position.y), double(pose.position.z));
+	ImGui::Text("注視点  (%.2f, %.2f, %.2f)",
+	            double(pose.target.x), double(pose.target.y), double(pose.target.z));
+	ImGui::SeparatorText("C++を書き換える");
+	ImGui::TextWrapped("src/CameraLesson.cpp の offset.y を 8.f に変えてビルドすると、より上から見下ろします。次に offset.z を -12.f にして、箱までの距離を比べます。");
+	ImGui::TextWrapped("CameraPose の position はカメラを置く位置、target は見る先です。追従時は毎フレーム箱の位置を基準に計算します。");
+	return renderer_.SetCameraPose(pose);
+}
+
+void TutorialScene::UpdateFreeMovement(float seconds) {
+	if (!input_.IsActive() || ui_.IsTextInputActive()) {
+		return;
+	}
+
+	auto &transform = scene_.FindObject(box_)->transform;
+	MoveLessonBox(transform, input_.GetKeyboard(), seconds);
+	transform.translation.x = std::clamp(transform.translation.x, -3.5f, 3.5f);
+	transform.translation.z = std::clamp(transform.translation.z, -3.5f, 3.5f);
 }
 
 void TutorialScene::DrawStartupLesson() const {

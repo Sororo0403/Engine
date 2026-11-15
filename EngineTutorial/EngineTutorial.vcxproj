@@ -81,10 +81,12 @@
     <ClInclude Include="include\TutorialScene.h" />
     <ClInclude Include="include\BoxLesson.h" />
     <ClInclude Include="include\MovementLesson.h" />
+    <ClInclude Include="include\CameraLesson.h" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\TutorialScene.cpp" />
     <ClCompile Include="src\BoxLesson.cpp" />
     <ClCompile Include="src\MovementLesson.cpp" />
+    <ClCompile Include="src\CameraLesson.cpp" />
     <None Include="README.md" />
     <None Include="resources\models\Box.obj" />
   </ItemGroup>

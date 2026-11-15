@@ -25,12 +25,14 @@ class TutorialScene final : public IScene {
 	void Finalize() override;
 
   private:
-	enum class Chapter { STARTUP, BOX, MOVEMENT };
+	enum class Chapter { STARTUP, BOX, MOVEMENT, CAMERA };
 
 	void DrawStartupLesson() const;
 	void DrawBoxLesson();
 	void DrawMovementLesson(float seconds);
+	bool DrawCameraLesson(float seconds);
 	bool DrawPreview();
+	void UpdateFreeMovement(float seconds);
 
 	ImGuiSystem &ui_;
 	RenderSystem &render_;
@@ -43,6 +45,7 @@ class TutorialScene final : public IScene {
 	Chapter chapter_ = Chapter::STARTUP;
 	float previewYaw_ = 0;
 	bool previewVisible_ = false;
+	bool followCamera_ = true;
 	std::optional<std::array<float, 3>> movementDistances_;
 
 	float elapsed_ = 0;
