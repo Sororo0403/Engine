@@ -9,6 +9,7 @@
   <Project Path="Engine/Engine.vcxproj" Id="b5695b53-5c1d-4b30-887f-99386dedafcd" />
   <Project Path="Editor/Editor.vcxproj" Id="9463d484-3e81-4a35-810b-2ded320811de" />
   <Project Path="Runtime/Runtime.vcxproj" Id="6ac69269-de64-452b-8a7e-605c3a214f1a" />
+  <Project Path="EngineTutorial/EngineTutorial.vcxproj" Id="da5f0245-b787-4b0e-bdc8-ef1c8d410c14" />
   <Folder Name="/External/">
     <Project Path="Engine/external/jolt/Jolt.vcxproj" Id="9bb21d9a-cdc2-44b9-8c50-4d1d4276c81b" />
     <Project Path="Engine/external/lua/Lua.vcxproj" Id="2ccfc879-c866-4c98-8f9b-52900fb3b438" />

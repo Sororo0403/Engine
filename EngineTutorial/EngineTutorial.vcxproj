@@ -1,0 +1,97 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{da5f0245-b787-4b0e-bdc8-ef1c8d410c14}</ProjectGuid>
+    <RootNamespace>EngineTutorial</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))\</RepositoryRoot>
+    <EngineExternalRoot>$(RepositoryRoot)Engine\external\</EngineExternalRoot>
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(RepositoryRoot)build\bin\$(VCToolsVersion)\$(Configuration)\EngineTutorial\</OutDir>
+    <IntDir>$(RepositoryRoot)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
+    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(RepositoryRoot)Engine\include;$(EngineExternalRoot)directxmath\include;$(EngineExternalRoot)imgui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).compile.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(EngineExternalRoot)assimp\lib\x64\$(Configuration);$(EngineExternalRoot)directxtk12\lib\x64\$(Configuration);$(EngineExternalRoot)imgui\lib\x64\$(Configuration);$(EngineExternalRoot)dxc\lib\x64;$(EngineExternalRoot)gameinput\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib;dxcompiler.lib;GameInput.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>assimp-vc145-mtd.lib;imguid.lib;zlibstaticd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>assimp-vc145-mt.lib;imgui.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Engine\Engine.vcxproj">
+      <Project>{b5695b53-5c1d-4b30-887f-99386dedafcd}</Project>
+      <AdditionalProperties>SolutionDir=$(RepositoryRoot)</AdditionalProperties>
+    </ProjectReference>
+    <ClInclude Include="include\TutorialScene.h" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\TutorialScene.cpp" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyTutorialResources" AfterTargets="Build">
+    <ItemGroup>
+      <EngineResource Include="$(RepositoryRoot)Engine\resources\**\*" />
+      <EngineLicense Include="$(EngineExternalRoot)licenses\*" />
+      <EngineBinary Include="$(EngineExternalRoot)dxc\bin\x64\dxcompiler.dll;$(EngineExternalRoot)dxc\bin\x64\dxil.dll;$(EngineExternalRoot)gameinput\bin\x64\GameInputRedist.dll;$(EngineExternalRoot)gameinput\bin\x64\GameInputRawInputProxy.exe" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EngineResource)" DestinationFiles="@(EngineResource->'$(OutDir)resources\engine\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(EngineLicense)" DestinationFolder="$(OutDir)licenses" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(EngineBinary)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
