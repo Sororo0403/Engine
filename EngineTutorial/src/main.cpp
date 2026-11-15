@@ -7,8 +7,8 @@ namespace {
 /// <summary>
 /// エンジンが使う最初のシーンを作成する
 /// </summary>
-std::unique_ptr<IScene> CreateTutorial(const EngineContext &) {
-	return std::make_unique<TutorialScene>();
+std::unique_ptr<IScene> CreateTutorial(const EngineContext &context) {
+	return std::make_unique<TutorialScene>(context);
 }
 
 } // namespace

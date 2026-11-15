@@ -6,9 +6,18 @@
     <Filter Include="src">
       <UniqueIdentifier>{b2c2e50d-810c-48ba-b68d-72bee102df6f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{74b159df-2caf-4ed9-a05f-75747ce91c33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\models">
+      <UniqueIdentifier>{38d80661-b71a-49a4-ab14-d2211f2be015}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\TutorialScene.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BoxLesson.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClCompile Include="src\main.cpp">
@@ -17,6 +26,12 @@
     <ClCompile Include="src\TutorialScene.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\BoxLesson.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <None Include="resources\models\Box.obj">
+      <Filter>resources\models</Filter>
+    </None>
     <None Include="README.md" />
   </ItemGroup>
 </Project>
