@@ -26,8 +26,9 @@ class TutorialScene final : public IScene {
 	void Finalize() override;
 
   private:
-	enum class Chapter { STARTUP, BOX, MOVEMENT, CAMERA, PLATFORM };
+	enum class Chapter { STARTUP, BOX, MOVEMENT, CAMERA, PLATFORM, COURSE };
 
+	static bool UsesPlatformStage(Chapter chapter);
 	bool EnterChapter(Chapter previous);
 	void PrepareBoxLesson();
 	void DrawStartupLesson() const;
@@ -35,6 +36,7 @@ class TutorialScene final : public IScene {
 	void DrawMovementLesson(float seconds);
 	bool DrawCameraLesson(float seconds);
 	bool DrawPlatformLesson(float seconds);
+	void DrawCourseLesson() const;
 	bool DrawPreview();
 	void UpdateFreeMovement(float seconds);
 

@@ -76,6 +76,10 @@ bool TutorialScene::Update(float seconds) {
 		if (ImGui::Button("5  ジャンプ")) {
 			chapter_ = Chapter::PLATFORM;
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("6  完成版")) {
+			chapter_ = Chapter::COURSE;
+		}
 		if (chapter_ != previous) {
 			ready = EnterChapter(previous);
 		}
@@ -110,13 +114,19 @@ bool TutorialScene::Update(float seconds) {
 	return ready && (!previewVisible_ || renderer_.Update(preview_->GetWidth(), preview_->GetHeight()));
 }
 
+bool TutorialScene::UsesPlatformStage(Chapter chapter) {
+	return chapter == Chapter::PLATFORM || chapter == Chapter::COURSE;
+}
+
 bool TutorialScene::EnterChapter(Chapter previous) {
-	if (chapter_ == Chapter::PLATFORM) {
+	if (UsesPlatformStage(chapter_)) {
 		scene_.Clear();
-		platformLesson_.Initialize(scene_);
+		const auto mode = chapter_ == Chapter::COURSE ? PlatformLesson::Mode::COURSE
+		                                              : PlatformLesson::Mode::PRACTICE;
+		platformLesson_.Initialize(scene_, mode);
 		return renderer_.SetCameraPose(MakeFollowCamera(platformLesson_.GetPosition(scene_)));
 	}
-	if (previous == Chapter::PLATFORM) {
+	if (UsesPlatformStage(previous)) {
 		scene_.Clear();
 		PrepareBoxLesson();
 	}
@@ -259,23 +269,53 @@ bool TutorialScene::DrawCameraLesson(float seconds) {
 }
 
 bool TutorialScene::DrawPlatformLesson(float seconds) {
-	ImGui::SeparatorText("第5章  ジャンプと着地");
-	ImGui::TextWrapped("WASDで移動し、Spaceでジャンプします。足場の上面に着地できます。落ちた場合はスタートに戻ります。");
-	if (ImGui::Button("スタートに戻る")) {
+	const bool course = chapter_ == Chapter::COURSE;
+	ImGui::SeparatorText(course ? "第6章  ゴールと再挑戦" : "第5章  ジャンプと着地");
+	ImGui::TextWrapped(course
+	                       ? "WASDで移動し、Spaceでジャンプ。金色の足場に着地するとクリアです。"
+	                       : "WASDで移動し、Spaceでジャンプします。足場の上面に着地できます。落ちた場合はスタートに戻ります。");
+
+	const auto &keyboard = input_.GetKeyboard();
+	const bool hasInput = input_.IsActive() && !ui_.IsTextInputActive();
+	if (ImGui::Button(course ? "最初から挑戦 (R)" : "スタートに戻る") ||
+	    (course && hasInput && keyboard.IsPressed(Key::R))) {
 		platformLesson_.Reset(scene_);
-	} else if (input_.IsActive() && !ui_.IsTextInputActive()) {
-		const auto &keyboard = input_.GetKeyboard();
+	} else if (hasInput) {
 		platformLesson_.Update(scene_, ReadMovementDirection(keyboard),
 		                       keyboard.IsPressed(Key::SPACE), seconds);
 	}
 
 	const auto &position = platformLesson_.GetPosition(scene_);
-	ImGui::TextUnformatted(platformLesson_.IsGrounded() ? "地面にいる" : "空中にいる");
-	ImGui::Text("箱の高さ  %.2f", double(position.y));
-	ImGui::SeparatorText("C++を書き換える");
-	ImGui::TextWrapped("src/PlatformLesson.cpp の kJumpSpeed を 7.5f に変更してビルドし、足場までの距離を比べます。次に kGravity を 18.f に変えて、落ちる速さを観察します。");
-	ImGui::TextWrapped("Step() は重力で縦方向の速度を変え、下降中に箱の底が足場の上面を越えたときに着地させます。箱の位置はSceneのTransformなので、そのまま描画に反映されます。");
+	if (course) {
+		DrawCourseLesson();
+	} else {
+		ImGui::TextUnformatted(platformLesson_.IsGrounded() ? "地面にいる" : "空中にいる");
+		ImGui::Text("箱の高さ  %.2f", double(position.y));
+		ImGui::SeparatorText("C++を書き換える");
+		ImGui::TextWrapped("src/PlatformLesson.cpp の kJumpSpeed を 7.5f に変更してビルドし、足場までの距離を比べます。次に kGravity を 18.f に変えて、落ちる速さを観察します。");
+		ImGui::TextWrapped("Step() は重力で縦方向の速度を変え、下降中に箱の底が足場の上面を越えたときに着地させます。箱の位置はSceneのTransformなので、そのまま描画に反映されます。");
+	}
 	return renderer_.SetCameraPose(MakeFollowCamera(position));
+}
+
+void TutorialScene::DrawCourseLesson() const {
+	switch (platformLesson_.GetState()) {
+	case PlatformLesson::State::READY:
+		ImGui::TextUnformatted("移動またはジャンプで計測開始");
+		break;
+	case PlatformLesson::State::RUNNING:
+		ImGui::TextUnformatted("挑戦中");
+		break;
+	case PlatformLesson::State::CLEARED:
+		ImGui::TextColored(kAccent, "クリア！");
+		break;
+	}
+	ImGui::Text("タイム  %.2f 秒", double(platformLesson_.GetElapsed()));
+	ImGui::Text("落下  %d 回", platformLesson_.GetFalls());
+	ImGui::TextWrapped("落下するとスタートに戻り、計測は続きます。Rまたはボタンで最初から挑戦できます。");
+	ImGui::SeparatorText("C++を書き換える");
+	ImGui::TextWrapped("src/PlatformLesson.cpp の kPlatforms で、ゴールの width（X方向の幅）を 3.5f から 1.8f に変えます。ビルドし、足場の見た目と着地できる範囲の両方を確認してください。");
+	ImGui::TextWrapped("Update() はゴールに着地すると状態を CLEARED に変えて計測を止めます。Reset() は時間と落下回数を初期化します。");
 }
 
 void TutorialScene::UpdateFreeMovement(float seconds) {
