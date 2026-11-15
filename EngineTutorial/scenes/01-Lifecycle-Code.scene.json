@@ -1,0 +1,147 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "コードを書く",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {"asset": "@project/assets/FrameExercise.lua", "enabled": true, "prefabs": [], "scenes": [], "references": [{"name": "result", "target": 12}], "state": {}}
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "章の見出し",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 96], "sizeDelta": [1144, 65]},
+      "text": {"enabled": true, "value": "第1章  1フレームの処理を書く", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 6,
+      "name": "実習の目的",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 170], "sizeDelta": [1144, 56]},
+      "text": {"enabled": true, "value": "Update が失敗した場合は、Draw を呼ばずに戻るようにします。", "fontFamily": "M PLUS 1p", "fontSize": 25, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 7,
+      "name": "実装の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 242], "sizeDelta": [557, 170]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.13, 0.18, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 8,
+      "name": "結果の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [641, 242], "sizeDelta": [571, 170]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.13, 0.18, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 9,
+      "name": "実装の見出し",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 253], "sizeDelta": [515, 35]},
+      "text": {"enabled": true, "value": "エンジンのC++  /  Engine.cpp", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 10,
+      "name": "実装の抜粋",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 290], "sizeDelta": [515, 100]},
+      "text": {"enabled": true, "value": "if (!sceneManager_.Update(deltaTime)) {\n    return -1;\n}", "fontFamily": "Consolas", "fontSize": 18, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 11,
+      "name": "結果の見出し",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [661, 253], "sizeDelta": [530, 35]},
+      "text": {"enabled": true, "value": "実行結果", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "結果",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [661, 286], "sizeDelta": [530, 114]},
+      "text": {"enabled": true, "value": "Playすると成功時と失敗時の結果が出ます。", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 13,
+      "name": "編集手順",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 451], "sizeDelta": [1144, 142]},
+      "text": {"enabled": true, "value": "1. Stop して、Assets の Scenes で 01-Lifecycle-Code を開く\n2. Hierarchy の「コードを書く」を選び、Inspector の Script → Edit Script を押す\n3. run_frame をLuaで書き、Save and Play を押して結果を見る", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 14,
+      "name": "検証の条件",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 627], "sizeDelta": [1144, 56]},
+      "text": {"enabled": true, "value": "成功時は Update → Draw。失敗時は Update で止まればクリアです。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}

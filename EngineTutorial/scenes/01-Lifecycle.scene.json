@@ -11,7 +11,7 @@
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
-      "script": {"asset": "@project/assets/LifecycleLesson.lua", "enabled": true, "prefabs": [], "scenes": [], "references": [{"name": "progress", "target": 14}, {"name": "prompt", "target": 15}, {"name": "source", "target": 16}, {"name": "code", "target": 17}, {"name": "answer1", "target": 18}, {"name": "label1", "target": 19}, {"name": "answer2", "target": 20}, {"name": "label2", "target": 21}, {"name": "answer3", "target": 22}, {"name": "label3", "target": 23}, {"name": "feedback", "target": 25}, {"name": "advance", "target": 28}, {"name": "advanceLabel", "target": 29}], "state": {}}
+      "script": {"asset": "@project/assets/LifecycleLesson.lua", "enabled": true, "prefabs": [], "scenes": [{"name": "practice", "path": "@project/scenes/01-Lifecycle-Code.scene.json"}], "references": [{"name": "progress", "target": 14}, {"name": "prompt", "target": 15}, {"name": "source", "target": 16}, {"name": "code", "target": 17}, {"name": "label1", "target": 19}, {"name": "label2", "target": 21}, {"name": "label3", "target": 23}, {"name": "feedback", "target": 25}, {"name": "advance", "target": 28}, {"name": "advanceLabel", "target": 29}], "state": {}}
     },
     {
       "id": 2,
@@ -54,72 +54,6 @@
       "text": {"enabled": true, "value": "第1章  起動から終了まで", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
-      "id": 6,
-      "name": "小テスト",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [699, 105], "sizeDelta": [144, 48]},
-      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
-      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
-      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "quiz", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
-    },
-    {
-      "id": 7,
-      "name": "小テストのラベル",
-      "active": true,
-      "parent": 6,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [110, 48]},
-      "text": {"enabled": true, "value": "小テスト", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
-      "id": 8,
-      "name": "C++実習",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [858, 105], "sizeDelta": [157, 48]},
-      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
-      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
-      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "experiment", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
-    },
-    {
-      "id": 9,
-      "name": "C++実習のラベル",
-      "active": true,
-      "parent": 8,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [123, 48]},
-      "text": {"enabled": true, "value": "C++実習", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
-      "id": 10,
-      "name": "応用問題",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [1030, 105], "sizeDelta": [182, 48]},
-      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
-      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
-      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "transfer", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
-    },
-    {
-      "id": 11,
-      "name": "応用問題のラベル",
-      "active": true,
-      "parent": 10,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [148, 48]},
-      "text": {"enabled": true, "value": "応用問題", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
       "id": 12,
       "name": "問題の背景",
       "active": true,
@@ -147,7 +81,7 @@
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 201], "sizeDelta": [425, 37]},
-      "text": {"enabled": true, "value": "小テスト  1 / 3", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "text": {"enabled": true, "value": "問題  1 / 3", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 15,
@@ -263,7 +197,7 @@
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [88, 563], "sizeDelta": [1098, 64]},
-      "text": {"enabled": true, "value": "Playを押すと小テストや実習を操作できます。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "text": {"enabled": true, "value": "Playを押すと問題に答えられます。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 26,
@@ -289,7 +223,7 @@
     },
     {
       "id": 28,
-      "name": "次へ進む・計測する",
+      "name": "次へ進む",
       "active": true,
       "parent": 1,
       "tag": "",
@@ -301,7 +235,7 @@
     },
     {
       "id": 29,
-      "name": "次へ進む・計測するのラベル",
+      "name": "次へ進むのラベル",
       "active": true,
       "parent": 28,
       "tag": "",
