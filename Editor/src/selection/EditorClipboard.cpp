@@ -3,16 +3,43 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/ColliderUtils.h"
+#include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneAssetReferences.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
 
 #include <set>
+#include <system_error>
 
 void EditorClipboard::RewriteAssets(const std::function<void(SceneObject &)> &rewrite) {
 	for (auto &object : objects_) {
 		rewrite(object);
 	}
+}
+
+std::filesystem::path EditorClipboard::FindUnavailableAsset() const {
+	std::filesystem::path unavailable;
+	const auto check = [&](const std::filesystem::path &path) {
+		if (path.empty() || !unavailable.empty()) {
+			return;
+		}
+		const auto absolute = PathUtils::ResolveFromExecutable(path);
+		std::error_code status;
+		if (!std::filesystem::is_regular_file(absolute, status)) {
+			unavailable = absolute;
+		}
+	};
+	for (const auto &object : objects_) {
+		SceneAssetReferences::Visit(object, check);
+		if (object.prefabLink) {
+			check(object.prefabLink->asset);
+		}
+		if (!unavailable.empty()) {
+			break;
+		}
+	}
+	return unavailable;
 }
 
 bool EditorClipboard::Copy(const Scene &scene,

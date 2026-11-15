@@ -8912,6 +8912,14 @@ void EditorScene::PasteObjects() {
 	}
 
 	try {
+		if (const auto unavailable = clipboard_.FindUnavailableAsset(); !unavailable.empty()) {
+			auto message = "Could not paste objects because a referenced file is unavailable: " +
+			               PathUtils::ToUtf8(unavailable);
+			Logger::Error(message, unavailable);
+			ShowError(std::move(message));
+			consolePanel_.Show();
+			return;
+		}
 		const auto copied = clipboard_.GetObjects();
 		std::vector<SceneObject> objects(copied.begin(), copied.end());
 

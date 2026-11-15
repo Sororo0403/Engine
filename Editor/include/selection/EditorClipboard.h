@@ -49,6 +49,11 @@ class EditorClipboard {
 	void RewriteAssets(const std::function<void(SceneObject &)> &rewrite);
 
 	/// <summary>
+	/// コピー済みの物体が直接参照する素材のうち、使用できない最初のファイルを取得する
+	/// </summary>
+	std::filesystem::path FindUnavailableAsset() const;
+
+	/// <summary>
 	/// 貼り付け可能な物体を保持しているか確認する
 	/// </summary>
 	/// <returns>true:データあり false:空</returns>
