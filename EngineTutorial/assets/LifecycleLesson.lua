@@ -64,7 +64,7 @@ local function show_question(self, state, number)
         text(self, "label" .. index, ("%d. %s"):format(index, choice))
     end
     text(self, "feedback", "コードを読んで、答えを選んでください。")
-    text(self, "advanceLabel", number == #questions and "コード実習へ" or "次の問題")
+    text(self, "advanceLabel", number == #questions and "穴埋め問題へ" or "次の問題")
     self:reference("advance"):set_interactable(false)
 end
 

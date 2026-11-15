@@ -60,7 +60,7 @@
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 212], "sizeDelta": [1144, 110]},
-      "text": {"enabled": true, "value": "実際のC++を読んで、エンジンの動きを当てます。\n小テストのあとにコードを書いて確かめます。", "fontFamily": "M PLUS 1p", "fontSize": 28, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "text": {"enabled": true, "value": "実際のC++を読んで、エンジンの動きを当てます。\n小テストのあとに、C++の穴埋め問題に挑戦します。", "fontFamily": "M PLUS 1p", "fontSize": 28, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 8,
