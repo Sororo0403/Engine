@@ -1,17 +1,16 @@
 {
   "format": "EngineScene",
-  "version": 82,
+  "version": 83,
   "projectRoot": "..",
   "objects": [
     {
       "id": 1,
-      "name": "コードを書く",
+      "name": "第1章 コード実習",
       "active": true,
       "parent": 0,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
-      "script": {"asset": "@project/assets/FrameExercise.lua", "enabled": true, "prefabs": [], "scenes": [], "references": [{"name": "result", "target": 12}], "state": {}}
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false}
     },
     {
       "id": 2,
@@ -70,17 +69,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 242], "sizeDelta": [557, 170]},
-      "image": {"enabled": true, "texture": "", "color": [0.09, 0.13, 0.18, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
-    },
-    {
-      "id": 8,
-      "name": "結果の背景",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [641, 242], "sizeDelta": [571, 170]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 242], "sizeDelta": [1144, 170]},
       "image": {"enabled": true, "texture": "", "color": [0.09, 0.13, 0.18, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
     },
     {
@@ -90,7 +79,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 253], "sizeDelta": [515, 35]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 253], "sizeDelta": [1080, 35]},
       "text": {"enabled": true, "value": "エンジンのC++  /  Engine.cpp", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
@@ -100,38 +89,8 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 290], "sizeDelta": [515, 100]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 290], "sizeDelta": [1080, 100]},
       "text": {"enabled": true, "value": "if (!sceneManager_.Update(deltaTime)) {\n    return -1;\n}", "fontFamily": "Consolas", "fontSize": 18, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
-      "id": 11,
-      "name": "結果の見出し",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [661, 253], "sizeDelta": [530, 35]},
-      "text": {"enabled": true, "value": "実行結果", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
-      "id": 12,
-      "name": "結果",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [661, 286], "sizeDelta": [530, 114]},
-      "text": {"enabled": true, "value": "Playすると成功時と失敗時の結果が出ます。", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
-    },
-    {
-      "id": 13,
-      "name": "編集手順",
-      "active": true,
-      "parent": 1,
-      "tag": "",
-      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 451], "sizeDelta": [1144, 142]},
-      "text": {"enabled": true, "value": "1. Gameビュー上部の Edit Script... を押す\n2. run_frame をLuaで書き、Save and Play を押す\n3. 同じ画面の実行結果を確認する", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 14,
@@ -140,8 +99,52 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 627], "sizeDelta": [1144, 56]},
-      "text": {"enabled": true, "value": "成功時は Update → Draw。失敗時は Update で止まればクリアです。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 565], "sizeDelta": [1144, 56]},
+      "text": {"enabled": true, "value": "成功時は Update → Draw、失敗時は Update で止まればクリアです。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 15,
+      "name": "コードを書く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 459], "sizeDelta": [260, 62]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "script": {"asset": "@project/assets/FrameExercise.lua", "enabled": true, "prefabs": [], "scenes": [], "references": [], "state": {}, "editInGame": true}
+    },
+    {
+      "id": 16,
+      "name": "コードを書くのラベル",
+      "active": true,
+      "parent": 15,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [226, 62]},
+      "text": {"enabled": true, "value": "コードを書く", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "目次へ戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [347, 459], "sizeDelta": [223, 62]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/00-Index.scene.json", "target": 0}]}
+    },
+    {
+      "id": 18,
+      "name": "目次へ戻るのラベル",
+      "active": true,
+      "parent": 17,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [189, 62]},
+      "text": {"enabled": true, "value": "目次に戻る", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     }
   ]
 }
