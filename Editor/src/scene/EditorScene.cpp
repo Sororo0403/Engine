@@ -7252,6 +7252,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		}
 		bool copiedSceneStates = false;
 		if (!previousProjectRoot.empty()) {
+			recentScenes_.FollowProjectMove(previousProjectRoot, project_.GetRoot());
 			const auto &path = document_.GetFilePath();
 			const auto hasState = [&] {
 				return preferences_.FindSceneView(path) ||

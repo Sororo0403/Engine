@@ -35,6 +35,12 @@ class RecentScenes {
 	/// </summary>
 	void RemoveMissing();
 
+	/// <summary>
+	/// 移動前に見つからず、移動先で見つかるプロジェクト内シーンの履歴を更新する
+	/// </summary>
+	void FollowProjectMove(const std::filesystem::path &previousRoot,
+	                       const std::filesystem::path &root);
+
   private:
 	std::vector<std::filesystem::path> paths_;
 };
