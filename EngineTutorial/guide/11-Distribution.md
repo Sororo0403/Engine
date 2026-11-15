@@ -2,6 +2,8 @@
 
 目次で **第11章 ビルドとRuntime配布** を開きます。Editorで作ったデータが配布フォルダに入り、書き出した実行ファイルで読み込まれるまでをたどります。
 
+**実装索引を開く** から、ビルド設定と配布アプリの書き出し・起動に関わる20ファイルを確認できます。
+
 ## Release Runtimeと出力
 
 [Runtime.vcxproj](../../Runtime/Runtime.vcxproj) はMSVCのバージョンと構成で出力先を分け、Releaseのビルド後にCRTのDLLを配置します。[Runtimeのmain.cpp](../../Runtime/src/main.cpp) の `--write-build-info` 処理は構成・アーキテクチャ・データ形式のバージョンを出力します。[GameExporter.cpp](../../Editor/src/export/GameExporter.cpp) はこれを使って、Release x64とEditorのデータ形式がそろっているかを確認します。
