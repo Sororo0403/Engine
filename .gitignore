@@ -367,7 +367,6 @@ build/
 
 # モデル用のOBJファイルは追跡する
 !/Engine/resources/models/**/*.obj
-!/EngineTutorial/resources/models/*.obj
 
 # Debug UI source directories
 !/Engine/include/graphics/debug/
