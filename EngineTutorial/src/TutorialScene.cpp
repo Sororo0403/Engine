@@ -1,21 +1,24 @@
 #include "TutorialScene.h"
 #include "BoxLesson.h"
+#include "MovementLesson.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "input/InputSystem.h"
 #include <algorithm>
 #include <imgui.h>
 
 namespace {
 
 constexpr ImVec4 kAccent{0.44f, 0.82f, 0.73f, 1.0f};
+constexpr std::array kUpdateRates{30, 60, 120};
 
 } // namespace
 
 TutorialScene::TutorialScene(const EngineContext &context)
-    : ui_(context.ui), render_(context.render),
+    : ui_(context.ui), render_(context.render), input_(context.input),
       renderer_(scene_, context.models, context.render) {
 }
 
@@ -52,12 +55,21 @@ bool TutorialScene::Update(float seconds) {
 	                                            ImGuiWindowFlags_NoMove |
 	                                            ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::TextColored(kAccent, "EngineTutorial");
+		const auto previous = chapter_;
 		if (ImGui::Button("1  起動")) {
 			chapter_ = Chapter::STARTUP;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("2  箱の表示")) {
 			chapter_ = Chapter::BOX;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("3  入力と移動")) {
+			chapter_ = Chapter::MOVEMENT;
+		}
+		if (chapter_ != previous) {
+			scene_.FindObject(box_)->transform = initialBoxTransform_;
+			previewYaw_ = 0;
 		}
 		ImGui::Separator();
 		ImGui::PushID(static_cast<int>(chapter_));
@@ -71,7 +83,11 @@ bool TutorialScene::Update(float seconds) {
 			ImGui::EndChild();
 			ImGui::SameLine();
 			if (ImGui::BeginChild("Lesson", {0, 0}, ImGuiChildFlags_Borders)) {
-				DrawBoxLesson();
+				if (chapter_ == Chapter::BOX) {
+					DrawBoxLesson();
+				} else {
+					DrawMovementLesson(seconds);
+				}
 			}
 			ImGui::EndChild();
 		}
@@ -137,6 +153,57 @@ void TutorialScene::DrawBoxLesson() {
 	const auto &position = transform.translation;
 	ImGui::Text("箱の位置  (%.2f, %.2f, %.2f)", double(position.x), double(position.y), double(position.z));
 	ImGui::TextWrapped("黄色い箱は parentId で親を参照しています。親の回転を変えると、子のローカル座標を変えなくても位置が動きます。");
+}
+
+void TutorialScene::DrawMovementLesson(float seconds) {
+	ImGui::SeparatorText("第3章  入力と移動時間");
+	ImGui::TextWrapped("WASDで緑の箱を動かします。D・AはX軸、W・SはZ軸の移動です。");
+	auto &transform = scene_.FindObject(box_)->transform;
+	if (ImGui::Button("箱を初期位置に戻す")) {
+		transform = initialBoxTransform_;
+	} else if (input_.IsActive() && !ui_.IsTextInputActive()) {
+		MoveLessonBox(transform, input_.GetKeyboard(), seconds);
+		transform.translation.x = std::clamp(transform.translation.x, -3.5f, 3.5f);
+		transform.translation.z = std::clamp(transform.translation.z, -3.5f, 3.5f);
+	}
+	ImGui::Text("箱の位置  X %.2f / Z %.2f",
+	            double(transform.translation.x), double(transform.translation.z));
+	ImGui::Text("前の更新から %.1f ms", double(seconds) * 1000.0);
+
+	ImGui::SeparatorText("更新回数を変えて測る");
+	ImGui::TextWrapped("Dを1秒間押した状態を、30・60・120回の更新で再現します。画面のフレームレートに関係なく同じ条件で比べられます。");
+	if (ImGui::Button("1秒間の移動距離を比較")) {
+		Keyboard keyboard;
+		Keyboard::State keys{};
+		keys[static_cast<std::size_t>(Key::D)] = true;
+		keyboard.Update(keys);
+		auto &distances = movementDistances_.emplace();
+		for (std::size_t i = 0; i < kUpdateRates.size(); ++i) {
+			Transform simulated;
+			const int updates = kUpdateRates[i];
+			for (int frame = 0; frame < updates; ++frame) {
+				MoveLessonBox(simulated, keyboard, 1.f / static_cast<float>(updates));
+			}
+			distances[i] = simulated.translation.x;
+		}
+	}
+	if (movementDistances_ && ImGui::BeginTable("Distances", 2, ImGuiTableFlags_BordersInnerH)) {
+		ImGui::TableSetupColumn("1秒間の更新回数");
+		ImGui::TableSetupColumn("Xの移動距離");
+		ImGui::TableHeadersRow();
+		for (std::size_t i = 0; i < kUpdateRates.size(); ++i) {
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			ImGui::Text("%d 回", kUpdateRates[i]);
+			ImGui::TableSetColumnIndex(1);
+			ImGui::Text("%.2f", double((*movementDistances_)[i]));
+		}
+		ImGui::EndTable();
+	}
+
+	ImGui::SeparatorText("C++を書き換える");
+	ImGui::TextWrapped("src/MovementLesson.cpp の StepDistance() を開き、speed / 60.f を speed * seconds に変えてビルドします。");
+	ImGui::TextWrapped("もう一度測定し、どの更新回数でも約3.00になるか確認してください。");
 }
 
 void TutorialScene::DrawStartupLesson() const {
