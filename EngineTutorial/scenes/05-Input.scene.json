@@ -1,0 +1,380 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "第5章  入力とアクション",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {
+        "asset": "@project/assets/CodeLesson.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "progress",
+            "target": 14
+          },
+          {
+            "name": "prompt",
+            "target": 15
+          },
+          {
+            "name": "source",
+            "target": 16
+          },
+          {
+            "name": "code",
+            "target": 17
+          },
+          {
+            "name": "label1",
+            "target": 19
+          },
+          {
+            "name": "label2",
+            "target": 21
+          },
+          {
+            "name": "label3",
+            "target": 23
+          },
+          {
+            "name": "feedback",
+            "target": 25
+          },
+          {
+            "name": "advance",
+            "target": 28
+          },
+          {
+            "name": "advanceLabel",
+            "target": 29
+          }
+        ],
+        "state": {
+          "questions": [
+            {
+              "source": "Engine/src/input/Keyboard.cpp  /  IsPressed",
+              "code": "return keys_[index] && !previousKeys_[index];",
+              "prompt": "あるキーを押したまま次のフレームに進みました。2フレーム目の IsPressed は何を返しますか？",
+              "options": [
+                "true",
+                "false",
+                "キー番号"
+              ],
+              "correct": 2,
+              "feedback": [
+                "前回も押されているので、!previousKeys_ が false です。",
+                "正解。押し始めたフレームだけ true です。長押しの判定には IsDown を使います。",
+                "戻り値は押し始めたかを示す bool です。キー番号は配列を引くために使います。"
+              ]
+            },
+            {
+              "source": "Engine/src/input/InputSystem.cpp  /  Update",
+              "code": "if (!state.active) {\n    keyboard_.Reset();\n    mouse_.Reset();\n    gamepad_.Reset();\n    return true;\n}",
+              "prompt": "バックエンドが非アクティブを返しました。前のフレームのキー状態はどうなりますか？",
+              "options": [
+                "入力状態をクリアする",
+                "最後の押下を保持する",
+                "更新失敗として終了する"
+              ],
+              "correct": 1,
+              "feedback": [
+                "正解。入力をクリアして true を返します。フォーカスが外れたときの押しっぱなしを防ぎます。",
+                "Reset は現在と前回の入力をクリアします。押下状態は持ち越しません。",
+                "非アクティブは正常な状態なので true です。取得エラーでは別の分岐で false を返します。"
+              ]
+            },
+            {
+              "source": "Engine/src/gameplay/GameActionReader.cpp  /  Read",
+              "code": "const bool remoteConnected =\n    wiiRemote && wiiRemote->connected;\n\n// raw 配列の Wii リモコンの要素\nremoteConnected &&\n    ((binding.wiiRemote == WiiInput::A && wiiRemote->aDown) ||\n     (binding.wiiRemote == WiiInput::SHAKE && wiiRemote->shake))",
+              "prompt": "アクションに Wii リモコンの A を割り当てました。接続中に振っただけで、この割り当ては反応しますか？",
+              "options": [
+                "振れば反応する",
+                "接続した時点で反応する",
+                "Aを押さない限り反応しない"
+              ],
+              "correct": 3,
+              "feedback": [
+                "振りに反応するのは SHAKE の割り当てです。",
+                "接続は入力を読む前提です。A ボタンの状態も確認します。",
+                "正解。A と SHAKE は別々の割り当てです。同じ名前の操作へ他デバイスの入力も割り当てられます。"
+              ]
+            },
+            {
+              "source": "Engine/src/gameplay/GameActionReader.cpp  /  Read",
+              "code": "const bool axisDown = h.held[axisIndex] ||\n                      h.blocked[axisIndex]\n    ? strength > releaseThreshold\n    : strength >= pressThreshold;",
+              "prompt": "軸の押下は0.6、解放は0.4が境界です。0.7で押下した後、0.5まで戻すとどうなりますか？",
+              "options": [
+                "解放扱いになる",
+                "押下状態を保つ",
+                "もう一度押した扱いになる"
+              ],
+              "correct": 2,
+              "feedback": [
+                "すでに押下中なので、解放側の閾値0.4で判定します。",
+                "正解。0.5は解放閾値より上です。判定の切り替わり付近で入力がちらつくのを抑えます。",
+                "押下状態が続いています。新しい押下の瞬間は作りません。"
+              ]
+            },
+            {
+              "source": "Engine/src/gameplay/GameActionReader.cpp  /  Read",
+              "code": "states_.push_back({binding.name, down,\n                   ",
+              "after": ",\n                   !down && h.down && !cancelled, value});",
+              "blank": true,
+              "prompt": "第3フィールドには、このアクションを押し始めた瞬間を入れます。どの式ですか？",
+              "options": [
+                "down && h.down",
+                "!down && h.down",
+                "down && !h.down"
+              ],
+              "correct": 3,
+              "feedback": [
+                "今回も前回も押されています。長押しの次フレームまで反応してしまいます。",
+                "前回押されて今回押されていないので、押下ではなく解放側の条件です。",
+                "正解。前回は押されず、今回初めて押されました。複数の割り当てをまとめた後で判定します。"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "章のタイトル",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 95], "sizeDelta": [600, 65]},
+      "text": {"enabled": true, "value": "第5章  入力とアクション", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "問題の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 183], "sizeDelta": [467, 362]},
+      "image": {"enabled": true, "texture": "", "color": [0.074, 0.106, 0.145, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 13,
+      "name": "コード欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [551, 183], "sizeDelta": [661, 362]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 14,
+      "name": "問題番号",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 201], "sizeDelta": [425, 37]},
+      "text": {"enabled": true, "value": "問題  1 / 5", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 15,
+      "name": "問題文",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 250], "sizeDelta": [425, 243]},
+      "text": {"enabled": true, "value": "あるキーを押したまま次のフレームに進みました。2フレーム目の IsPressed は何を返しますか？", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 16,
+      "name": "ソースファイル名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 201], "sizeDelta": [612, 36]},
+      "text": {"enabled": true, "value": "Engine/src/input/Keyboard.cpp  /  IsPressed", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": false, "color": [0.68, 0.78, 0.87, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "C++の抜粋",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 250], "sizeDelta": [615, 280]},
+      "text": {"enabled": true, "value": "return keys_[index] && !previousKeys_[index];", "fontFamily": "Consolas", "fontSize": 18, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 18,
+      "name": "選択肢1",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 340], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer1", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 19,
+      "name": "選択肢1のラベル",
+      "active": true,
+      "parent": 18,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "1. true", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 20,
+      "name": "選択肢2",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 400], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer2", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 21,
+      "name": "選択肢2のラベル",
+      "active": true,
+      "parent": 20,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "2. false", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 22,
+      "name": "選択肢3",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 460], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer3", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 23,
+      "name": "選択肢3のラベル",
+      "active": true,
+      "parent": 22,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "3. キー番号", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 24,
+      "name": "回答欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 558], "sizeDelta": [1144, 75]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 25,
+      "name": "回答の説明",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [88, 563], "sizeDelta": [1098, 64]},
+      "text": {"enabled": true, "value": "コードを読んで、答えを選んでください。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 26,
+      "name": "目次に戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 649], "sizeDelta": [202, 49]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/00-Index.scene.json", "target": 0}]}
+    },
+    {
+      "id": 27,
+      "name": "目次に戻るのラベル",
+      "active": true,
+      "parent": 26,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [168, 49]},
+      "text": {"enabled": true, "value": "目次に戻る", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 28,
+      "name": "次へ進む",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [945, 649], "sizeDelta": [267, 49]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": false, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "advance", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 29,
+      "name": "次へ進むのラベル",
+      "active": true,
+      "parent": 28,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [233, 49]},
+      "text": {"enabled": true, "value": "次の問題", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}

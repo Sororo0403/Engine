@@ -13,3 +13,4 @@
 - [第2章 シーンとコンポーネント](guide/02-SceneObjects.md)
 - [第3章 編集とUndo／Redo](guide/03-Editing.md)
 - [第4章 保存・素材・Prefab](guide/04-Assets.md)
+- [第5章 入力とアクション](guide/05-Input.md)
