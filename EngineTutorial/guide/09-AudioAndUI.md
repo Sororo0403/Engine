@@ -2,6 +2,8 @@
 
 目次で **第9章 音と画面UI** を開きます。空間音声のチャンネル、距離による音量、Canvasの幅、同梱フォント、ボタンの押下と解放を扱います。
 
+**実装索引を開く** から、音声の読み込み・再生、Canvasの配置と入力、画像・文字の描画、UIの編集と保存に関わる58ファイルを確認できます。教材の目次からは **実装索引 → 第9章** を選びます。
+
 ## 音の再生
 
 [AudioClipManager.cpp](../../Engine/src/audio/AudioClipManager.cpp) はクリップを読み込んで共有します。[SceneAudioPlayer.cpp](../../Engine/src/scene/SceneAudioPlayer.cpp) はシーン上の音源・リスナーと再生中の音を対応させます。[AudioSystem.cpp](../../Engine/src/audio/AudioSystem.cpp) はDirectXTKのオーディオ機能を使って再生を管理し、空間音声の再生前にはモノラルの素材と位置設定を検証します。
