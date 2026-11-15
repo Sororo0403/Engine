@@ -18,6 +18,16 @@
 | [10](10-Windows.md) | Windowsと共通処理 | Win32ウィンドウ、文字列変換、パス、ファイル操作、通知、資源の寿命とエラー |
 | [11](11-Distribution.md) | ビルドとRuntime配布 | ソリューション・プロジェクトの依存関係 → DLL・リソース配置 → ゲーム出力 → Runtimeの設定・シーン遷移・セーブ |
 
+## 外部ライブラリと同梱素材
+
+アプリの **実装索引 → 外部ライブラリ・同梱素材** から、使用目的、接続する自作コードと章、出力先を確認できます。
+
+| アプリの項目 | 対象 |
+| --- | --- |
+| 描画・Editor UI | Assimp、DirectXMath、DirectXTK12、DXC、Dear ImGui、ImGuizmo |
+| 入力・物理・Lua・JSON | GameInput、Jolt、Lua、nlohmann/json、Windows SDKの入力と空間音声 |
+| ライセンス・同梱素材 | ビルドとゲーム出力でのライセンス配置、M PLUS 1p、EditorのBoxモデル |
+
 ## 実装の確認方法
 
 - 章では、入口の呼び出し元、処理が読むデータ、結果の反映先、失敗時や終了時の扱いをつなげて説明します。
