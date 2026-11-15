@@ -1,0 +1,542 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "第7章  HLSLシェーダー",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {
+        "asset": "@project/assets/SourceGuide.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "page",
+            "target": 14
+          },
+          {
+            "name": "path",
+            "target": 16
+          },
+          {
+            "name": "topic",
+            "target": 17
+          },
+          {
+            "name": "explanation",
+            "target": 18
+          },
+          {
+            "name": "follow",
+            "target": 20
+          },
+          {
+            "name": "row1",
+            "target": 30
+          },
+          {
+            "name": "label1",
+            "target": 31
+          },
+          {
+            "name": "row2",
+            "target": 32
+          },
+          {
+            "name": "label2",
+            "target": 33
+          },
+          {
+            "name": "row3",
+            "target": 34
+          },
+          {
+            "name": "label3",
+            "target": 35
+          },
+          {
+            "name": "row4",
+            "target": 36
+          },
+          {
+            "name": "label4",
+            "target": 37
+          },
+          {
+            "name": "row5",
+            "target": 38
+          },
+          {
+            "name": "label5",
+            "target": 39
+          },
+          {
+            "name": "row6",
+            "target": 40
+          },
+          {
+            "name": "label6",
+            "target": 41
+          },
+          {
+            "name": "previous",
+            "target": 42
+          },
+          {
+            "name": "next",
+            "target": 44
+          }
+        ],
+        "state": {
+          "entries": [
+            {
+              "label": "DebugLine.hlsli",
+              "path": "Engine/resources/shaders/debug/DebugLine.hlsli",
+              "topic": "線のシェーダー間の出力",
+              "explanation": "頂点処理からピクセル処理へ投影後の位置と色を受け渡す型を定義します。",
+              "follow": "DebugLineOutput を VS と PS で確認。"
+            },
+            {
+              "label": "DebugLine.VS.hlsl",
+              "path": "Engine/resources/shaders/debug/DebugLine.VS.hlsl",
+              "topic": "線の端点をカメラで投影する",
+              "explanation": "ワールド座標の線の頂点をカメラ行列で変換し、色を渡します。",
+              "follow": "VSMain の行列との積と DebugLineOutput。"
+            },
+            {
+              "label": "DebugLine.PS.hlsl",
+              "path": "Engine/resources/shaders/debug/DebugLine.PS.hlsl",
+              "topic": "受け取った線の色を返す",
+              "explanation": "頂点側から受け取った色をピクセルの出力色にします。",
+              "follow": "PSMain の return input.color。"
+            },
+            {
+              "label": "Mesh.hlsli",
+              "path": "Engine/resources/shaders/mesh/Mesh.hlsli",
+              "topic": "メッシュの頂点出力を共有",
+              "explanation": "画面に置く位置に加えて、テクスチャ座標やワールド位置・法線をピクセル側へ渡す型です。",
+              "follow": "VertexOutput と Mesh.VS.hlsl／Mesh.PS.hlsl。"
+            },
+            {
+              "label": "Mesh.VS.hlsl",
+              "path": "Engine/resources/shaders/mesh/Mesh.VS.hlsl",
+              "topic": "頂点を投影しワールド位置も渡す",
+              "explanation": "頂点を worldViewProjection で変換し、照明に使うワールド位置と法線も計算します。",
+              "follow": "VSMain の position・worldPosition・normal の出力。"
+            },
+            {
+              "label": "Mesh.PS.hlsl",
+              "path": "Engine/resources/shaders/mesh/Mesh.PS.hlsl",
+              "topic": "テクスチャ・照明・影から色を求める",
+              "explanation": "テクスチャや材質に照明を適用します。影は深度の比較で求め、霧などの効果も反映します。",
+              "follow": "影の SampleCmpLevelZero と、PSMain の拡散光の saturate。"
+            },
+            {
+              "label": "Shadow.VS.hlsl",
+              "path": "Engine/resources/shaders/mesh/Shadow.VS.hlsl",
+              "topic": "光源から見た深度を描く",
+              "explanation": "頂点をモデルのワールド行列で変換してから光源のビュー投影行列で変換します。",
+              "follow": "VSMain の world と shadowViewProjection。"
+            },
+            {
+              "label": "Skinning.hlsli",
+              "path": "Engine/resources/shaders/mesh/Skinning.hlsli",
+              "topic": "ボーンの重みで頂点と法線を変形",
+              "explanation": "最大8個の重み付き変換を合成します。重みがなければ末尾の所属ノード用変換を使います。",
+              "follow": "SkinVertex のループと total == 0 の分岐。"
+            },
+            {
+              "label": "SkinnedMesh.VS.hlsl",
+              "path": "Engine/resources/shaders/mesh/SkinnedMesh.VS.hlsl",
+              "topic": "ボーン変形したモデルを画面へ投影",
+              "explanation": "SkinVertex で変形した位置と法線を描画用に変換し、通常のメッシュと共通の出力型で渡します。",
+              "follow": "VSMain の SkinVertex と VertexOutput。"
+            },
+            {
+              "label": "SkinnedShadow.VS.hlsl",
+              "path": "Engine/resources/shaders/mesh/SkinnedShadow.VS.hlsl",
+              "topic": "ボーン変形後のモデルから影を描く",
+              "explanation": "ボーンによる頂点変形を行い、光源ビュー投影へ変換します。曲がったポーズでも影が形に沿います。",
+              "follow": "SkinVertex → world → shadowViewProjection。"
+            },
+            {
+              "label": "Particle.VS.hlsl",
+              "path": "Engine/resources/shaders/particles/Particle.VS.hlsl",
+              "topic": "粒子をカメラに向く四角形にする",
+              "explanation": "頂点番号と粒子のサイズを使い、カメラに向く面の頂点を生成します。",
+              "follow": "main の SV_VertexID とカメラの軸の使い方。"
+            },
+            {
+              "label": "Particle.PS.hlsl",
+              "path": "Engine/resources/shaders/particles/Particle.PS.hlsl",
+              "topic": "粒子の画像と色を合成する",
+              "explanation": "画像に粒子の色を掛けます。円形の場合はUVの中心からの距離に応じて透明度を落とします。",
+              "follow": "main の circle と smoothstep。"
+            },
+            {
+              "label": "Canvas.VS.hlsl",
+              "path": "Engine/resources/shaders/ui/Canvas.VS.hlsl",
+              "topic": "UIの矩形を頂点番号から生成",
+              "explanation": "UIの位置と軸を使って矩形を組み立て、画像上の参照座標を渡します。",
+              "follow": "main の SV_VertexID と uvRect。"
+            },
+            {
+              "label": "Canvas.PS.hlsl",
+              "path": "Engine/resources/shaders/ui/Canvas.PS.hlsl",
+              "topic": "UI画像の色と明暗効果を反映",
+              "explanation": "画像に色と透明度を掛けます。白黒効果が有効なときは輝度を求めて指定した明暗の範囲へ変換します。",
+              "follow": "main の image.Sample と luminance。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "索引のタイトル",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 95], "sizeDelta": [1080, 65]},
+      "text": {"enabled": true, "value": "第7章  HLSLシェーダー", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "問題の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 183], "sizeDelta": [467, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.074, 0.106, 0.145, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 13,
+      "name": "コード欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [551, 183], "sizeDelta": [661, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 14,
+      "name": "page",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 193], "sizeDelta": [425, 37]},
+      "text": {"enabled": true, "value": "1 / 3 ページ", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 16,
+      "name": "path",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 199], "sizeDelta": [612, 56]},
+      "text": {"enabled": true, "value": "Engine/resources/shaders/debug/DebugLine.hlsli", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": false, "color": [0.68, 0.78, 0.87, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "topic",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 255], "sizeDelta": [612, 45]},
+      "text": {"enabled": true, "value": "線のシェーダー間の出力", "fontFamily": "M PLUS 1p", "fontSize": 25, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 18,
+      "name": "explanation",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 312], "sizeDelta": [612, 143]},
+      "text": {"enabled": true, "value": "頂点処理からピクセル処理へ投影後の位置と色を受け渡す型を定義します。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 19,
+      "name": "follow",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 477], "sizeDelta": [612, 32]},
+      "text": {"enabled": true, "value": "追う箇所", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 20,
+      "name": "followText",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 511], "sizeDelta": [612, 84]},
+      "text": {"enabled": true, "value": "DebugLineOutput を VS と PS で確認。", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 30,
+      "name": "ファイル 1",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 241], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry1", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 31,
+      "name": "ファイル 1のラベル",
+      "active": true,
+      "parent": 30,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "DebugLine.hlsli", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 32,
+      "name": "ファイル 2",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 292], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry2", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 33,
+      "name": "ファイル 2のラベル",
+      "active": true,
+      "parent": 32,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "DebugLine.VS.hlsl", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 34,
+      "name": "ファイル 3",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 343], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry3", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 35,
+      "name": "ファイル 3のラベル",
+      "active": true,
+      "parent": 34,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "DebugLine.PS.hlsl", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 36,
+      "name": "ファイル 4",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 394], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry4", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 37,
+      "name": "ファイル 4のラベル",
+      "active": true,
+      "parent": 36,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "Mesh.hlsli", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 38,
+      "name": "ファイル 5",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 445], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry5", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 39,
+      "name": "ファイル 5のラベル",
+      "active": true,
+      "parent": 38,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "Mesh.VS.hlsl", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 40,
+      "name": "ファイル 6",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 496], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry6", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 41,
+      "name": "ファイル 6のラベル",
+      "active": true,
+      "parent": 40,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "Mesh.PS.hlsl", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 42,
+      "name": "前ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": false, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "previous", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 43,
+      "name": "前ページのラベル",
+      "active": true,
+      "parent": 42,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "前ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 44,
+      "name": "次ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [312, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "next", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 45,
+      "name": "次ページのラベル",
+      "active": true,
+      "parent": 44,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "次ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 46,
+      "name": "第7章の実装索引へ戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 649], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/07-Rendering-Reference.scene.json", "target": 0}]}
+    },
+    {
+      "id": 47,
+      "name": "第7章の実装索引へ戻るのラベル",
+      "active": true,
+      "parent": 46,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "第7章の実装索引", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 48,
+      "name": "問題を開く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [945, 649], "sizeDelta": [267, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/07-Rendering.scene.json", "target": 0}]}
+    },
+    {
+      "id": 49,
+      "name": "問題を開くのラベル",
+      "active": true,
+      "parent": 48,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [235, 48]},
+      "text": {"enabled": true, "value": "問題を開く", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}

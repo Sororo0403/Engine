@@ -1,0 +1,563 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "第7章  描画ワールド・描画命令",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {
+        "asset": "@project/assets/SourceGuide.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "page",
+            "target": 14
+          },
+          {
+            "name": "path",
+            "target": 16
+          },
+          {
+            "name": "topic",
+            "target": 17
+          },
+          {
+            "name": "explanation",
+            "target": 18
+          },
+          {
+            "name": "follow",
+            "target": 20
+          },
+          {
+            "name": "row1",
+            "target": 30
+          },
+          {
+            "name": "label1",
+            "target": 31
+          },
+          {
+            "name": "row2",
+            "target": 32
+          },
+          {
+            "name": "label2",
+            "target": 33
+          },
+          {
+            "name": "row3",
+            "target": 34
+          },
+          {
+            "name": "label3",
+            "target": 35
+          },
+          {
+            "name": "row4",
+            "target": 36
+          },
+          {
+            "name": "label4",
+            "target": 37
+          },
+          {
+            "name": "row5",
+            "target": 38
+          },
+          {
+            "name": "label5",
+            "target": 39
+          },
+          {
+            "name": "row6",
+            "target": 40
+          },
+          {
+            "name": "label6",
+            "target": 41
+          },
+          {
+            "name": "previous",
+            "target": 42
+          },
+          {
+            "name": "next",
+            "target": 44
+          }
+        ],
+        "state": {
+          "entries": [
+            {
+              "label": "RenderObjectHandle.h",
+              "path": "Engine/include/graphics/render/RenderObjectHandle.h",
+              "topic": "描画物体を安全に特定する識別子",
+              "explanation": "ワールドID、格納位置、世代を持ち、削除後に同じ位置を再利用した物体と区別します。",
+              "follow": "RenderWorld がハンドルを作成・解決する箇所。"
+            },
+            {
+              "label": "SceneRenderer.h",
+              "path": "Engine/include/scene/SceneRenderer.h",
+              "topic": "シーンデータを描画へ渡すAPI",
+              "explanation": "シーンから物体を描画ワールドへ反映します。描画、境界の取得、デバッグ線の追加などの入口も持ちます。",
+              "follow": "Initialize・Update・Draw と GetObjectBounds。"
+            },
+            {
+              "label": "SceneRenderer.cpp",
+              "path": "Engine/src/scene/SceneRenderer.cpp",
+              "topic": "シーンから表示対象を取り出す",
+              "explanation": "物体の有効状態と描画条件を確認して、描画ワールドの物体を作成・更新します。シーンのカメラや灯りも描画へ渡します。",
+              "follow": "Update → SynchronizeObjects。描画対象は IsRenderable で確認。"
+            },
+            {
+              "label": "RenderWorld.h",
+              "path": "Engine/include/graphics/render/RenderWorld.h",
+              "topic": "描画ワールド単位の状態",
+              "explanation": "物体、カメラ、ライトなどをワールド単位で管理します。シーンのデータから描画に必要な姿勢や値を準備できます。",
+              "follow": "Update と Draw、DrawShadows の分担。"
+            },
+            {
+              "label": "RenderWorld.cpp",
+              "path": "Engine/src/graphics/render/RenderWorld.cpp",
+              "topic": "カメラと影の候補を別に判定",
+              "explanation": "物体の境界をカメラの範囲と光源の範囲に対して別々に調べます。画面外の物体でも影に必要なら残ります。",
+              "follow": "Update の可視性判定 → Draw／DrawShadows。"
+            },
+            {
+              "label": "RenderSystem.h",
+              "path": "Engine/include/graphics/render/RenderSystem.h",
+              "topic": "描画先に応じた描画処理の入口",
+              "explanation": "RenderWorld を作成して更新し、画面か RenderTexture に描画するAPIを提供します。",
+              "follow": "CreateRenderTexture と Draw のオーバーロード。"
+            },
+            {
+              "label": "RenderSystem.cpp",
+              "path": "Engine/src/graphics/render/RenderSystem.cpp",
+              "topic": "複数の描画処理を同じ描画先へ送る",
+              "explanation": "ワールドの描画に加え、必要に応じて粒子やCanvasを描きます。Sceneビューなどには RenderTexture を使えます。",
+              "follow": "Draw の画面向けと RenderTexture 向けを比較。"
+            },
+            {
+              "label": "MeshRenderer.h",
+              "path": "Engine/include/graphics/render/MeshRenderer.h",
+              "topic": "メッシュ用の描画とシェーダー入力",
+              "explanation": "描画コマンドや材質・光源との接続を提供します。カメラ位置と霧は MeshFogData でGPUへ渡します。",
+              "follow": "Draw・DrawShadow と MeshFogData。"
+            },
+            {
+              "label": "MeshRenderer.cpp",
+              "path": "Engine/src/graphics/render/MeshRenderer.cpp",
+              "topic": "頂点・定数・描画状態をまとめて送る",
+              "explanation": "メッシュ用のパイプラインやルートシグネチャを作り、描画時に必要な定数やテクスチャを設定します。",
+              "follow": "Initialize → Draw。影側は DrawShadow。"
+            },
+            {
+              "label": "ParticleRenderer.h",
+              "path": "Engine/include/graphics/render/ParticleRenderer.h",
+              "topic": "カメラに向けた粒子の描画API",
+              "explanation": "粒子の描画データと今回のカメラを受け取り、透明合成する粒子を描画します。",
+              "follow": "Update と Draw に渡す描画情報。"
+            },
+            {
+              "label": "ParticleRenderer.cpp",
+              "path": "Engine/src/graphics/render/ParticleRenderer.cpp",
+              "topic": "透明粒子を奥から並べる",
+              "explanation": "粒子の順序をカメラから見た奥行きで決め、頂点側でカメラ向きの面を作るためのデータをGPUへ送ります。",
+              "follow": "Update の描画順と Draw の命令を追う。"
+            },
+            {
+              "label": "DebugLine.h",
+              "path": "Engine/include/graphics/render/DebugLine.h",
+              "topic": "ワールド座標で引く線のデータ",
+              "explanation": "始点・終点と色を持ちます。グリッドや物体の境界などのデバッグ表示を表します。",
+              "follow": "SceneRenderer::AddDebugLine と DebugLineBatch。"
+            },
+            {
+              "label": "DebugLineVertex.h",
+              "path": "Engine/include/graphics/render/DebugLineVertex.h",
+              "topic": "デバッグ線の1頂点",
+              "explanation": "線の描画に使う位置と色を頂点の形式にします。HLSL側で同じ要素を頂点入力にします。",
+              "follow": "DebugLine.VS.hlsl の VertexInput。"
+            },
+            {
+              "label": "DebugLineBatch.h",
+              "path": "Engine/include/graphics/render/DebugLineBatch.h",
+              "topic": "複数の線の頂点をまとめて保持",
+              "explanation": "描画ワールドの線を頂点バッファにまとめ、まとめて描画できるようにします。",
+              "follow": "Update の入力と頂点バッファ情報。"
+            },
+            {
+              "label": "DebugLineBatch.cpp",
+              "path": "Engine/src/graphics/render/DebugLineBatch.cpp",
+              "topic": "線ごとの両端を連続した頂点へ変換",
+              "explanation": "線を描画用の頂点に展開し、頂点バッファを更新します。",
+              "follow": "Update が DebugLine から頂点を組み立てる箇所。"
+            },
+            {
+              "label": "DebugLineRenderer.h",
+              "path": "Engine/include/graphics/render/DebugLineRenderer.h",
+              "topic": "デバッグ線をまとめて描くAPI",
+              "explanation": "更新した線のデータを受け取り、描画コマンドへ反映します。",
+              "follow": "Initialize と Draw、DebugLineBatch の使い方。"
+            },
+            {
+              "label": "DebugLineRenderer.cpp",
+              "path": "Engine/src/graphics/render/DebugLineRenderer.cpp",
+              "topic": "バッチの頂点を線として描く",
+              "explanation": "線描画用の状態を設定し、まとめた頂点を一度に描く命令を記録します。",
+              "follow": "Draw の頂点バッファ、トポロジー、DrawInstanced。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "索引のタイトル",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 95], "sizeDelta": [1080, 65]},
+      "text": {"enabled": true, "value": "第7章  描画ワールド・描画命令", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "問題の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 183], "sizeDelta": [467, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.074, 0.106, 0.145, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 13,
+      "name": "コード欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [551, 183], "sizeDelta": [661, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 14,
+      "name": "page",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 193], "sizeDelta": [425, 37]},
+      "text": {"enabled": true, "value": "1 / 3 ページ", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 16,
+      "name": "path",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 199], "sizeDelta": [612, 56]},
+      "text": {"enabled": true, "value": "Engine/include/graphics/render/RenderObjectHandle.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": false, "color": [0.68, 0.78, 0.87, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "topic",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 255], "sizeDelta": [612, 45]},
+      "text": {"enabled": true, "value": "描画物体を安全に特定する識別子", "fontFamily": "M PLUS 1p", "fontSize": 25, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 18,
+      "name": "explanation",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 312], "sizeDelta": [612, 143]},
+      "text": {"enabled": true, "value": "ワールドID、格納位置、世代を持ち、削除後に同じ位置を再利用した物体と区別します。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 19,
+      "name": "follow",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 477], "sizeDelta": [612, 32]},
+      "text": {"enabled": true, "value": "追う箇所", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 20,
+      "name": "followText",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 511], "sizeDelta": [612, 84]},
+      "text": {"enabled": true, "value": "RenderWorld がハンドルを作成・解決する箇所。", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 30,
+      "name": "ファイル 1",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 241], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry1", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 31,
+      "name": "ファイル 1のラベル",
+      "active": true,
+      "parent": 30,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "RenderObjectHandle.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 32,
+      "name": "ファイル 2",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 292], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry2", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 33,
+      "name": "ファイル 2のラベル",
+      "active": true,
+      "parent": 32,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneRenderer.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 34,
+      "name": "ファイル 3",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 343], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry3", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 35,
+      "name": "ファイル 3のラベル",
+      "active": true,
+      "parent": 34,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneRenderer.cpp", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 36,
+      "name": "ファイル 4",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 394], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry4", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 37,
+      "name": "ファイル 4のラベル",
+      "active": true,
+      "parent": 36,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "RenderWorld.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 38,
+      "name": "ファイル 5",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 445], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry5", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 39,
+      "name": "ファイル 5のラベル",
+      "active": true,
+      "parent": 38,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "RenderWorld.cpp", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 40,
+      "name": "ファイル 6",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 496], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry6", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 41,
+      "name": "ファイル 6のラベル",
+      "active": true,
+      "parent": 40,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "RenderSystem.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 42,
+      "name": "前ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": false, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "previous", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 43,
+      "name": "前ページのラベル",
+      "active": true,
+      "parent": 42,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "前ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 44,
+      "name": "次ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [312, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "next", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 45,
+      "name": "次ページのラベル",
+      "active": true,
+      "parent": 44,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "次ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 46,
+      "name": "第7章の実装索引へ戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 649], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/07-Rendering-Reference.scene.json", "target": 0}]}
+    },
+    {
+      "id": 47,
+      "name": "第7章の実装索引へ戻るのラベル",
+      "active": true,
+      "parent": 46,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "第7章の実装索引", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 48,
+      "name": "問題を開く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [945, 649], "sizeDelta": [267, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/07-Rendering.scene.json", "target": 0}]}
+    },
+    {
+      "id": 49,
+      "name": "問題を開くのラベル",
+      "active": true,
+      "parent": 48,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [235, 48]},
+      "text": {"enabled": true, "value": "問題を開く", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 目次で **第7章 描画とGPU** を開きます。シーンからの描画対象の抽出、カメラと影の範囲、頂点の座標、GPUの定数バッファ、光に背を向けた面を扱います。
 
+**実装索引を開く** から、描画ワールド、GPUリソース、HLSLシェーダーに関わる44ファイルを確認できます。教材の目次からは **実装索引 → 第7章** を選びます。
+
 ## シーンから描画へ
 
 [SceneRenderer.cpp](../../Engine/src/scene/SceneRenderer.cpp) は有効状態とコンポーネントを調べ、描画できる物体だけを描画ワールドに登録します。[ModelLoader.cpp](../../Engine/src/graphics/model/ModelLoader.cpp) はAssimpから形状や材質を読み、エンジンが扱うモデルへ変換します。[ModelManager.cpp](../../Engine/src/graphics/model/ModelManager.cpp) ではモデルを取得・共有し、物体ごとの姿勢や表示に使う値は描画側で管理します。
