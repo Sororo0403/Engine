@@ -57,6 +57,9 @@ std::string PathUtils::ToUtf8(const std::filesystem::path &path) {
 
 bool PathUtils::IsSameFile(const std::filesystem::path &first,
                            const std::filesystem::path &second) {
+	if (first.empty() || second.empty()) {
+		return false;
+	}
 	auto firstPath = ResolveFromExecutable(first);
 	auto secondPath = ResolveFromExecutable(second);
 	firstPath.make_preferred();

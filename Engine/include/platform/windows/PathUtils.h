@@ -31,7 +31,7 @@ std::filesystem::path ResolveFromExecutable(const std::filesystem::path &path);
 /// </summary>
 /// <param name="first">比較するパス。相対パスは実行ファイルのフォルダ基準</param>
 /// <param name="second">比較対象のパス</param>
-/// <returns>true:同じパスまたはファイル false:一致を確認できない。無効なパスは例外</returns>
+/// <returns>true:同じパスまたはファイル false:空のパス、または一致を確認できない。空以外の無効なパスは例外</returns>
 bool IsSameFile(const std::filesystem::path &first,
                 const std::filesystem::path &second);
 
