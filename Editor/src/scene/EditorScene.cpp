@@ -588,10 +588,8 @@ bool EditorScene::Update(float deltaTime) {
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
-		if (consoleScript.playWithoutTestSave && retry.failedTestSave) {
-			playMode_.SetLoadTestSave(false);
-		}
-		StartPlay(retry.path, retry.camera, true);
+		StartPlay(retry.path, retry.camera, true,
+		          consoleScript.playWithoutTestSave && retry.failedTestSave);
 		UpdateDialogs();
 		return true;
 	}
@@ -6791,13 +6789,10 @@ void EditorScene::UpdateDialogs() {
 				if (ui_.Button("Play Scene Again") || withoutSave) {
 					auto path = *errorReplayPath_;
 					const auto camera = errorReplayCameraOverride_;
-					if (withoutSave) {
-						playMode_.SetLoadTestSave(false);
-					}
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					CancelPendingAction();
-					StartPlay(path, camera, true);
+					StartPlay(path, camera, true, withoutSave);
 					return;
 				}
 				ImGui::SetItemTooltip("Start Play in %s.",
@@ -6860,7 +6855,8 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 }
 
 void EditorScene::StartPlay(const std::filesystem::path &path,
-                            SceneObjectId cameraOverride, bool allowCameraFallback) {
+                            SceneObjectId cameraOverride, bool allowCameraFallback,
+                            bool skipTestSave) {
 	consolePanel_.MarkPlayStart();
 	playFailureReplay_.reset();
 	audioPreviewPanel_.Stop();
@@ -6905,7 +6901,8 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	std::optional<std::filesystem::path> failedTestSave;
 	std::filesystem::path failedModelFile;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
-	                     cameraOverride, &invalidInputAction, &failedTestSave, &failedModelFile)) {
+	                     cameraOverride, &invalidInputAction, &failedTestSave,
+	                     &failedModelFile, skipTestSave)) {
 		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));

@@ -453,7 +453,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 						request.retryPlay = true;
 						request.playWithoutTestSave = true;
 					}
-					ImGui::SetItemTooltip("Turn off Load Test Save and retry the same scene.");
+					ImGui::SetItemTooltip("Retry the same scene without loading the test save for this run.");
 				}
 			}
 

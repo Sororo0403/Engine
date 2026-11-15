@@ -542,8 +542,9 @@ class EditorScene final : public IScene {
 	/// <param name="path">再生するシーン。空なら編集中のシーン</param>
 	/// <param name="cameraOverride">再生に使うCamera。0なら通常の選択</param>
 	/// <param name="allowCameraFallback">前回のCameraが使えない場合は通常の選択で再生する</param>
+	/// <param name="skipTestSave">今回の試遊だけテスト用セーブを読み込まない</param>
 	void StartPlay(const std::filesystem::path &path, SceneObjectId cameraOverride,
-	               bool allowCameraFallback = false);
+	               bool allowCameraFallback = false, bool skipTestSave = false);
 
 	/// <summary>
 	/// 試遊を再実行し、失敗したときは同じ操作を再試行できるようにする

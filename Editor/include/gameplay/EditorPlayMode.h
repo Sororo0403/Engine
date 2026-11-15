@@ -81,6 +81,7 @@ class EditorPlayMode {
 	/// <param name="invalidInputAction">指定時は修正が必要な名前付き入力を返す。該当しない場合は空</param>
 	/// <param name="failedTestSave">テスト用セーブの読み込みに失敗した場合の場所。場所が不明な場合は空のパス</param>
 	/// <param name="failedModelFile">モデルの読み込みエラーで確認するファイルの場所</param>
+	/// <param name="skipTestSave">今回の試遊だけテスト用セーブを読み込まない</param>
 	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
@@ -89,7 +90,8 @@ class EditorPlayMode {
 	           SceneObjectId cameraOverride = 0,
 	           std::string *invalidInputAction = nullptr,
 	           std::optional<std::filesystem::path> *failedTestSave = nullptr,
-	           std::filesystem::path *failedModelFile = nullptr);
+	           std::filesystem::path *failedModelFile = nullptr,
+	           bool skipTestSave = false);
 
 	/// <summary>
 	/// 指定したシーンから再実行し、Gameパネルへフォーカスを戻す。一時停止状態は保持する
@@ -242,13 +244,6 @@ class EditorPlayMode {
 	/// <returns>true:一時停止で開始 false:通常再生で開始</returns>
 	bool GetStartPaused() const {
 		return startPaused_;
-	}
-
-	/// <summary>
-	/// 次のPlayでテスト用セーブを読み込むか設定する
-	/// </summary>
-	void SetLoadTestSave(bool enabled) {
-		loadTestSave_ = enabled;
 	}
 
 	/// <summary>

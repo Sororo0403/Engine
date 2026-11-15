@@ -314,7 +314,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            SceneObjectId cameraOverride,
                            std::string *invalidInputAction,
                            std::optional<std::filesystem::path> *failedTestSave,
-                           std::filesystem::path *failedModelFile) {
+                           std::filesystem::path *failedModelFile,
+                           bool skipTestSave) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -377,7 +378,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	}
 
 	std::string initialScriptData = "{}";
-	if (loadTestSave_ && !config.settingsId.empty()) {
+	if (!skipTestSave && loadTestSave_ && !config.settingsId.empty()) {
 		const auto path = config.GetScriptSettingsPath(true);
 		if (path.empty()) {
 			error = "The Editor test save location is unavailable.";
