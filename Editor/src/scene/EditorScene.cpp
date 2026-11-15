@@ -566,16 +566,18 @@ bool EditorScene::Update(float deltaTime) {
 	    replay ? replay->path : std::filesystem::path{},
 	    replay ? replay->scriptPath : std::filesystem::path{},
 	    replay ? std::string_view{replay->inputAction} : std::string_view{},
-	    replay ? replay->failedScene : std::filesystem::path{});
-	if (consoleScript.openFailedScene && replay && consoleScript.logId == replay->logId) {
-		const auto path = replay->failedScene;
+	    replay ? replay->failedScene : std::nullopt);
+	if (consoleScript.openFailedScene && replay && replay->failedScene &&
+	    consoleScript.logId == replay->logId) {
+		const auto path = *replay->failedScene;
 		const auto object = replay->failedObject;
-		if (PathUtils::IsSameFile(document_.GetFilePath(), path)) {
+		const auto &editingPath = document_.GetFilePath();
+		if ((path.empty() && editingPath.empty()) || PathUtils::IsSameFile(editingPath, path)) {
 			FinishEdit();
 			if (object != 0) {
 				RevealReferenceObject(object);
 			}
-		} else {
+		} else if (!path.empty()) {
 			pendingOpenPath_ = path;
 			StartAction(EditorAction::OPEN_PATH, object);
 		}
@@ -5234,7 +5236,10 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	if (playFailureReplay_) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
 		playFailureReplay_->scriptPath = PathUtils::AfterMove(playFailureReplay_->scriptPath, moves);
-		playFailureReplay_->failedScene = PathUtils::AfterMove(playFailureReplay_->failedScene, moves);
+		if (playFailureReplay_->failedScene) {
+			auto &path = *playFailureReplay_->failedScene;
+			path = PathUtils::AfterMove(path, moves);
+		}
 	}
 
 	clipboard_.Clear();
@@ -5482,7 +5487,7 @@ void EditorScene::UpdateDialogs() {
 				    playFailureReplay_->path == previousPath) {
 					playFailureReplay_->path = document_.GetFilePath();
 				}
-				if (playFailureReplay_ && !previousPath.empty() &&
+				if (playFailureReplay_ &&
 				    playFailureReplay_->failedScene == previousPath) {
 					playFailureReplay_->failedScene = document_.GetFilePath();
 				}
@@ -7029,10 +7034,12 @@ void EditorScene::LogPlayFailure() {
 		const auto &editingPath = document_.GetFilePath();
 		const bool followsEditingScene = errorReplayPath_->empty() ||
 		    (!editingPath.empty() && PathUtils::IsSameFile(*errorReplayPath_, editingPath));
+		auto failedScene = errorScenePath_.empty() ? editingPath : errorScenePath_;
+		const bool canReveal = !failedScene.empty() || (followsEditingScene && errorObjectId_ != 0);
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
 		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_, errorInputAction_,
-		    errorScenePath_.empty() ? editingPath : errorScenePath_, errorObjectId_};
+		    canReveal ? std::optional{std::move(failedScene)} : std::nullopt, errorObjectId_};
 	}
 }
 

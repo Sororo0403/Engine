@@ -1095,7 +1095,7 @@ class EditorScene final : public IScene {
 		bool followsEditingScene;
 		std::filesystem::path scriptPath;
 		std::string inputAction;
-		std::filesystem::path failedScene;
+		std::optional<std::filesystem::path> failedScene;
 		SceneObjectId failedObject;
 	};
 	std::optional<PlayFailureReplay> playFailureReplay_;

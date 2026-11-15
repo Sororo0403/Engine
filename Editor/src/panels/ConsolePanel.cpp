@@ -108,7 +108,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          const std::filesystem::path &retryScene,
                                          const std::filesystem::path &retryScript,
                                          std::string_view retryInput,
-                                         const std::filesystem::path &failedScene) {
+                                         const std::optional<std::filesystem::path> &failedScene) {
 	if (!open_) {
 		return {};
 	}
@@ -418,13 +418,15 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 			}
 
 			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
-				if (!failedScene.empty()) {
+				if (failedScene) {
 					ui.SameLine();
-					if (ui.Button("Open Failed Scene")) {
+					if (ui.Button(failedScene->empty() ? "Select Failed Object" : "Open Failed Scene")) {
 						request.logId = selected->id;
 						request.openFailedScene = true;
 					}
-					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedScene).c_str());
+					if (!failedScene->empty()) {
+						ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(*failedScene).c_str());
+					}
 				}
 				if (!retryInput.empty()) {
 					ui.SameLine();

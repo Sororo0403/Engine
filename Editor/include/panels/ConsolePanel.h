@@ -3,6 +3,7 @@
 #include "core/LogEntry.h"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -49,14 +50,14 @@ class ConsolePanel {
 	/// <param name="retryScene">再試遊の開始先。空なら編集中のシーン</param>
 	/// <param name="retryScript">移動後のLuaパス。空ならログのパスを使う</param>
 	/// <param name="retryInput">直近の試遊失敗で修正が必要な名前付き入力。空なら編集操作を表示しない</param>
-	/// <param name="failedScene">エラーが起きた編集元シーン。空ならシーンを開く操作を表示しない</param>
+	/// <param name="failedScene">エラーが起きた編集元シーン。空パスは未保存の編集中シーン、nulloptは操作なし</param>
 	/// <returns>Luaや入力の編集、シーンを開く操作、または再試遊の要求</returns>
 	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
 	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0,
 	             const std::filesystem::path &retryScene = {},
 	             const std::filesystem::path &retryScript = {},
 	             std::string_view retryInput = {},
-	             const std::filesystem::path &failedScene = {});
+	             const std::optional<std::filesystem::path> &failedScene = {});
 
   private:
 	/// <summary>
