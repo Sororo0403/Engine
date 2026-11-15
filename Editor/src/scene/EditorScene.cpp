@@ -983,6 +983,11 @@ bool EditorScene::Update(float deltaTime) {
 					scriptReplayPath_ = playFailureReplay_->path;
 					scriptReplayCameraOverride_ = playFailureReplay_->camera;
 					stage_ = DialogStage::EDIT_PLAY_SCRIPT;
+				} else if (checkedRequest.scriptPath.empty() &&
+				           consoleScript.path.empty() && !inspectorScript.empty()) {
+					scriptReplayPath_.clear();
+					scriptReplayCameraOverride_ = 0;
+					stage_ = DialogStage::EDIT_PLAY_SCRIPT;
 				}
 			} else {
 				ShowError(error);
