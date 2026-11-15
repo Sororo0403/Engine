@@ -2,6 +2,8 @@
 
 目次で **第4章 保存・素材・Prefab** を開きます。プロジェクトとシーンの相対パス、保存失敗時の状態、Assetsで移動した素材の参照、Prefabの更新を扱う5問です。
 
+**実装索引を開く** から、プロジェクトと保存・復旧、素材の取り込みや移動、Prefabとシーンの依存に関わる57ファイルを確認できます。教材の目次からは **実装索引 → 第4章** を選びます。
+
 ## プロジェクトとシーン
 
 [ProjectDocument.cpp](../../Editor/src/scene/ProjectDocument.cpp) は `project.json` の形式とバージョンを検証し、`assets` と `scenes` をプロジェクトの下で開きます。`startupScene` は `scenes` 内への相対パスです。空なら起動シーンは未設定です。

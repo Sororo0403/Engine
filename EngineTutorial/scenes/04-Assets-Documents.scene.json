@@ -1,0 +1,542 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "第4章  プロジェクト・保存と復旧",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {
+        "asset": "@project/assets/SourceGuide.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "page",
+            "target": 14
+          },
+          {
+            "name": "path",
+            "target": 16
+          },
+          {
+            "name": "topic",
+            "target": 17
+          },
+          {
+            "name": "explanation",
+            "target": 18
+          },
+          {
+            "name": "follow",
+            "target": 20
+          },
+          {
+            "name": "row1",
+            "target": 30
+          },
+          {
+            "name": "label1",
+            "target": 31
+          },
+          {
+            "name": "row2",
+            "target": 32
+          },
+          {
+            "name": "label2",
+            "target": 33
+          },
+          {
+            "name": "row3",
+            "target": 34
+          },
+          {
+            "name": "label3",
+            "target": 35
+          },
+          {
+            "name": "row4",
+            "target": 36
+          },
+          {
+            "name": "label4",
+            "target": 37
+          },
+          {
+            "name": "row5",
+            "target": 38
+          },
+          {
+            "name": "label5",
+            "target": 39
+          },
+          {
+            "name": "row6",
+            "target": 40
+          },
+          {
+            "name": "label6",
+            "target": 41
+          },
+          {
+            "name": "previous",
+            "target": 42
+          },
+          {
+            "name": "next",
+            "target": 44
+          }
+        ],
+        "state": {
+          "entries": [
+            {
+              "label": "ProjectDocument.h",
+              "path": "Editor/include/scene/ProjectDocument.h",
+              "topic": "プロジェクトと起動シーンを保持",
+              "explanation": "起動シーンとゲーム設定の管理に加え、素材とシーンのディレクトリを取得できます。",
+              "follow": "Open・GetAssetsDirectory・GetStartupScene。"
+            },
+            {
+              "label": "ProjectDocument.cpp",
+              "path": "Editor/src/scene/ProjectDocument.cpp",
+              "topic": "project.jsonを開く",
+              "explanation": "形式の版と各パスを検証し、プロジェクトルートから起動シーンを解決して scenes 内にあることを確認します。",
+              "follow": "Open → GetStartupScene。保存側は Save。"
+            },
+            {
+              "label": "SceneDocument.h",
+              "path": "Editor/include/scene/SceneDocument.h",
+              "topic": "編集中のシーンと保存地点",
+              "explanation": "Scene・EditorHistory・ファイルパスをまとめます。SaveCopy は別ファイルへのコピーを扱います。",
+              "follow": "IsModified・SaveAs・SaveCopy。"
+            },
+            {
+              "label": "SceneDocument.cpp",
+              "path": "Editor/src/scene/SceneDocument.cpp",
+              "topic": "保存成功後に保存地点を更新",
+              "explanation": "書き込んでからファイルパスや保存済みデータ、履歴の保存地点を更新します。",
+              "follow": "SaveAs → FileUtils::WriteTextAtomically と MarkSaved。"
+            },
+            {
+              "label": "SceneSerializer.h",
+              "path": "Engine/include/scene/SceneSerializer.h",
+              "topic": "シーンのJSON変換を提供",
+              "explanation": "メモリ上の変換とファイル用の変換を公開します。ファイル用の変換に保存位置を渡せます。",
+              "follow": "Serialize と SerializeForFile の引数。"
+            },
+            {
+              "label": "SceneSerializer.cpp",
+              "path": "Engine/src/scene/SceneSerializer.cpp",
+              "topic": "素材の相対参照と版の互換性",
+              "explanation": "シーンJSONを読み、設定と物体の候補を検証します。プロジェクト内の素材は @project で参照でき、読み込み時はルートを基準に解決します。",
+              "follow": "SerializeForFile と Load。JSONの読み書きには nlohmann/json を使う。"
+            },
+            {
+              "label": "SceneAssetReferences.h",
+              "path": "Engine/include/scene/SceneAssetReferences.h",
+              "topic": "ファイル参照を調べる共通API",
+              "explanation": "モデル・画像などを種類付きで訪問できます。参照を書き換える処理も同じフィールド群を扱います。",
+              "follow": "Visit と Rewrite の引数を比較。"
+            },
+            {
+              "label": "SceneAssetReferences.cpp",
+              "path": "Engine/src/scene/SceneAssetReferences.cpp",
+              "topic": "各コンポーネントから素材参照を列挙",
+              "explanation": "物体の素材参照をまとめて走査します。コピーや移動の処理はこのAPIを使って対象パスを集めたり書き換えたりできます。",
+              "follow": "Visit と Rewrite がモデルや画像を扱う箇所。"
+            },
+            {
+              "label": "GameConfig.h",
+              "path": "Engine/include/gameplay/GameConfig.h",
+              "topic": "シーンと別に保つゲーム設定",
+              "explanation": "起動シーンへのパス、タイトル、ウィンドウ寸法、入力設定などを持ちます。",
+              "follow": "HasValidWindowSettings・HasValidStartupSettings。"
+            },
+            {
+              "label": "GameConfig.cpp",
+              "path": "Engine/src/gameplay/GameConfig.cpp",
+              "topic": "game.jsonと実行時の設定を読み込む",
+              "explanation": "Deserialize は読み込んだ設定を検証します。出力ゲームのスクリプト設定の読み込みもこの実装にあります。",
+              "follow": "Deserialize と LoadScriptSettings。配布時の使い方は第11章。"
+            },
+            {
+              "label": "SceneRecovery.h",
+              "path": "Editor/include/files/SceneRecovery.h",
+              "topic": "セッションごとに未保存シーンを記録",
+              "explanation": "スナップショットと候補の情報を定義し、候補の列挙や読み込みを行うAPIを公開します。",
+              "follow": "Record・Enumerate・Read。"
+            },
+            {
+              "label": "SceneRecovery.cpp",
+              "path": "Editor/src/files/SceneRecovery.cpp",
+              "topic": "未保存の状態と復旧候補を管理",
+              "explanation": "Record で復旧用に状態を記録します。Enumerate と Read で候補を調べ、明示したファイルを復旧に使えます。",
+              "follow": "Initialize → Record、復旧側は Enumerate → Read。"
+            },
+            {
+              "label": "OutputDirectory.h",
+              "path": "Editor/include/files/OutputDirectory.h",
+              "topic": "新規フォルダへの出力と片付け",
+              "explanation": "出力ファイルの作成、コピー、完了を扱います。失敗時に出力中に作ったものを片付ける情報も持ちます。",
+              "follow": "Create・Copy・Complete・Cleanup。"
+            },
+            {
+              "label": "OutputDirectory.cpp",
+              "path": "Editor/src/files/OutputDirectory.cpp",
+              "topic": "出力失敗時に作成物の識別を確認",
+              "explanation": "作ったファイルを記録し、失敗後の片付けでは識別情報を確かめます。置き換わったファイルを削除しないための処理です。",
+              "follow": "Copy と Text の作成処理、Cleanup の識別情報確認。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "索引のタイトル",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 95], "sizeDelta": [1080, 65]},
+      "text": {"enabled": true, "value": "第4章  プロジェクト・保存と復旧", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "問題の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 183], "sizeDelta": [467, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.074, 0.106, 0.145, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 13,
+      "name": "コード欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [551, 183], "sizeDelta": [661, 432]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 14,
+      "name": "page",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 193], "sizeDelta": [425, 37]},
+      "text": {"enabled": true, "value": "1 / 3 ページ", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 16,
+      "name": "path",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 199], "sizeDelta": [612, 56]},
+      "text": {"enabled": true, "value": "Editor/include/scene/ProjectDocument.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": false, "color": [0.68, 0.78, 0.87, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "topic",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 255], "sizeDelta": [612, 45]},
+      "text": {"enabled": true, "value": "プロジェクトと起動シーンを保持", "fontFamily": "M PLUS 1p", "fontSize": 25, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 18,
+      "name": "explanation",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 312], "sizeDelta": [612, 143]},
+      "text": {"enabled": true, "value": "起動シーンとゲーム設定の管理に加え、素材とシーンのディレクトリを取得できます。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 19,
+      "name": "follow",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 477], "sizeDelta": [612, 32]},
+      "text": {"enabled": true, "value": "追う箇所", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 20,
+      "name": "followText",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 511], "sizeDelta": [612, 84]},
+      "text": {"enabled": true, "value": "Open・GetAssetsDirectory・GetStartupScene。", "fontFamily": "M PLUS 1p", "fontSize": 19, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 30,
+      "name": "ファイル 1",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 241], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry1", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 31,
+      "name": "ファイル 1のラベル",
+      "active": true,
+      "parent": 30,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "ProjectDocument.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 32,
+      "name": "ファイル 2",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 292], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry2", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 33,
+      "name": "ファイル 2のラベル",
+      "active": true,
+      "parent": 32,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "ProjectDocument.cpp", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 34,
+      "name": "ファイル 3",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 343], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry3", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 35,
+      "name": "ファイル 3のラベル",
+      "active": true,
+      "parent": 34,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneDocument.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 36,
+      "name": "ファイル 4",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 394], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry4", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 37,
+      "name": "ファイル 4のラベル",
+      "active": true,
+      "parent": 36,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneDocument.cpp", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 38,
+      "name": "ファイル 5",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 445], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry5", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 39,
+      "name": "ファイル 5のラベル",
+      "active": true,
+      "parent": 38,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneSerializer.h", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 40,
+      "name": "ファイル 6",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 496], "sizeDelta": [425, 43]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "entry6", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 41,
+      "name": "ファイル 6のラベル",
+      "active": true,
+      "parent": 40,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [393, 43]},
+      "text": {"enabled": true, "value": "SceneSerializer.cpp", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 42,
+      "name": "前ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": false, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "previous", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 43,
+      "name": "前ページのラベル",
+      "active": true,
+      "parent": 42,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "前ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 44,
+      "name": "次ページ",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [312, 554], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "next", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 45,
+      "name": "次ページのラベル",
+      "active": true,
+      "parent": 44,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "次ページ", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 46,
+      "name": "第4章の実装索引へ戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 649], "sizeDelta": [202, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/04-Assets-Reference.scene.json", "target": 0}]}
+    },
+    {
+      "id": 47,
+      "name": "第4章の実装索引へ戻るのラベル",
+      "active": true,
+      "parent": 46,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [170, 48]},
+      "text": {"enabled": true, "value": "第4章の実装索引", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 48,
+      "name": "問題を開く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [945, 649], "sizeDelta": [267, 48]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/04-Assets.scene.json", "target": 0}]}
+    },
+    {
+      "id": 49,
+      "name": "問題を開くのラベル",
+      "active": true,
+      "parent": 48,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [16, 0], "sizeDelta": [235, 48]},
+      "text": {"enabled": true, "value": "問題を開く", "fontFamily": "M PLUS 1p", "fontSize": 18, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}
