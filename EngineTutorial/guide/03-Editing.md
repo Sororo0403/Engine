@@ -2,6 +2,8 @@
 
 目次で **第3章 編集とUndo／Redo** を開きます。選択とアクティブな物体、ギズモ操作の確定、Playと編集データ、保存地点、履歴カーソルを扱う5問です。
 
+**実装索引を開く** から、選択・ギズモと編集履歴で使う45件のファイルを参照できます。教材の目次からは **実装索引 → 第3章** を選びます。
+
 ## 選択と編集の確定
 
 HierarchyやSceneビューは、選択した物体をIDで扱います。[EditorSelection.cpp](../../Editor/src/selection/EditorSelection.cpp) の `GetIds()` は一覧を返し、`GetActiveId()` は末尾のIDを返します。単一選択では `SelectOnly()` が一覧を一件に絞ります。物体を削除したあとは `RemoveMissing()` で存在しないIDを取り除けます。
