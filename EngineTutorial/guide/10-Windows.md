@@ -2,6 +2,8 @@
 
 目次で **第10章 Windowsと共通処理** を開きます。閉じる要求、実行ファイル基準のパス、UTF-8、アトミックな保存、終了通知の扱いを確認します。
 
+**実装索引を開く** から、ウィンドウ、文字列変換、パス、ファイル保存、Windowsのシェルに関わる12ファイルを確認できます。
+
 ## ウィンドウの要求と終了
 
 [Window.cpp](../../Engine/src/platform/windows/Window.cpp) は `WM_SIZE` で寸法を保持し、`WM_CLOSE` では閉じる要求を記録します。[Engine.cpp](../../Engine/src/core/Engine.cpp) のメインループは要求を消費し、編集中なら終了を許可するかシーンへ問い合わせます。ウィンドウが破棄されると `WM_DESTROY` 側から終了通知を送ります。[WinApp.cpp](../../Engine/src/platform/windows/WinApp.cpp) が `WM_QUIT` を受け取るとメッセージ処理を終えます。
