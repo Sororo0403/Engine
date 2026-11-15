@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <optional>
 #include <span>
 #include <vector>
@@ -27,13 +28,13 @@ class EditorClipboard {
 	/// <summary>
 	/// コピーした物体データを取得する
 	/// </summary>
-	/// <returns>次のCopy成功またはClearまで有効なデータ一覧</returns>
+	/// <returns>次のCopy成功・素材参照の更新・Clearまで有効なデータ一覧</returns>
 	std::span<const SceneObject> GetObjects() const;
 
 	/// <summary>
 	/// コピーしたデータと同じ順序の複製元IDを取得する
 	/// </summary>
-	/// <returns>コピー範囲内の参照を付け替えるためのID一覧。次のCopy成功またはClearまで有効</returns>
+	/// <returns>コピー範囲内の参照を付け替えるためのID一覧。次のCopy成功・素材参照の更新・Clearまで有効</returns>
 	std::span<const SceneObjectId> GetSourceIds() const;
 
 	/// <summary>
@@ -41,6 +42,11 @@ class EditorClipboard {
 	/// コピー範囲内の参照とTransform・Collider・レンズ設定・Character設定・追従設定・復帰設定・Trigger Actionsのコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
+
+	/// <summary>
+	/// コピー済みの物体が参照する素材パスを更新する
+	/// </summary>
+	void RewriteAssets(const std::function<void(SceneObject &)> &rewrite);
 
 	/// <summary>
 	/// 貼り付け可能な物体を保持しているか確認する

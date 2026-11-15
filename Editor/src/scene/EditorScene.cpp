@@ -5220,7 +5220,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
                                  std::string &error,
                                  std::filesystem::path *failurePath) {
 	if (!AssetUsage::Relocate(moves, assets_.GetRootDirectory(), document_,
-	                          project_, error, failurePath)) {
+	                          project_, error, failurePath, &clipboard_)) {
 		return false;
 	}
 	assetsPanel_.RelocatePaths(moves, assets_.GetRootDirectory());
@@ -5244,7 +5244,6 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		}
 	}
 
-	clipboard_.Clear();
 	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
 	assets_.Refresh();

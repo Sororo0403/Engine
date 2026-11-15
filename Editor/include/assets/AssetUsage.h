@@ -11,6 +11,7 @@ class Scene;
 class SceneDocument;
 class ProjectDocument;
 class EditorHistory;
+class EditorClipboard;
 
 namespace AssetUsage {
 using Paths = std::vector<std::filesystem::path>;
@@ -72,7 +73,9 @@ Paths CopyTo(std::span<const std::filesystem::path> sources,
 /// Assets内で素材を移動または改名し、保存済みと編集中の参照を更新する
 /// </summary>
 /// <param name="failurePath">移動を妨げた項目の場所。場所を特定できない場合は空</param>
+/// <param name="clipboard">移動成功時に素材参照を更新するクリップボード。指定なしはnullptr</param>
 bool Relocate(const Moves &moves, const std::filesystem::path &assetRoot,
               SceneDocument &document, ProjectDocument &project,
-              std::string &error, std::filesystem::path *failurePath = nullptr);
+              std::string &error, std::filesystem::path *failurePath = nullptr,
+              EditorClipboard *clipboard = nullptr);
 } // namespace AssetUsage

@@ -9,6 +9,12 @@
 
 #include <set>
 
+void EditorClipboard::RewriteAssets(const std::function<void(SceneObject &)> &rewrite) {
+	for (auto &object : objects_) {
+		rewrite(object);
+	}
+}
+
 bool EditorClipboard::Copy(const Scene &scene,
                            std::span<const SceneObjectId> objectIds) {
 	if (objectIds.empty()) {

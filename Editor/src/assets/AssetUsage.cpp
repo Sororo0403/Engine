@@ -1,5 +1,4 @@
 #include "assets/AssetUsage.h"
-
 #include "assets/AssetDependencies.h"
 #include "files/OutputDirectory.h"
 #include "platform/windows/FileUtils.h"
@@ -10,6 +9,7 @@
 #include "scene/SceneAssetReferences.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneSerializer.h"
+#include "selection/EditorClipboard.h"
 
 #include <Windows.h>
 #include <algorithm>
@@ -22,6 +22,7 @@
 #include <set>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 
 namespace {
 namespace fs = std::filesystem;
@@ -808,7 +809,8 @@ AssetUsage::Moves AssetUsage::FindAvailableMoveDestinations(const Moves &moves,
 
 bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
                           SceneDocument &document, ProjectDocument &project,
-                          std::string &error, fs::path *failurePath) {
+                          std::string &error, fs::path *failurePath,
+                          EditorClipboard *clipboard) {
 	if (failurePath) {
 		failurePath->clear();
 	}
@@ -925,6 +927,12 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		Rewrite(live, map);
 		auto history = document.GetHistory().PrepareAssetRewrite(
 		    [&](SceneObject &object) { RewriteObject(object, map); });
+		std::optional<EditorClipboard> updatedClipboard;
+		if (clipboard && clipboard->HasObjects()) {
+			updatedClipboard.emplace(*clipboard);
+			updatedClipboard->RewriteAssets(
+			    [&](SceneObject &object) { RewriteObject(object, map); });
+		}
 		std::string liveSavedText;
 		bool refreshSavedText = false;
 
@@ -1031,6 +1039,10 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		document.ApplyAssetRename(live, std::move(movedOpen),
 		                          refreshSavedText ? &liveSavedText : nullptr,
 		                          *history);
+		if (updatedClipboard) {
+			static_assert(std::is_nothrow_move_assignable_v<EditorClipboard>);
+			*clipboard = std::move(*updatedClipboard);
+		}
 		error.clear();
 		return true;
 	} catch (const std::exception &failure) {
