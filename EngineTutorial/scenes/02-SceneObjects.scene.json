@@ -1,0 +1,380 @@
+{
+  "format": "EngineScene",
+  "version": 82,
+  "projectRoot": "..",
+  "objects": [
+    {
+      "id": 1,
+      "name": "第2章  シーンとコンポーネント",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "canvas": {"enabled": true, "referenceSize": [1280, 720], "scaleWithScreen": true, "matchWidthOrHeight": 0.5, "sortOrder": 0, "background": false},
+      "script": {
+        "asset": "@project/assets/CodeLesson.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "progress",
+            "target": 14
+          },
+          {
+            "name": "prompt",
+            "target": 15
+          },
+          {
+            "name": "source",
+            "target": 16
+          },
+          {
+            "name": "code",
+            "target": 17
+          },
+          {
+            "name": "label1",
+            "target": 19
+          },
+          {
+            "name": "label2",
+            "target": 21
+          },
+          {
+            "name": "label3",
+            "target": 23
+          },
+          {
+            "name": "feedback",
+            "target": 25
+          },
+          {
+            "name": "advance",
+            "target": 28
+          },
+          {
+            "name": "advanceLabel",
+            "target": 29
+          }
+        ],
+        "state": {
+          "questions": [
+            {
+              "source": "Engine/src/scene/Scene.cpp  /  FindObject",
+              "code": "const auto found = objects_.find(id);\n\nif (found == objects_.end()) {\n    return nullptr;\n}\n\nreturn &found->second;",
+              "prompt": "同じ名前の箱を2つ置いたとき、FindObject が相手を見分ける値はどれですか？",
+              "options": [
+                "物体の名前",
+                "SceneObjectId",
+                "親のID"
+              ],
+              "correct": 2,
+              "feedback": [
+                "名前は表示用の値です。同名の物体があっても、検索はIDを使います。",
+                "正解。Sceneは物体をIDで保持します。指定したIDがなければ nullptr です。",
+                "親IDは階層を表します。同じ親の子も、それぞれ自身のIDで取得します。"
+              ]
+            },
+            {
+              "source": "Engine/include/scene/SceneObject.h  /  IsRenderable",
+              "code": "bool IsRenderable() const {\n    return HasMesh() && meshRenderer\n           && meshRenderer->visible;\n}",
+              "prompt": "モデルを割り当てた Mesh と Collider があります。Mesh Renderer を付けなくても描画されますか？",
+              "options": [
+                "描画される",
+                "ライトがあれば描画される",
+                "描画されない"
+              ],
+              "correct": 3,
+              "feedback": [
+                "Meshは形状の参照です。IsRenderable は Mesh Renderer の存在と表示設定も確認します。",
+                "ライトがあってもこの条件は変わりません。描画可否は Mesh と Mesh Renderer で決まります。",
+                "正解。Collider は衝突用です。Mesh Renderer がない場合、描画条件を満たしません。"
+              ]
+            },
+            {
+              "source": "Engine/src/scene/SceneHierarchy.cpp  /  Compose",
+              "code": "auto matrix = TransformUtils::MakeWorldMatrix(local);\n// 回転を保持する処理を省略\nif (parent) {\n    matrix = matrix * XMLoadFloat4x4(&parent->matrix);\n    // 回転の合成を省略\n}",
+              "prompt": "親のXが10、子のローカルXが2です。両方とも回転なし・拡大率1なら、子のワールドXはいくつですか？",
+              "options": [
+                "12",
+                "2",
+                "10"
+              ],
+              "correct": 1,
+              "feedback": [
+                "正解。子のローカル変形に親のワールド変形を合成します。この例では移動量10と2が足されます。",
+                "2は親から見た座標です。ワールド座標には親の移動量10も入ります。",
+                "10は親の座標です。子は親の位置からさらにX方向へ2移動しています。"
+              ]
+            },
+            {
+              "source": "Engine/src/scene/SceneActivity.cpp  /  BuildStates",
+              "code": "result.emplace(id,\n    object.active && (object.parentId == 0 ||\n                      result.at(object.parentId)));",
+              "prompt": "子自身の active が true でも、親が無効なら、子は実行時にどう扱われますか？",
+              "options": [
+                "子だけ有効",
+                "子は無効",
+                "子の active が false に書き換わる"
+              ],
+              "correct": 2,
+              "feedback": [
+                "子自身と、親の有効状態の両方が必要です。このケースで右側の条件は false です。",
+                "正解。親の実行時の状態も確認します。子自身の active 設定は保持されます。",
+                "結果は result に記録します。SceneObject の active フィールドへは書き戻しません。"
+              ]
+            },
+            {
+              "source": "Engine/src/scene/SceneHierarchy.cpp  /  SetParent",
+              "code": "for (auto ancestor = parent; ancestor != 0;\n     ancestor = scene.FindObject(ancestor)->parentId) {\n    if (ancestor == id) {\n        ",
+              "after": "\n    }\n}",
+              "blank": true,
+              "prompt": "自分の子孫を新しい親に指定し、祖先をたどると自分に戻りました。循環を防ぐにはどの行が入りますか？",
+              "options": [
+                "break;",
+                "return true;",
+                "return false;"
+              ],
+              "correct": 3,
+              "feedback": [
+                "ループから抜けるだけなので、後続の親更新へ進んでしまいます。",
+                "親を変更せず関数を抜けますが、呼び出し元に成功と伝えてしまいます。",
+                "正解。親を更新する前に失敗を返し、循環を作らずに済みます。"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [0, 0], "sizeDelta": [1280, 720]},
+      "image": {"enabled": true, "texture": "", "color": [0.055, 0.081, 0.118, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 3,
+      "name": "見出しの線",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 79], "sizeDelta": [1144, 2]},
+      "image": {"enabled": true, "texture": "", "color": [0.24, 0.61, 0.54, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 4,
+      "name": "教材名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 27], "sizeDelta": [1144, 36]},
+      "text": {"enabled": true, "value": "EngineTutorial  /  エンジン実装ガイド", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 5,
+      "name": "章のタイトル",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 95], "sizeDelta": [600, 65]},
+      "text": {"enabled": true, "value": "第2章  シーンとコンポーネント", "fontFamily": "M PLUS 1p", "fontSize": 41, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 12,
+      "name": "問題の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 183], "sizeDelta": [467, 362]},
+      "image": {"enabled": true, "texture": "", "color": [0.074, 0.106, 0.145, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 13,
+      "name": "コード欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [551, 183], "sizeDelta": [661, 362]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 14,
+      "name": "問題番号",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 201], "sizeDelta": [425, 37]},
+      "text": {"enabled": true, "value": "問題  1 / 5", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": true, "color": [0.48, 0.85, 0.76, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 15,
+      "name": "問題文",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 250], "sizeDelta": [425, 243]},
+      "text": {"enabled": true, "value": "同じ名前の箱を2つ置いたとき、FindObject が相手を見分ける値はどれですか？", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 16,
+      "name": "ソースファイル名",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 201], "sizeDelta": [612, 36]},
+      "text": {"enabled": true, "value": "Engine/src/scene/Scene.cpp  /  FindObject", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": false, "color": [0.68, 0.78, 0.87, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 17,
+      "name": "C++の抜粋",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [573, 250], "sizeDelta": [615, 280]},
+      "text": {"enabled": true, "value": "const auto found = objects_.find(id);\n\nif (found == objects_.end()) {\n    return nullptr;\n}\n\nreturn &found->second;", "fontFamily": "Consolas", "fontSize": 18, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "top", "raycastTarget": false}
+    },
+    {
+      "id": 18,
+      "name": "選択肢1",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 340], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer1", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 19,
+      "name": "選択肢1のラベル",
+      "active": true,
+      "parent": 18,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "1. 物体の名前", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 20,
+      "name": "選択肢2",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 400], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer2", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 21,
+      "name": "選択肢2のラベル",
+      "active": true,
+      "parent": 20,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "2. SceneObjectId", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 22,
+      "name": "選択肢3",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [89, 460], "sizeDelta": [425, 50]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "answer3", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 23,
+      "name": "選択肢3のラベル",
+      "active": true,
+      "parent": 22,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [391, 50]},
+      "text": {"enabled": true, "value": "3. 親のID", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 24,
+      "name": "回答欄の背景",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 558], "sizeDelta": [1144, 75]},
+      "image": {"enabled": true, "texture": "", "color": [0.09, 0.131, 0.179, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"}
+    },
+    {
+      "id": 25,
+      "name": "回答の説明",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [88, 563], "sizeDelta": [1098, 64]},
+      "text": {"enabled": true, "value": "コードを読んで、答えを選んでください。", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 26,
+      "name": "目次に戻る",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 649], "sizeDelta": [202, 49]},
+      "image": {"enabled": true, "texture": "", "color": [0.13, 0.24, 0.28, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/00-Index.scene.json", "target": 0}]}
+    },
+    {
+      "id": 27,
+      "name": "目次に戻るのラベル",
+      "active": true,
+      "parent": 26,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [168, 49]},
+      "text": {"enabled": true, "value": "目次に戻る", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 28,
+      "name": "次へ進む",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [945, 649], "sizeDelta": [267, 49]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": false, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.78, 1, 0.95, 1], "pressedColor": [0.7, 0.83, 0.8, 1], "disabledColor": [0.5, 0.55, 0.56, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "advance", "once": false, "operation": "sendScriptMessage", "scene": "", "target": 1}]}
+    },
+    {
+      "id": 29,
+      "name": "次へ進むのラベル",
+      "active": true,
+      "parent": 28,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [17, 0], "sizeDelta": [233, 49]},
+      "text": {"enabled": true, "value": "次の問題", "fontFamily": "M PLUS 1p", "fontSize": 20, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    }
+  ]
+}
