@@ -10,8 +10,11 @@ return Engine::Run(config, CreateInitialScene);]],
         prompt = "CreateInitialScene は、いつ呼ばれて何を受け取りますか？",
         choices = {"起動直後に EngineConfig を受け取る", "準備後に EngineContext を受け取る", "毎フレーム経過時間を受け取る"},
         correct = 2,
-        hint = "ヒント  ここでは関数を渡しています。呼び出すのは共通機能を準備する Engine 側です。",
-        reason = "正解。Engineが共通機能を準備し、EngineContextを渡してこの関数を呼びます。",
+        feedback = {
+            "ヒント  EngineConfig は Engine::Run に渡す起動設定です。シーンを作る関数は、共通機能の準備後に EngineContext を受け取ります。",
+            "正解。Engineが共通機能を準備し、EngineContextを渡してこの関数を呼びます。",
+            "ヒント  経過時間を受け取るのは、作成済みのシーンを毎フレーム更新する Update です。CreateInitialScene は最初のシーンを作るために呼ばれます。",
+        },
     },
     {
         source = "Engine/src/core/Engine.cpp  /  MainLoop",
@@ -29,8 +32,11 @@ if (!graphics_.EndFrame()) {
         prompt = "通常の1フレームでは、状態の更新・描画・画面への表示はどの順ですか？",
         choices = {"描画 → 状態の更新 → 表示", "状態の更新 → 表示 → 描画", "状態の更新 → 描画 → 表示"},
         correct = 3,
-        hint = "ヒント  Update で状態を更新し、Draw で描画します。EndFrame の中で描画結果を表示します。",
-        reason = "正解。Update → Draw → EndFrame の順です。EndFrame は描画命令をGPUへ送り、Present で表示します。",
+        feedback = {
+            "ヒント  Update が Draw より前に実行されるので、このフレームで更新した状態が Draw に使われます。",
+            "ヒント  Draw は描画命令を記録します。EndFrame はそのあとで命令を送り、Present で描画結果を表示します。",
+            "正解。Update → Draw → EndFrame の順です。EndFrame は描画命令をGPUへ送り、Present で表示します。",
+        },
     },
     {
         source = "Engine/src/core/Engine.cpp  /  ~Impl",
@@ -45,8 +51,11 @@ sceneManager_.Finalize();]],
         prompt = "シーンを解放する前に WaitForGpu() を呼ぶのはなぜですか？",
         choices = {"GPUが描画資源をまだ使っているため", "次のシーンを読み込むため", "現在のシーンを保存するため"},
         correct = 1,
-        hint = "ヒント  CPUが描画命令を送った時点で、GPUの処理が終わっているとは限りません。",
-        reason = "正解。シーンが持つ描画資源を解放する前に、GPUが使い終わるのを待ちます。",
+        feedback = {
+            "正解。シーンが持つ描画資源を解放する前に、GPUが使い終わるのを待ちます。",
+            "ヒント  次のシーンの初期化は切り替え時に行います。この終了処理の WaitForGpu は、送信済みの描画命令の完了を待ちます。",
+            "ヒント  保存の可否は、閉じる要求を受けたシーンが判断します。ここでは後片付けの前にGPUの描画が終わるのを待ちます。",
+        },
     },
 }
 
@@ -97,7 +106,7 @@ return {
 
         local question = questions[state.question]
         state.answered = choice == question.correct
-        text(self, "feedback", state.answered and question.reason or question.hint)
+        text(self, "feedback", question.feedback[choice])
         self:reference("advance"):set_interactable(state.answered)
     end,
 }
