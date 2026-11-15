@@ -263,6 +263,7 @@ bool EditorScene::Update(float deltaTime) {
 	const auto playSourceObject = canRevealPlayObject ? activePlayObject : SceneObjectId{0};
 	const auto sourceToOpen = playSourceIsEditingScene && !canRevealPlayObject
 	                              ? std::filesystem::path{} : playSource;
+	std::filesystem::path playScriptToEdit;
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
 	                                   !IsBusy() && playUsesEditingScene_ &&
 	                                       playSelectionActive_ &&
@@ -271,7 +272,17 @@ bool EditorScene::Update(float deltaTime) {
 	                                   document_.GetFilePath(),
 	                                   project_.GetStartupScene(), sourceToOpen,
 	                                   canRevealPlayObject, lastPlayScenePath_,
-	                                   lastPlayCameraOverride_);
+	                                   lastPlayCameraOverride_, &playScriptToEdit);
+	if (!playScriptToEdit.empty() && !IsBusy() && action == EditorAction::NONE) {
+		std::string error;
+		if (scriptEditorDialog_.ShowEdit(playScriptToEdit, error)) {
+			scriptReplayPath_ = playSource.empty() ? editingScenePath : playSource;
+			scriptReplayCameraOverride_ = 0;
+			stage_ = DialogStage::EDIT_PLAY_SCRIPT;
+		} else {
+			ShowError(std::move(error));
+		}
+	}
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -5786,7 +5797,11 @@ void EditorScene::UpdateDialogs() {
 			}
 			assetsPanel_.RequestReveal(savedScript);
 			if (playAfterSave) {
-				StartPlay(scriptReplayPath_, scriptReplayCameraOverride_, true);
+				if (playMode_.IsPlaying()) {
+					RestartPlay(true);
+				} else {
+					StartPlay(scriptReplayPath_, scriptReplayCameraOverride_, true);
+				}
 			}
 		} else if (result == ScriptEditorDialog::Result::CANCELLED) {
 			if (fromPlayError) {

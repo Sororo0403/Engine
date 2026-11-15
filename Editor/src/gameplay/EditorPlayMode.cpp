@@ -62,7 +62,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               const std::filesystem::path &playSourcePath,
                                               bool canRevealPlayObject,
                                               const std::filesystem::path &lastPlayScenePath,
-                                              SceneObjectId lastPlayCameraOverride) {
+                                              SceneObjectId lastPlayCameraOverride,
+                                              std::filesystem::path *scriptToEdit) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -179,6 +180,38 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		ui.EndDisabled();
 		ui.BeginDisabled(!canStart);
+
+		if (scriptToEdit && ui.Button("Edit Script...")) {
+			ImGui::OpenPopup("PlayScriptPicker");
+		}
+		if (scriptToEdit && ImGui::BeginPopup("PlayScriptPicker")) {
+			std::set<std::filesystem::path> scripts;
+			for (const auto &[id, object] : session_.GetScene().GetObjects()) {
+				if (object.script && object.script->enabled &&
+				    !object.script->asset.empty() && session_.HasSourceObject(id)) {
+					scripts.insert(PathUtils::ResolveFromExecutable(object.script->asset));
+				}
+			}
+
+			if (scripts.size() == 1) {
+				*scriptToEdit = *scripts.begin();
+				ImGui::CloseCurrentPopup();
+			} else if (scripts.empty()) {
+				ui.Text("This scene has no enabled scripts.");
+			} else {
+				int index = 0;
+				for (const auto &path : scripts) {
+					ImGui::PushID(index++);
+					if (ui.Selectable(PathUtils::ToUtf8(path.filename()).c_str(),
+					                  false)) {
+						*scriptToEdit = path;
+					}
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(path).c_str());
+					ImGui::PopID();
+				}
+			}
+			ImGui::EndPopup();
+		}
 
 		if (const auto *path = session_.GetLoadedScenePath()) {
 			if (ui.Button("Restart Current Scene")) {
