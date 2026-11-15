@@ -183,6 +183,12 @@ class EditorPreferences {
 	                            const std::filesystem::path &root);
 
 	/// <summary>
+	/// 移動先に対応する起動シーンがあれば、保存済みの配布下書きを引き継ぐ
+	/// </summary>
+	bool CopyProjectExportDraft(const std::filesystem::path &previousRoot,
+	                            const std::filesystem::path &root);
+
+	/// <summary>
 	/// 移動に成功した素材の新しいパスをシーンの履歴と編集状態に反映する
 	/// </summary>
 	void RelocateScenes(std::span<const std::pair<std::filesystem::path,

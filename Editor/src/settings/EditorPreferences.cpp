@@ -213,6 +213,44 @@ bool EditorPreferences::CopyProjectSceneStates(const std::filesystem::path &prev
 	return sceneViews.size() != viewCount || sceneSelections_.size() != selectionCount;
 }
 
+bool EditorPreferences::CopyProjectExportDraft(const std::filesystem::path &previousRoot,
+                                               const std::filesystem::path &root) {
+	const auto previous = gameExportDrafts.find(previousRoot);
+	if (previous == gameExportDrafts.end() || root.empty() || gameExportDrafts.contains(root)) {
+		return false;
+	}
+
+	auto draft = previous->second;
+	try {
+		const auto relative = PathUtils::RelativeInside(previousRoot, draft.startupScenePath);
+		if (!IsProjectScenePath(relative)) {
+			return false;
+		}
+		draft.startupScenePath = SceneViewKey(root / relative);
+		if (draft.startupScenePath.empty()) {
+			return false;
+		}
+		PathUtils::RelativeInside(root, draft.startupScenePath);
+	} catch (const std::runtime_error &) {
+		return false;
+	}
+
+	try {
+		const auto output = PathUtils::FromPathInput(draft.output);
+		if (output.is_absolute()) {
+			const std::pair move{previousRoot, root};
+			const auto relocated = PathUtils::AfterMove(output, std::span{&move, 1});
+			if (relocated != output) {
+				draft.output = PathUtils::ToUtf8(relocated);
+			}
+		}
+	} catch (const std::invalid_argument &) {
+		// 入力途中のパスは、配布画面で修正できるよう文字列を保持する。
+	}
+	draft.recheck = true;
+	return gameExportDrafts.try_emplace(root, std::move(draft)).second;
+}
+
 void EditorPreferences::RelocateScenes(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	namespace fs = std::filesystem;

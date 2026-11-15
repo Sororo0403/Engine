@@ -7092,6 +7092,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			projectDialog_.RetrySelection(std::move(error), folder);
 			if (!missingRecentProject_.empty() &&
 			    (preferences_.projectScenes.contains(missingRecentProject_) ||
+			     preferences_.gameExportDrafts.contains(missingRecentProject_) ||
 			     !preferences_.LastProjectAssetFolder(missingRecentProject_).empty())) {
 				projectDialog_.OfferPreviousProjectSession();
 			}
@@ -7193,6 +7194,8 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		otherExportResult_.clear();
 		returnToExportResult_ = false;
 		exportCheckInterrupted_ = false;
+		const bool copiedExportDraft = preferences_.CopyProjectExportDraft(
+		    previousProjectRoot, project_.GetRoot());
 		exportDialog_.SwitchProject(project_.GetRoot());
 		if (const auto found = preferences_.gameExportDrafts.find(project_.GetRoot());
 		    found != preferences_.gameExportDrafts.end()) {
@@ -7261,7 +7264,8 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				RestoreSceneViewAndSelection(path);
 			}
 		}
-		SaveEditorSession(removedRecent || rememberedUnavailableScene || copiedSceneStates);
+		SaveEditorSession(removedRecent || rememberedUnavailableScene || copiedSceneStates ||
+		                  copiedExportDraft);
 		if (!assetsReady) {
 			Logger::Warning("Project opened, but the Assets list could not be loaded. "
 			                "Use Refresh in Assets to try again.\n" + assets_.GetError(),
