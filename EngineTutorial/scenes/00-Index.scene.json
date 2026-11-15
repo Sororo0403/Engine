@@ -69,7 +69,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 360], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 360], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": true, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/01-Lifecycle.scene.json", "target": 0}]}
@@ -81,8 +81,8 @@
       "parent": 8,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第1章  起動から終了まで", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第1章  起動から終了まで", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 10,
@@ -91,7 +91,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 446], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 446], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/02-SceneObjects.scene.json", "target": 0}]}
@@ -103,8 +103,8 @@
       "parent": 10,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第2章  シーンとコンポーネント", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第2章  シーンとコンポーネント", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 12,
@@ -113,7 +113,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [514, 360], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [455, 360], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/03-Editing.scene.json", "target": 0}]}
@@ -125,8 +125,8 @@
       "parent": 12,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第3章  編集とUndo／Redo", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第3章  編集とUndo／Redo", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 14,
@@ -135,7 +135,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [514, 446], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [455, 446], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/04-Assets.scene.json", "target": 0}]}
@@ -147,8 +147,8 @@
       "parent": 14,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第4章  保存・素材・Prefab", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第4章  保存・素材・Prefab", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 16,
@@ -157,7 +157,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 532], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 532], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/05-Input.scene.json", "target": 0}]}
@@ -169,8 +169,8 @@
       "parent": 16,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第5章  入力とアクション", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第5章  入力とアクション", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 18,
@@ -179,7 +179,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [514, 532], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [455, 532], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/06-Simulation.scene.json", "target": 0}]}
@@ -191,8 +191,8 @@
       "parent": 18,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第6章  シミュレーションと物理", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第6章  シミュレーションと物理", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 20,
@@ -201,7 +201,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 618], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 618], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/07-Rendering.scene.json", "target": 0}]}
@@ -213,8 +213,8 @@
       "parent": 20,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第7章  描画とGPU", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第7章  描画とGPU", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 22,
@@ -223,7 +223,7 @@
       "parent": 1,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [514, 618], "sizeDelta": [420, 64]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [455, 618], "sizeDelta": [370, 64]},
       "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
       "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
       "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/08-ScriptsAndMotion.scene.json", "target": 0}]}
@@ -235,8 +235,30 @@
       "parent": 22,
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
-      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
-      "text": {"enabled": true, "value": "第8章  Lua・アニメーション・粒子", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第8章  Lua・アニメーション・粒子", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 24,
+      "name": "第9章を開く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [842, 360], "sizeDelta": [370, 64]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/09-AudioAndUI.scene.json", "target": 0}]}
+    },
+    {
+      "id": 25,
+      "name": "第9章を開くのラベル",
+      "active": true,
+      "parent": 24,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [330, 64]},
+      "text": {"enabled": true, "value": "第9章  音と画面UI", "fontFamily": "M PLUS 1p", "fontSize": 21, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     }
   ]
 }

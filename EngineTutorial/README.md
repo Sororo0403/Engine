@@ -17,3 +17,4 @@
 - [第6章 シミュレーションと物理](guide/06-Simulation.md)
 - [第7章 描画とGPU](guide/07-Rendering.md)
 - [第8章 Lua・アニメーション・粒子](guide/08-ScriptsAndMotion.md)
+- [第9章 音と画面UI](guide/09-AudioAndUI.md)
