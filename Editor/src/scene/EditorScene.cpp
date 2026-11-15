@@ -573,7 +573,10 @@ bool EditorScene::Update(float deltaTime) {
 		const auto path = *replay->failedScene;
 		const auto object = replay->failedObject;
 		const auto &editingPath = document_.GetFilePath();
-		if ((path.empty() && editingPath.empty()) || PathUtils::IsSameFile(editingPath, path)) {
+		const bool alreadyOpen = path.empty()
+		                             ? editingPath.empty()
+		                             : !editingPath.empty() && PathUtils::IsSameFile(editingPath, path);
+		if (alreadyOpen) {
 			FinishEdit();
 			if (object != 0) {
 				RevealReferenceObject(object);
