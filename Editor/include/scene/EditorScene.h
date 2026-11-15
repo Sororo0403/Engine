@@ -1095,6 +1095,8 @@ class EditorScene final : public IScene {
 		bool followsEditingScene;
 		std::filesystem::path scriptPath;
 		std::string inputAction;
+		std::filesystem::path failedScene;
+		SceneObjectId failedObject;
 	};
 	std::optional<PlayFailureReplay> playFailureReplay_;
 	SceneObjectId playInitialCameraOverride_ = 0;

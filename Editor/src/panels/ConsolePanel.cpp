@@ -107,7 +107,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          std::uint64_t retryPlayLogId,
                                          const std::filesystem::path &retryScene,
                                          const std::filesystem::path &retryScript,
-                                         std::string_view retryInput) {
+                                         std::string_view retryInput,
+                                         const std::filesystem::path &failedScene) {
 	if (!open_) {
 		return {};
 	}
@@ -417,6 +418,14 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 			}
 
 			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
+				if (!failedScene.empty()) {
+					ui.SameLine();
+					if (ui.Button("Open Failed Scene")) {
+						request.logId = selected->id;
+						request.openFailedScene = true;
+					}
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedScene).c_str());
+				}
 				if (!retryInput.empty()) {
 					ui.SameLine();
 					if (ui.Button("Edit Input Binding")) {

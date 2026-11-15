@@ -565,7 +565,23 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, !IsBusy(), false, replay ? replay->logId : 0,
 	    replay ? replay->path : std::filesystem::path{},
 	    replay ? replay->scriptPath : std::filesystem::path{},
-	    replay ? std::string_view{replay->inputAction} : std::string_view{});
+	    replay ? std::string_view{replay->inputAction} : std::string_view{},
+	    replay ? replay->failedScene : std::filesystem::path{});
+	if (consoleScript.openFailedScene && replay && consoleScript.logId == replay->logId) {
+		const auto path = replay->failedScene;
+		const auto object = replay->failedObject;
+		if (PathUtils::IsSameFile(document_.GetFilePath(), path)) {
+			FinishEdit();
+			if (object != 0) {
+				RevealReferenceObject(object);
+			}
+		} else {
+			pendingOpenPath_ = path;
+			StartAction(EditorAction::OPEN_PATH, object);
+		}
+		UpdateDialogs();
+		return true;
+	}
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
@@ -5218,6 +5234,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	if (playFailureReplay_) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
 		playFailureReplay_->scriptPath = PathUtils::AfterMove(playFailureReplay_->scriptPath, moves);
+		playFailureReplay_->failedScene = PathUtils::AfterMove(playFailureReplay_->failedScene, moves);
 	}
 
 	clipboard_.Clear();
@@ -5464,6 +5481,10 @@ void EditorScene::UpdateDialogs() {
 				if (playFailureReplay_ && playFailureReplay_->followsEditingScene &&
 				    playFailureReplay_->path == previousPath) {
 					playFailureReplay_->path = document_.GetFilePath();
+				}
+				if (playFailureReplay_ && !previousPath.empty() &&
+				    playFailureReplay_->failedScene == previousPath) {
+					playFailureReplay_->failedScene = document_.GetFilePath();
 				}
 				if (lastPlayFollowedEditingScene_ &&
 				    lastPlayScenePath_ == previousPath) {
@@ -7010,7 +7031,8 @@ void EditorScene::LogPlayFailure() {
 		    (!editingPath.empty() && PathUtils::IsSameFile(*errorReplayPath_, editingPath));
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
-		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_, errorInputAction_};
+		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_, errorInputAction_,
+		    errorScenePath_.empty() ? editingPath : errorScenePath_, errorObjectId_};
 	}
 }
 
