@@ -127,6 +127,28 @@
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
       "text": {"enabled": true, "value": "第3章  編集とUndo／Redo", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+    },
+    {
+      "id": 14,
+      "name": "第4章を開く",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [514, 446], "sizeDelta": [420, 64]},
+      "image": {"enabled": true, "texture": "", "color": [0.18, 0.38, 0.37, 1], "raycastTarget": false, "preserveAspect": false, "fillAmount": 1, "fillOrigin": "left"},
+      "button": {"enabled": true, "interactable": true, "navigation": true, "initialSelection": false, "normalColor": [1, 1, 1, 1], "highlightedColor": [0.84, 1, 0.95, 1], "pressedColor": [0.78, 0.85, 0.83, 1], "disabledColor": [0.5, 0.5, 0.5, 1]},
+      "triggerActions": {"actions": [{"arrivalTag": "", "cameraBlendSeconds": 0, "clipTime": 0, "contact": "any", "contactTag": "", "delaySeconds": 0, "destination": 0, "event": "buttonClick", "inputAction": "", "launchSpeed": 12, "messageName": "", "once": false, "operation": "loadScene", "scene": "@project/scenes/04-Assets.scene.json", "target": 0}]}
+    },
+    {
+      "id": 15,
+      "name": "第4章を開くのラベル",
+      "active": true,
+      "parent": 14,
+      "tag": "",
+      "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
+      "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [20, 0], "sizeDelta": [380, 64]},
+      "text": {"enabled": true, "value": "第4章  保存・素材・Prefab", "fontFamily": "M PLUS 1p", "fontSize": 24, "bold": true, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     }
   ]
 }
