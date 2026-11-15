@@ -7,25 +7,30 @@ config.windowWidth = 1600;
 config.windowHeight = 900;
 
 return Engine::Run(config, CreateInitialScene);]],
-        prompt = "CreateInitialScene は、ここで何として渡されますか？",
-        choices = {"作成済みのシーン", "シーンを作る関数", "保存済みシーンのパス"},
+        prompt = "CreateInitialScene は、いつ呼ばれて何を受け取りますか？",
+        choices = {"起動直後に EngineConfig を受け取る", "準備後に EngineContext を受け取る", "毎フレーム経過時間を受け取る"},
         correct = 2,
-        hint = "ヒント  CreateInitialScene の後ろに () があるか見てください。",
+        hint = "ヒント  ここでは関数を渡しています。呼び出すのは共通機能を準備する Engine 側です。",
         reason = "正解。Engineが共通機能を準備し、EngineContextを渡してこの関数を呼びます。",
     },
     {
         source = "Engine/src/core/Engine.cpp  /  MainLoop",
         code = [[if (!sceneManager_.Update(deltaTime)) {
-    return -1;
+    // 失敗時の処理を省略
 }
 
 // 音声・タイトル更新・BeginFrame を省略
-sceneManager_.Draw();]],
-        prompt = "このフレームの Update が false を返すと、次に何が起きますか？",
-        choices = {"描画して次のフレームへ進む", "現在のシーンを再初期化する", "描画に進む前にループを抜ける"},
+sceneManager_.Draw();
+
+// UI描画を省略
+if (!graphics_.EndFrame()) {
+    // 失敗時の処理を省略
+}]],
+        prompt = "通常の1フレームでは、状態の更新・描画・画面への表示はどの順ですか？",
+        choices = {"描画 → 状態の更新 → 表示", "状態の更新 → 表示 → 描画", "状態の更新 → 描画 → 表示"},
         correct = 3,
-        hint = "ヒント  return -1 に到達すると、実行中の MainLoop() から戻ります。",
-        reason = "正解。Draw() に到達する前に MainLoop() が戻り、Engine::Run が終了処理へ進みます。",
+        hint = "ヒント  Update で状態を更新し、Draw で描画します。EndFrame の中で描画結果を表示します。",
+        reason = "正解。Update → Draw → EndFrame の順です。EndFrame は描画命令をGPUへ送り、Present で表示します。",
     },
     {
         source = "Engine/src/core/Engine.cpp  /  ~Impl",
@@ -37,10 +42,10 @@ sceneManager_.Draw();]],
 
 // 参照している側から順に終了する
 sceneManager_.Finalize();]],
-        prompt = "描画機能を初期化済みの場合、シーンを解放する前に何をしますか？",
-        choices = {"送信済みのGPU処理の完了を待つ", "次のシーンを読み込む", "先にウィンドウを破棄する"},
+        prompt = "シーンを解放する前に WaitForGpu() を呼ぶのはなぜですか？",
+        choices = {"GPUが描画資源をまだ使っているため", "次のシーンを読み込むため", "現在のシーンを保存するため"},
         correct = 1,
-        hint = "ヒント  Finalize() より先に実行される WaitForGpu() の行を確認してください。",
+        hint = "ヒント  CPUが描画命令を送った時点で、GPUの処理が終わっているとは限りません。",
         reason = "正解。シーンが持つ描画資源を解放する前に、GPUが使い終わるのを待ちます。",
     },
 }
@@ -56,7 +61,7 @@ local function show_question(self, state, number)
     state.answered = false
 
     local question = questions[number]
-    text(self, "progress", ("問題  %d / %d"):format(number, #questions))
+    text(self, "progress", ("問題  %d / %d"):format(number, #questions + 1))
     text(self, "source", question.source)
     text(self, "code", question.code)
     text(self, "prompt", question.prompt)

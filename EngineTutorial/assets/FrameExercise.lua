@@ -1,11 +1,11 @@
 local answers = {
     success = {
         line = "return 0;",
-        feedback = "0 は正常終了を表します。更新に失敗した場合の終了コードを選びましょう。",
+        feedback = "Draw には進みませんが、0 を返すので Engine::Run は正常終了として扱います。",
     },
     skip = {
         line = "continue;",
-        feedback = "continue は次のフレームへ進みます。失敗を呼び出し元に返す行を選びましょう。",
+        feedback = "このフレームの Draw を飛ばして次のフレームに進みます。失敗は Engine::Run に伝わりません。",
     },
     failure = {
         line = "return -1;",
