@@ -177,6 +177,12 @@ class EditorPreferences {
 	                               const std::filesystem::path &destination);
 
 	/// <summary>
+	/// 移動先に存在するシーンへ以前の視点と選択を引き継ぐ。移動先の記録があれば保持する
+	/// </summary>
+	bool CopyProjectSceneStates(const std::filesystem::path &previousRoot,
+	                            const std::filesystem::path &root);
+
+	/// <summary>
 	/// 移動に成功した素材の新しいパスをシーンの履歴と編集状態に反映する
 	/// </summary>
 	void RelocateScenes(std::span<const std::pair<std::filesystem::path,

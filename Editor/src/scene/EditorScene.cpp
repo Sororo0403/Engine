@@ -7247,7 +7247,21 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				consolePanel_.Show();
 			}
 		}
-		SaveEditorSession(removedRecent || rememberedUnavailableScene);
+		bool copiedSceneStates = false;
+		if (!previousProjectRoot.empty()) {
+			const auto &path = document_.GetFilePath();
+			const auto hasState = [&] {
+				return preferences_.FindSceneView(path) ||
+				       !preferences_.LastSceneSelection(path).empty();
+			};
+			const bool hadState = hasState();
+			copiedSceneStates = preferences_.CopyProjectSceneStates(
+			    previousProjectRoot, project_.GetRoot());
+			if (copiedSceneStates && !hadState && hasState()) {
+				RestoreSceneViewAndSelection(path);
+			}
+		}
+		SaveEditorSession(removedRecent || rememberedUnavailableScene || copiedSceneStates);
 		if (!assetsReady) {
 			Logger::Warning("Project opened, but the Assets list could not be loaded. "
 			                "Use Refresh in Assets to try again.\n" + assets_.GetError(),

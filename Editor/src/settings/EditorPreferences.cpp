@@ -13,6 +13,7 @@
 #include <format>
 #include <fstream>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <unordered_set>
 #include <utility>
@@ -173,6 +174,43 @@ void EditorPreferences::CopySceneViewAndSelection(
 	if (!selection.empty()) {
 		sceneSelections_.try_emplace(key, selection.begin(), selection.end());
 	}
+}
+
+bool EditorPreferences::CopyProjectSceneStates(const std::filesystem::path &previousRoot,
+                                               const std::filesystem::path &root) {
+	if (!previousRoot.is_absolute() || !root.is_absolute() ||
+	    PathUtils::IsSameFile(previousRoot, root)) {
+		return false;
+	}
+
+	std::set<std::filesystem::path> sources;
+	for (const auto &entry : sceneViews) {
+		sources.insert(entry.first);
+	}
+	for (const auto &entry : sceneSelections_) {
+		sources.insert(entry.first);
+	}
+
+	const auto viewCount = sceneViews.size();
+	const auto selectionCount = sceneSelections_.size();
+	for (const auto &source : sources) {
+		std::filesystem::path destination;
+		try {
+			const auto relative = PathUtils::RelativeInside(previousRoot, source);
+			if (!IsProjectScenePath(relative)) {
+				continue;
+			}
+			destination = SceneViewKey(root / relative);
+			if (destination.empty()) {
+				continue;
+			}
+			PathUtils::RelativeInside(root, destination);
+		} catch (const std::runtime_error &) {
+			continue;
+		}
+		CopySceneViewAndSelection(source, destination);
+	}
+	return sceneViews.size() != viewCount || sceneSelections_.size() != selectionCount;
 }
 
 void EditorPreferences::RelocateScenes(
