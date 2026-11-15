@@ -131,7 +131,7 @@
       "tag": "",
       "transform": {"translation": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1]},
       "rectTransform": {"anchorMin": [0, 0], "anchorMax": [0, 0], "pivot": [0, 0], "position": [68, 451], "sizeDelta": [1144, 142]},
-      "text": {"enabled": true, "value": "1. Stop して、Assets の Scenes で 01-Lifecycle-Code を開く\n2. Hierarchy の「コードを書く」を選び、Inspector の Script → Edit Script を押す\n3. run_frame をLuaで書き、Save and Play を押して結果を見る", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
+      "text": {"enabled": true, "value": "1. Gameビュー上部の Edit Script... を押す\n2. run_frame をLuaで書き、Save and Play を押す\n3. 同じ画面の実行結果を確認する", "fontFamily": "M PLUS 1p", "fontSize": 23, "bold": false, "color": [0.89, 0.93, 0.97, 1], "alignment": "left", "verticalAlignment": "middle", "raycastTarget": false}
     },
     {
       "id": 14,

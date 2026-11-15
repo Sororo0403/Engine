@@ -4,10 +4,9 @@
 
 ## コードを書く
 
-1. 小テストの最後で **コード実習へ** を押します。実習へ直接進む場合は、Assetsの **Scenes** から **01-Lifecycle-Code** を開きます。
-2. Play中なら **Stop** を押し、編集シーンとして **01-Lifecycle-Code** を開きます。Hierarchyで **コードを書く** を選び、Inspectorの **Script → Edit Script** を押します。
-3. 開いたコード欄でLuaの `run_frame(update, draw)` を編集します。`update()` が `false` を返した場合は、その場で関数を抜ける処理を書きます。
-4. **Save and Play** を押します。Gameビューに成功時と失敗時の呼び出し順が出ます。成功時は `Update → Draw`、失敗時は `Update` で止まればクリアです。
+1. 小テストの最後で **コード実習へ** を押します。実習へ直接進む場合は、Assetsの **Scenes** から **01-Lifecycle-Code** を開いて **Play** を押します。
+2. Gameビュー上部の **Edit Script…** を押し、Luaの `run_frame(update, draw)` を編集します。`update()` が `false` を返した場合は、その場で関数を抜ける処理を書きます。
+3. **Save and Play** を押すと、同じ実習が再実行されます。成功時は `Update → Draw`、失敗時は `Update` で止まればクリアです。
 
 実習で書くLuaは、画面に出るC++の分岐と同じ動きを組み立てる練習です。
 
