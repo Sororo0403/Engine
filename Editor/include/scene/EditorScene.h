@@ -1143,6 +1143,7 @@ class EditorScene final : public IScene {
 
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
+	std::filesystem::path unavailablePasteAsset_;
 	std::string errorInputAction_;
 	bool errorLoadingPlayScene_ = false;
 	std::filesystem::path errorScenePath_;

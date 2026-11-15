@@ -6399,6 +6399,22 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (!unavailablePasteAsset_.empty()) {
+				if (ui_.Button("Show Referenced File Location")) {
+					ShellUtils::RevealLocationInExplorer(unavailablePasteAsset_, errorActionMessage_);
+				}
+				ui_.SameLine();
+				if (ui_.Button("Retry Paste")) {
+					unavailablePasteAsset_.clear();
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					PasteObjects();
+					return;
+				}
+				ui_.SameLine();
+			}
+
 			if (!failedAssetReloads_.empty()) {
 				if (ui_.BeginChild("FailedAssetReloads", 500.0f, 160.0f)) {
 					ImGui::PushTextWrapPos();
@@ -6812,6 +6828,7 @@ void EditorScene::UpdateDialogs() {
 				}
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
+				unavailablePasteAsset_.clear();
 				failedAssetMoves_.clear();
 				failedAssetCopy_ = {};
 				CancelPendingAction();
@@ -7388,6 +7405,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
                             std::filesystem::path scriptPath) {
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
+	unavailablePasteAsset_.clear();
 	errorInputAction_.clear();
 	errorLoadingPlayScene_ = false;
 	errorScenePath_.clear();
@@ -8912,11 +8930,12 @@ void EditorScene::PasteObjects() {
 	}
 
 	try {
-		if (const auto unavailable = clipboard_.FindUnavailableAsset(); !unavailable.empty()) {
+		if (auto unavailable = clipboard_.FindUnavailableAsset(); !unavailable.empty()) {
 			auto message = "Could not paste objects because a referenced file is unavailable: " +
 			               PathUtils::ToUtf8(unavailable);
 			Logger::Error(message, unavailable);
 			ShowError(std::move(message));
+			unavailablePasteAsset_ = std::move(unavailable);
 			consolePanel_.Show();
 			return;
 		}
