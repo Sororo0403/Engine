@@ -622,6 +622,8 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"references", std::move(references)},
 				    {"prefabs", std::move(prefabs)},
 				    {"scenes", std::move(scenes)}};
+				if (script.editInGame)
+					objects.back()["script"]["editInGame"] = true;
 			}
 
 			if (object.animator) {
@@ -1232,6 +1234,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				    PathUtils::FromUtf8(value.at("asset").get<std::string>());
 				script.enabled = value.at("enabled").get<bool>();
 				script.initialState = value.at("state").dump();
+				if (version >= 83)
+					script.editInGame = value.value("editInGame", false);
 
 				for (const auto &reference : value.at("references")) {
 					if (!reference.at("name").is_string() ||

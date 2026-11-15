@@ -47,6 +47,9 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	bool changed = false;
 	if (ui.Checkbox("Script Enabled", value.enabled))
 		changed |= history.SetScript(id, value);
+	if (ui.Checkbox("Edit in Game", value.editInGame))
+		changed |= history.SetScript(id, value);
+	ImGui::SetItemTooltip("Add a Button to this object to offer a Lua editor in the game.");
 	const auto preview = value.asset.empty()
 	                         ? std::string("None")
 	                         : PathUtils::ToUtf8(value.asset.filename());

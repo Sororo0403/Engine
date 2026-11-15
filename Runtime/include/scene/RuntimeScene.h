@@ -3,6 +3,7 @@
 #include "gameplay/GameActionReader.h"
 #include "gameplay/GameConfig.h"
 #include "gameplay/SceneSimulation.h"
+#include "graphics/ui/GameScriptEditor.h"
 #include "scene/IScene.h"
 #include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
@@ -69,6 +70,7 @@ class RuntimeScene final : public IScene {
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
 	SceneAudioPlayer audioPlayer_;
+	GameScriptEditor scriptEditor_;
 	std::filesystem::path scriptSettingsPath_;
 	std::string observedScriptData_;
 	std::string savedScriptSettings_;

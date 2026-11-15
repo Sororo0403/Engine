@@ -227,6 +227,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		    {"format", "EngineGame"},
 		    {"version", kCurrentVersion},
 		    {"gamepadEnabled", gamepadEnabled},
+		    {"enableScriptEditing", enableScriptEditing},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"actions", actionsJson},
@@ -398,6 +399,9 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			}
 
 			candidate.gamepadEnabled = data.at("gamepadEnabled").get<bool>();
+		}
+		if (data.at("version") >= 13) {
+			candidate.enableScriptEditing = data.at("enableScriptEditing").get<bool>();
 		}
 
 		if (data.at("version") >= 7) {

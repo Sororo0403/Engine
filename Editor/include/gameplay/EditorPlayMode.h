@@ -6,6 +6,7 @@
 #include "gameplay/GameActionReader.h"
 #include "gameplay/GameConfig.h"
 #include "graphics/ui/ViewportInput.h"
+#include "graphics/ui/GameScriptEditor.h"
 #include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
 #include <memory>
@@ -266,6 +267,7 @@ class EditorPlayMode {
 
   private:
 	EditorPlaySession session_;
+	GameScriptEditor gameScriptEditor_;
 	SceneAudioPlayer audioPlayer_;
 	std::string lastUpdateError_;
 	SceneObjectId previewCamera_ = 0;

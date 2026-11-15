@@ -151,6 +151,17 @@ void RuntimeScene::SaveScriptSettings() {
 }
 
 bool RuntimeScene::Update(float seconds) {
+	if (scriptEditor_.IsOpen()) {
+		simulation_.CancelUIInput();
+		scriptEditor_.Draw(simulation_.GetScene());
+		std::string error;
+		if (audioPlayer_.Update(simulation_.GetCameraPose(), true, error,
+		                        nullptr, simulation_.GetAudioActions()))
+			return true;
+		Logger::Error(error);
+		return false;
+	}
+
 	CharacterInput input;
 	const auto actions = actionReader_.Read(
 	    config_.actions, input_.GetKeyboard(), &input_.GetMouse(),
@@ -224,6 +235,13 @@ bool RuntimeScene::Update(float seconds) {
 		simulation_.CancelUIInput();
 	std::string audioError;
 	const bool sceneChanged = simulation_.GetSceneRevision() != revision;
+	if (sceneChanged) {
+		scriptEditor_.Reset();
+	} else if (config_.enableScriptEditing && input_.IsActive()) {
+		scriptEditor_.OpenClickedScript(simulation_.GetScene(),
+		                               simulation_.GetUI().GetClicks());
+		scriptEditor_.Draw(simulation_.GetScene());
+	}
 	const auto *destination = sceneChanged ? simulation_.GetLoadedScenePath() : nullptr;
 	if (sceneChanged && !renderer_.PrepareSceneModels(audioError, &invalidObject)) {
 		reportSceneError(audioError);
