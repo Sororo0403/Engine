@@ -268,6 +268,16 @@ bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics) {
 		ImGui::SetCurrentContext(impl_->context_);
 
 		ImGuiIO &io = ImGui::GetIO();
+		const auto fontPath = executableDirectory / L"resources/engine/fonts/MPLUS1p-Regular.ttf";
+		const auto fontFile = PathUtils::ToUtf8(fontPath);
+		ImFontConfig fontConfig;
+		fontConfig.Flags |= ImFontFlags_NoLoadError;
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFile.c_str(), 15.f, &fontConfig);
+		if (!io.FontDefault) {
+			Logger::Error("ImGuiのフォントを読み込めませんでした。", fontPath);
+			Finalize();
+			return false;
+		}
 
 		// UI配置設定を実行ファイルの隣のconfigフォルダへ保存する
 		io.IniFilename = impl_->iniFilePath_.c_str();

@@ -725,6 +725,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				checkRuntimeFile(runtimeRoot / name);
 			for (const auto *shader : kRuntimeShaders)
 				checkRuntimeFile(runtimeRoot / L"resources/engine" / shader);
+			for (const auto *font : {L"MPLUS1p-Regular.ttf", L"MPLUS1p-Bold.ttf"})
+				checkRuntimeFile(runtimeRoot / L"resources/engine/fonts" / font);
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {

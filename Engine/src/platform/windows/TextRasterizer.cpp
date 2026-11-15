@@ -1,9 +1,10 @@
 ﻿#include "platform/windows/TextRasterizer.h"
+#include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/TextComponent.h"
 #include <cmath>
 #include <d2d1.h>
-#include <dwrite.h>
+#include <dwrite_3.h>
 #include <exception>
 #include <format>
 #include <stdexcept>
@@ -19,6 +20,9 @@ struct TextRasterizer::Impl {
 	ComPtr<ID2D1Factory> drawing;
 	ComPtr<IDWriteFactory> writing;
 	ComPtr<IWICImagingFactory> imaging;
+	ComPtr<IDWriteFontCollection1> bundledFonts;
+
+	void LoadBundledFonts();
 };
 
 namespace {
@@ -34,6 +38,32 @@ void Require(HRESULT result, const char *operation) {
 		                static_cast<unsigned long>(result)));
 }
 } // namespace
+
+void TextRasterizer::Impl::LoadBundledFonts() {
+	if (bundledFonts) {
+		return;
+	}
+
+	ComPtr<IDWriteFactory5> factory;
+	Require(writing.As(&factory), "Get DirectWrite font factory");
+	ComPtr<IDWriteFontSetBuilder1> fonts;
+	Require(factory->CreateFontSetBuilder(fonts.GetAddressOf()),
+	        "Create bundled font set builder");
+
+	const auto directory = PathUtils::ResolveFromExecutable(L"resources/engine/fonts");
+	for (const auto *name : {L"MPLUS1p-Regular.ttf", L"MPLUS1p-Bold.ttf"}) {
+		const auto path = directory / name;
+		ComPtr<IDWriteFontFile> file;
+		Require(factory->CreateFontFileReference(path.c_str(), nullptr, file.GetAddressOf()),
+		        "Open bundled M PLUS 1p font");
+		Require(fonts->AddFontFile(file.Get()), "Add bundled M PLUS 1p font");
+	}
+
+	ComPtr<IDWriteFontSet> set;
+	Require(fonts->CreateFontSet(set.GetAddressOf()), "Create bundled font set");
+	Require(factory->CreateFontCollectionFromFontSet(set.Get(), bundledFonts.GetAddressOf()),
+	        "Create bundled font collection");
+}
 
 TextRasterizer::TextRasterizer() : impl_(std::make_unique<Impl>()) {
 }
@@ -80,10 +110,15 @@ bool TextRasterizer::Rasterize(const TextComponent &text, int width, int height,
 		            bitmap.Get(), properties, target.GetAddressOf()),
 		        "Create text render target");
 		const auto family = StringConversion::Utf8ToWide(text.fontFamily);
+		const bool useBundledFont =
+		    CompareStringOrdinal(family.c_str(), -1, L"M PLUS 1p", -1, TRUE) == CSTR_EQUAL;
+		if (useBundledFont) {
+			impl_->LoadBundledFonts();
+		}
 		ComPtr<IDWriteTextFormat> format;
 		Require(
 		    impl_->writing->CreateTextFormat(
-		        family.c_str(), nullptr,
+		        family.c_str(), useBundledFont ? impl_->bundledFonts.Get() : nullptr,
 		        text.bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL,
 		        DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
 		        text.fontSize * scale, L"", format.GetAddressOf()),

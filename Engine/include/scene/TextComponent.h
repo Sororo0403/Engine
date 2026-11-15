@@ -12,7 +12,7 @@ struct TextComponent {
 	bool enabled = true;
 	bool raycastTarget = true;
 	std::string text = "Text";
-	std::string fontFamily = "Segoe UI";
+	std::string fontFamily = "M PLUS 1p";
 	float fontSize = 32;
 	bool bold = false;
 	Alignment alignment = Alignment::LEFT;

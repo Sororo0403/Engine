@@ -45,6 +45,9 @@
     <Filter Include="resources">
       <UniqueIdentifier>{5c78554c-b4c5-456a-b834-225692ded83e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resources\fonts">
+      <UniqueIdentifier>{bed3c21b-7724-4ad4-9a83-711beddb5f33}</UniqueIdentifier>
+    </Filter>
     <Filter Include="resources\shaders">
       <UniqueIdentifier>{c1143765-a207-4f02-bd8b-220bba90e40a}</UniqueIdentifier>
     </Filter>
@@ -499,6 +502,12 @@
   <ItemGroup>
     <None Include="resources\shaders\mesh\Mesh.hlsli">
       <Filter>resources\shaders\mesh</Filter>
+    </None>
+    <None Include="resources\fonts\MPLUS1p-Regular.ttf">
+      <Filter>resources\fonts</Filter>
+    </None>
+    <None Include="resources\fonts\MPLUS1p-Bold.ttf">
+      <Filter>resources\fonts</Filter>
     </None>
     <None Include="resources\shaders\debug\DebugLine.hlsli">
       <Filter>resources\shaders\debug</Filter>
