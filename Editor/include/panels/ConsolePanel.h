@@ -23,6 +23,7 @@ class ConsolePanel {
 		std::filesystem::path diagnosticPath;
 		bool editInput = false;
 		bool openFailedScene = false;
+		bool playWithoutTestSave = false;
 	};
 
 	/// <summary>
@@ -51,13 +52,15 @@ class ConsolePanel {
 	/// <param name="retryScript">移動後のLuaパス。空ならログのパスを使う</param>
 	/// <param name="retryInput">直近の試遊失敗で修正が必要な名前付き入力。空なら編集操作を表示しない</param>
 	/// <param name="failedScene">エラーが起きた編集元シーン。空パスは未保存の編集中シーン、nulloptは操作なし</param>
+	/// <param name="failedTestSave">テスト用セーブの読み込みが失敗したか</param>
 	/// <returns>Luaや入力の編集、シーンを開く操作、または再試遊の要求</returns>
 	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
 	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0,
 	             const std::filesystem::path &retryScene = {},
 	             const std::filesystem::path &retryScript = {},
 	             std::string_view retryInput = {},
-	             const std::optional<std::filesystem::path> &failedScene = {});
+	             const std::optional<std::filesystem::path> &failedScene = {},
+	             bool failedTestSave = false);
 
   private:
 	/// <summary>

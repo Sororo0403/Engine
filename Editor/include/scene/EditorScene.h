@@ -1097,6 +1097,7 @@ class EditorScene final : public IScene {
 		std::string inputAction;
 		std::optional<std::filesystem::path> failedScene;
 		SceneObjectId failedObject;
+		bool failedTestSave;
 	};
 	std::optional<PlayFailureReplay> playFailureReplay_;
 	SceneObjectId playInitialCameraOverride_ = 0;

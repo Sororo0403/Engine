@@ -566,7 +566,8 @@ bool EditorScene::Update(float deltaTime) {
 	    replay ? replay->path : std::filesystem::path{},
 	    replay ? replay->scriptPath : std::filesystem::path{},
 	    replay ? std::string_view{replay->inputAction} : std::string_view{},
-	    replay ? replay->failedScene : std::nullopt);
+	    replay ? replay->failedScene : std::nullopt,
+	    replay && replay->failedTestSave);
 	if (consoleScript.openFailedScene && replay && replay->failedScene &&
 	    consoleScript.logId == replay->logId) {
 		const auto path = *replay->failedScene;
@@ -587,6 +588,9 @@ bool EditorScene::Update(float deltaTime) {
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
+		if (consoleScript.playWithoutTestSave && retry.failedTestSave) {
+			playMode_.SetLoadTestSave(false);
+		}
 		StartPlay(retry.path, retry.camera, true);
 		UpdateDialogs();
 		return true;
@@ -7027,6 +7031,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 void EditorScene::LogPlayFailure() {
 	const auto &source = !errorScriptPath_.empty() ? errorScriptPath_
 	                     : !errorPlayModelFile_.empty() ? errorPlayModelFile_
+	                     : errorTestSave_ && !errorTestSave_->empty() ? *errorTestSave_
 	                                                    : errorScenePath_;
 	const auto logId = Logger::PlayFailure(errorMessage_, source);
 	errorPlayLogId_ = logId;
@@ -7039,7 +7044,8 @@ void EditorScene::LogPlayFailure() {
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
 		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_, errorInputAction_,
-		    canReveal ? std::optional{std::move(failedScene)} : std::nullopt, errorObjectId_};
+		    canReveal ? std::optional{std::move(failedScene)} : std::nullopt,
+		    errorObjectId_, errorTestSave_.has_value()};
 	}
 }
 

@@ -108,7 +108,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          const std::filesystem::path &retryScene,
                                          const std::filesystem::path &retryScript,
                                          std::string_view retryInput,
-                                         const std::optional<std::filesystem::path> &failedScene) {
+                                         const std::optional<std::filesystem::path> &failedScene,
+                                         bool failedTestSave) {
 	if (!open_) {
 		return {};
 	}
@@ -445,6 +446,15 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				ImGui::SetItemTooltip("Start Play in %s.",
 				                      retryScene.empty() ? "the editing scene"
 				                                         : PathUtils::ToUtf8(retryScene).c_str());
+				if (failedTestSave) {
+					ui.SameLine();
+					if (ui.Button("Play Without Test Save")) {
+						request.logId = selected->id;
+						request.retryPlay = true;
+						request.playWithoutTestSave = true;
+					}
+					ImGui::SetItemTooltip("Turn off Load Test Save and retry the same scene.");
+				}
 			}
 
 			ui.SameLine();
