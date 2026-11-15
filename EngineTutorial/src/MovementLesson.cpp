@@ -16,16 +16,20 @@ float StepDistance(float speed, float seconds) {
 
 } // namespace
 
-void MoveLessonBox(Transform &box, const Keyboard &keyboard, float seconds) {
+DirectX::XMFLOAT2 ReadMovementDirection(const Keyboard &keyboard) {
 	const float x = float(keyboard.IsDown(Key::D)) - float(keyboard.IsDown(Key::A));
 	const float z = float(keyboard.IsDown(Key::W)) - float(keyboard.IsDown(Key::S));
 	const float length = std::hypot(x, z);
 	if (length == 0) {
-		return;
+		return {};
 	}
+	return {x / length, z / length};
+}
 
+void MoveLessonBox(Transform &box, const Keyboard &keyboard, float seconds) {
+	const auto direction = ReadMovementDirection(keyboard);
 	constexpr float speed = 3.f;
 	const float distance = StepDistance(speed, seconds);
-	box.translation.x += x / length * distance;
-	box.translation.z += z / length * distance;
+	box.translation.x += direction.x * distance;
+	box.translation.z += direction.y * distance;
 }

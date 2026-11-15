@@ -27,8 +27,7 @@ TutorialScene::TutorialScene(const EngineContext &context)
 TutorialScene::~TutorialScene() = default;
 
 bool TutorialScene::Initialize() {
-	box_ = CreateLessonBox(scene_);
-	initialBoxTransform_ = scene_.FindObject(box_)->transform;
+	PrepareBoxLesson();
 	LightingSettings lighting;
 	lighting.ambient = 0.36f;
 	if (!renderer_.Initialize() || !renderer_.SetLighting(lighting) ||
@@ -73,10 +72,12 @@ bool TutorialScene::Update(float seconds) {
 		if (ImGui::Button("4  カメラ")) {
 			chapter_ = Chapter::CAMERA;
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("5  ジャンプ")) {
+			chapter_ = Chapter::PLATFORM;
+		}
 		if (chapter_ != previous) {
-			scene_.FindObject(box_)->transform = initialBoxTransform_;
-			previewYaw_ = 0;
-			ready = renderer_.SetCameraPose(kFixedCamera);
+			ready = EnterChapter(previous);
 		}
 		ImGui::Separator();
 		ImGui::PushID(static_cast<int>(chapter_));
@@ -94,8 +95,10 @@ bool TutorialScene::Update(float seconds) {
 					DrawBoxLesson();
 				} else if (chapter_ == Chapter::MOVEMENT) {
 					DrawMovementLesson(seconds);
-				} else {
+				} else if (chapter_ == Chapter::CAMERA) {
 					ready = DrawCameraLesson(seconds) && ready;
+				} else {
+					ready = DrawPlatformLesson(seconds) && ready;
 				}
 			}
 			ImGui::EndChild();
@@ -105,6 +108,26 @@ bool TutorialScene::Update(float seconds) {
 	ImGui::End();
 	ImGui::PopStyleVar(2);
 	return ready && (!previewVisible_ || renderer_.Update(preview_->GetWidth(), preview_->GetHeight()));
+}
+
+bool TutorialScene::EnterChapter(Chapter previous) {
+	if (chapter_ == Chapter::PLATFORM) {
+		scene_.Clear();
+		platformLesson_.Initialize(scene_);
+		return renderer_.SetCameraPose(MakeFollowCamera(platformLesson_.GetPosition(scene_)));
+	}
+	if (previous == Chapter::PLATFORM) {
+		scene_.Clear();
+		PrepareBoxLesson();
+	}
+	scene_.FindObject(box_)->transform = initialBoxTransform_;
+	previewYaw_ = 0;
+	return renderer_.SetCameraPose(kFixedCamera);
+}
+
+void TutorialScene::PrepareBoxLesson() {
+	box_ = CreateLessonBox(scene_);
+	initialBoxTransform_ = scene_.FindObject(box_)->transform;
 }
 
 void TutorialScene::Draw() const {
@@ -233,6 +256,26 @@ bool TutorialScene::DrawCameraLesson(float seconds) {
 	ImGui::TextWrapped("src/CameraLesson.cpp の offset.y を 8.f に変えてビルドすると、より上から見下ろします。次に offset.z を -12.f にして、箱までの距離を比べます。");
 	ImGui::TextWrapped("CameraPose の position はカメラを置く位置、target は見る先です。追従時は毎フレーム箱の位置を基準に計算します。");
 	return renderer_.SetCameraPose(pose);
+}
+
+bool TutorialScene::DrawPlatformLesson(float seconds) {
+	ImGui::SeparatorText("第5章  ジャンプと着地");
+	ImGui::TextWrapped("WASDで移動し、Spaceでジャンプします。足場の上面に着地できます。落ちた場合はスタートに戻ります。");
+	if (ImGui::Button("スタートに戻る")) {
+		platformLesson_.Reset(scene_);
+	} else if (input_.IsActive() && !ui_.IsTextInputActive()) {
+		const auto &keyboard = input_.GetKeyboard();
+		platformLesson_.Update(scene_, ReadMovementDirection(keyboard),
+		                       keyboard.IsPressed(Key::SPACE), seconds);
+	}
+
+	const auto &position = platformLesson_.GetPosition(scene_);
+	ImGui::TextUnformatted(platformLesson_.IsGrounded() ? "地面にいる" : "空中にいる");
+	ImGui::Text("箱の高さ  %.2f", double(position.y));
+	ImGui::SeparatorText("C++を書き換える");
+	ImGui::TextWrapped("src/PlatformLesson.cpp の kJumpSpeed を 7.5f に変更してビルドし、足場までの距離を比べます。次に kGravity を 18.f に変えて、落ちる速さを観察します。");
+	ImGui::TextWrapped("Step() は重力で縦方向の速度を変え、下降中に箱の底が足場の上面を越えたときに着地させます。箱の位置はSceneのTransformなので、そのまま描画に反映されます。");
+	return renderer_.SetCameraPose(MakeFollowCamera(position));
 }
 
 void TutorialScene::UpdateFreeMovement(float seconds) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "PlatformLesson.h"
 #include "scene/IScene.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
@@ -25,12 +26,15 @@ class TutorialScene final : public IScene {
 	void Finalize() override;
 
   private:
-	enum class Chapter { STARTUP, BOX, MOVEMENT, CAMERA };
+	enum class Chapter { STARTUP, BOX, MOVEMENT, CAMERA, PLATFORM };
 
+	bool EnterChapter(Chapter previous);
+	void PrepareBoxLesson();
 	void DrawStartupLesson() const;
 	void DrawBoxLesson();
 	void DrawMovementLesson(float seconds);
 	bool DrawCameraLesson(float seconds);
+	bool DrawPlatformLesson(float seconds);
 	bool DrawPreview();
 	void UpdateFreeMovement(float seconds);
 
@@ -38,6 +42,7 @@ class TutorialScene final : public IScene {
 	RenderSystem &render_;
 	const InputSystem &input_;
 	Scene scene_;
+	PlatformLesson platformLesson_;
 	SceneRenderer renderer_;
 	std::unique_ptr<RenderTexture> preview_;
 	SceneObjectId box_ = 0;
