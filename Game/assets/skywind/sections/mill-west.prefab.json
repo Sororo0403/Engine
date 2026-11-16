@@ -1,0 +1,527 @@
+{
+  "format": "EnginePrefab",
+  "version": 2,
+  "root": 1,
+  "nextSourceId": 15,
+  "scene": {
+    "format": "EngineScene",
+    "version": 83,
+    "objects": [
+      {
+        "id": 1,
+        "name": "mill-west",
+        "tag": "",
+        "parent": 0,
+        "active": true,
+        "transform": {
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "name": "in",
+        "tag": "stage-entry:walk",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "name": "First Mill Island Collider",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            0.0,
+            -0.3,
+            2.0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "collider": {
+          "center": [
+            0,
+            0,
+            0
+          ],
+          "filter": {
+            "layer": 0,
+            "mask": 4294967295
+          },
+          "halfExtents": [
+            3.8,
+            0.3,
+            2.0
+          ],
+          "halfHeight": 0.5,
+          "isTrigger": false,
+          "radius": 0.5,
+          "shape": "Box"
+        }
+      },
+      {
+        "id": 4,
+        "name": "First Mill Island",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            0.0,
+            0.0,
+            2.0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1.9487179487179487,
+            0.8,
+            1.3513513513513513
+          ]
+        },
+        "mesh": {
+          "model": "../models/FloatingIsland02.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 5,
+        "name": "Relay Island Collider",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -0.6,
+            -0.3,
+            6.25
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "collider": {
+          "center": [
+            0,
+            0,
+            0
+          ],
+          "filter": {
+            "layer": 0,
+            "mask": 4294967295
+          },
+          "halfExtents": [
+            2.9,
+            0.3,
+            1.75
+          ],
+          "halfHeight": 0.5,
+          "isTrigger": false,
+          "radius": 0.5,
+          "shape": "Box"
+        }
+      },
+      {
+        "id": 6,
+        "name": "Relay Island",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -0.6,
+            0.0,
+            6.25
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1.4871794871794872,
+            0.8,
+            1.1824324324324325
+          ]
+        },
+        "mesh": {
+          "model": "../models/FloatingIsland02.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 7,
+        "name": "Second Mill Island Collider",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -1.0,
+            -0.3,
+            10.25
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "collider": {
+          "center": [
+            0,
+            0,
+            0
+          ],
+          "filter": {
+            "layer": 0,
+            "mask": 4294967295
+          },
+          "halfExtents": [
+            3.8,
+            0.3,
+            1.75
+          ],
+          "halfHeight": 0.5,
+          "isTrigger": false,
+          "radius": 0.5,
+          "shape": "Box"
+        }
+      },
+      {
+        "id": 8,
+        "name": "Second Mill Island",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -1.0,
+            0.0,
+            10.25
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1.9487179487179487,
+            0.8,
+            1.1824324324324325
+          ]
+        },
+        "mesh": {
+          "model": "../models/FloatingIsland02.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 9,
+        "name": "First Windmill",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -2.7,
+            0,
+            1.8
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            0.62,
+            0.62,
+            0.62
+          ]
+        },
+        "mesh": {
+          "model": "../models/SkyMill.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 10,
+        "name": "First Mill Sails",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -2.7,
+            2.1,
+            0.97
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            0.62,
+            0.62,
+            0.62
+          ]
+        },
+        "mesh": {
+          "model": "../models/ClothSails.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 11,
+        "name": "Second Windmill",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            1.7,
+            0,
+            10.3
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            0.62,
+            0.62,
+            0.62
+          ]
+        },
+        "mesh": {
+          "model": "../models/SkyMill.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 12,
+        "name": "Second Mill Sails",
+        "tag": "",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            1.7,
+            2.1,
+            9.47
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            0.62,
+            0.62,
+            0.62
+          ]
+        },
+        "mesh": {
+          "model": "../models/ClothSails.glb"
+        },
+        "meshRenderer": {
+          "textures": [],
+          "uvOffset": [
+            0.0,
+            0.0
+          ],
+          "uvScale": [
+            1.0,
+            1.0
+          ],
+          "visible": true
+        }
+      },
+      {
+        "id": 13,
+        "name": "Relay Footing",
+        "tag": "stage-decor:roadside",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -2.4,
+            0.0,
+            6.2
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "name": "out",
+        "tag": "stage-exit:walk",
+        "parent": 1,
+        "active": true,
+        "transform": {
+          "translation": [
+            -1.0,
+            0.0,
+            12.0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      }
+    ]
+  }
+}
