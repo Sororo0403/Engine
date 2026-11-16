@@ -320,6 +320,8 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\StageFlowBuilder.cpp" />
     <ClInclude Include="include\gameplay\StageFlowPrefab.h" />
     <ClCompile Include="src\gameplay\StageFlowPrefab.cpp" />
+    <ClInclude Include="include\gameplay\StageFlowProject.h" />
+    <ClCompile Include="src\gameplay\StageFlowProject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h" />

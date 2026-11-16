@@ -543,6 +543,12 @@
     <ClCompile Include="src\gameplay\StageFlowPrefab.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
+    <ClInclude Include="include\gameplay\StageFlowProject.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\StageFlowProject.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h">
