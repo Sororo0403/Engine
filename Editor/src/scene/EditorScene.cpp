@@ -2525,6 +2525,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::GENERATE_DECORATIONS;
 		}
 
+		if (ui_.MenuItem("Stage Plan...", nullptr, enabled && !project_.GetRoot().empty())) {
+			action = EditorAction::STAGE_PLAN;
+		}
+
 		if (ui_.BeginMenu("UI")) {
 			if (ui_.MenuItem("Canvas", nullptr, enabled))
 				action = EditorAction::CREATE_CANVAS;
@@ -3538,6 +3542,12 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
+		return;
+	case EditorAction::STAGE_PLAN:
+		if (!playMode_.IsPlaying() && !IsBusy() && !project_.GetRoot().empty()) {
+			stagePlanDialog_.Show(project_.GetRoot());
+			stage_ = DialogStage::STAGE_PLAN;
+		}
 		return;
 	case EditorAction::GENERATE_DECORATIONS: {
 		if (playMode_.IsPlaying() || IsBusy() || project_.GetRoot().empty()) {
@@ -5964,6 +5974,20 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		}
 
+		return;
+	}
+
+	case DialogStage::STAGE_PLAN: {
+		const auto result = stagePlanDialog_.Draw(ui_, document_, project_.GetScenesDirectory());
+		if (result == StagePlanDialog::Result::NONE) {
+			return;
+		}
+		stage_ = DialogStage::IDLE;
+		if (result == StagePlanDialog::Result::OPEN_SAVED_SCENE) {
+			pendingOpenPath_ = stagePlanDialog_.GetSavedPath();
+			pendingAction_ = EditorAction::OPEN_PATH;
+			ConfirmSceneChanges();
+		}
 		return;
 	}
 

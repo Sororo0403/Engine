@@ -452,6 +452,8 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\BoxCreationSettings.h"></ClInclude>
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"></ClCompile>
+    <ClInclude Include="include\dialogs\StagePlanDialog.h" />
+    <ClCompile Include="src\dialogs\StagePlanDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\EditorCameraBookmarks.h"></ClInclude>

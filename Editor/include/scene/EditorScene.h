@@ -20,6 +20,7 @@
 #include "dialogs/SceneImportDialog.h"
 #include "dialogs/SceneRecoveryDialog.h"
 #include "dialogs/SceneReloadDialog.h"
+#include "dialogs/StagePlanDialog.h"
 #include "dialogs/ScriptEditorDialog.h"
 #include "animation/AnimationClipEditor.h"
 #include "dialogs/TextureImportDialog.h"
@@ -175,6 +176,7 @@ class EditorScene final : public IScene {
 		CREATE_BOX,
 		CREATE_SIZED_BOX,
 		GENERATE_DECORATIONS,
+		STAGE_PLAN,
 		CREATE_CAMERA,
 		CREATE_CANVAS,
 		CREATE_UI_TEXT,
@@ -323,6 +325,7 @@ class EditorScene final : public IScene {
 		OBJECT_ARRAY,
 		BOX_CREATION,
 		STAGE_DECORATIONS,
+		STAGE_PLAN,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -1115,6 +1118,7 @@ class EditorScene final : public IScene {
 	BatchRenameDialog batchRenameDialog_;
 	ObjectArrayDialog objectArrayDialog_;
 	BoxCreationDialog boxCreationDialog_;
+	StagePlanDialog stagePlanDialog_;
 	bool openingStageDecorations_ = false;
 	std::uint32_t stageDecorationSeed_ = 0;
 	std::string stageDecorationName_;

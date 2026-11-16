@@ -792,6 +792,8 @@
     <ClInclude Include="include\scene\BoxCreationSettings.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\StagePlanDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\StagePlanDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\EditorCameraBookmarks.h"><Filter>include\camera</Filter></ClInclude>
