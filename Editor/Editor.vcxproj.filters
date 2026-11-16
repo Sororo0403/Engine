@@ -519,6 +519,12 @@
     <ClCompile Include="src\gameplay\SampleStage.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
+    <ClInclude Include="include\gameplay\StagePlan.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\StagePlan.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h">

@@ -312,6 +312,8 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\gameplay\SampleStage.h" />
     <ClCompile Include="src\gameplay\SampleStage.cpp" />
+    <ClInclude Include="include\gameplay\StagePlan.h" />
+    <ClCompile Include="src\gameplay\StagePlan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h" />
