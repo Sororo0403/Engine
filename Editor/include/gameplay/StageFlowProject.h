@@ -37,6 +37,12 @@ struct Project {
 bool LoadProject(const std::filesystem::path &projectRoot, Project &project, std::string &error);
 
 /// <summary>
+/// プロジェクトの区間Prefabとテーマを保持し、フローグラフを保存する
+/// </summary>
+bool SaveGraph(const std::filesystem::path &projectRoot, const Graph &graph,
+               std::string &error);
+
+/// <summary>
 /// 区間を選んで配置し、飾りと試遊用の主人公・カメラ・風を持つ独立したシーンへ組み立てる
 /// </summary>
 /// <returns>成功時だけsceneと区間名の一覧を置き換える。失敗時は元のシーンを保持する</returns>

@@ -2529,6 +2529,26 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::STAGE_PLAN;
 		}
 
+		if (ui_.MenuItem("Stage Flow...", nullptr, enabled && !project_.GetRoot().empty())) {
+			action = EditorAction::STAGE_FLOW;
+		}
+
+		if (ui_.BeginMenu("Stage Flow Port")) {
+			if (ui_.MenuItem("Walk Entry", nullptr, enabled)) {
+				action = EditorAction::STAGE_FLOW_WALK_ENTRY;
+			}
+			if (ui_.MenuItem("Walk Exit", nullptr, enabled)) {
+				action = EditorAction::STAGE_FLOW_WALK_EXIT;
+			}
+			if (ui_.MenuItem("Jump Entry", nullptr, enabled)) {
+				action = EditorAction::STAGE_FLOW_JUMP_ENTRY;
+			}
+			if (ui_.MenuItem("Jump Exit", nullptr, enabled)) {
+				action = EditorAction::STAGE_FLOW_JUMP_EXIT;
+			}
+			ui_.EndMenu();
+		}
+
 		if (ui_.BeginMenu("UI")) {
 			if (ui_.MenuItem("Canvas", nullptr, enabled))
 				action = EditorAction::CREATE_CANVAS;
@@ -3549,6 +3569,31 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 			stage_ = DialogStage::STAGE_PLAN;
 		}
 		return;
+	case EditorAction::STAGE_FLOW:
+		if (!playMode_.IsPlaying() && !IsBusy() && !project_.GetRoot().empty()) {
+			stageFlowDialog_.Show(project_.GetRoot());
+			stage_ = DialogStage::STAGE_FLOW;
+		}
+		return;
+	case EditorAction::STAGE_FLOW_WALK_ENTRY:
+	case EditorAction::STAGE_FLOW_WALK_EXIT:
+	case EditorAction::STAGE_FLOW_JUMP_ENTRY:
+	case EditorAction::STAGE_FLOW_JUMP_EXIT: {
+		const bool entry = action == EditorAction::STAGE_FLOW_WALK_ENTRY ||
+		                   action == EditorAction::STAGE_FLOW_JUMP_ENTRY;
+		const bool jump = action == EditorAction::STAGE_FLOW_JUMP_ENTRY ||
+		                  action == EditorAction::STAGE_FLOW_JUMP_EXIT;
+		SceneObject marker;
+		marker.name = entry ? "in" : "out";
+		marker.tag = std::string(entry ? "stage-entry:" : "stage-exit:") +
+		             (jump ? "jump" : "walk");
+		marker.parentId = selection_.GetActiveId();
+		if (entry) {
+			marker.transform.rotation = {0, 1, 0, 0};
+		}
+		CreateObject(std::move(marker));
+		return;
+	}
 	case EditorAction::GENERATE_DECORATIONS: {
 		if (playMode_.IsPlaying() || IsBusy() || project_.GetRoot().empty()) {
 			return;
@@ -5974,6 +6019,20 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		}
 
+		return;
+	}
+
+	case DialogStage::STAGE_FLOW: {
+		const auto result = stageFlowDialog_.Draw(ui_, document_, project_.GetScenesDirectory());
+		if (result == StageFlowDialog::Result::NONE) {
+			return;
+		}
+		stage_ = DialogStage::IDLE;
+		if (result == StageFlowDialog::Result::OPEN_SAVED_SCENE) {
+			pendingOpenPath_ = stageFlowDialog_.GetSavedPath();
+			pendingAction_ = EditorAction::OPEN_PATH;
+			ConfirmSceneChanges();
+		}
 		return;
 	}
 

@@ -21,6 +21,7 @@
 #include "dialogs/SceneRecoveryDialog.h"
 #include "dialogs/SceneReloadDialog.h"
 #include "dialogs/StagePlanDialog.h"
+#include "dialogs/StageFlowDialog.h"
 #include "dialogs/ScriptEditorDialog.h"
 #include "animation/AnimationClipEditor.h"
 #include "dialogs/TextureImportDialog.h"
@@ -177,6 +178,11 @@ class EditorScene final : public IScene {
 		CREATE_SIZED_BOX,
 		GENERATE_DECORATIONS,
 		STAGE_PLAN,
+		STAGE_FLOW,
+		STAGE_FLOW_WALK_ENTRY,
+		STAGE_FLOW_WALK_EXIT,
+		STAGE_FLOW_JUMP_ENTRY,
+		STAGE_FLOW_JUMP_EXIT,
 		CREATE_CAMERA,
 		CREATE_CANVAS,
 		CREATE_UI_TEXT,
@@ -326,6 +332,7 @@ class EditorScene final : public IScene {
 		BOX_CREATION,
 		STAGE_DECORATIONS,
 		STAGE_PLAN,
+		STAGE_FLOW,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -1119,6 +1126,7 @@ class EditorScene final : public IScene {
 	ObjectArrayDialog objectArrayDialog_;
 	BoxCreationDialog boxCreationDialog_;
 	StagePlanDialog stagePlanDialog_;
+	StageFlowDialog stageFlowDialog_;
 	bool openingStageDecorations_ = false;
 	std::uint32_t stageDecorationSeed_ = 0;
 	std::string stageDecorationName_;

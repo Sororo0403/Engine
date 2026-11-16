@@ -2,6 +2,7 @@
 
 #include "gameplay/StageFlowBuilder.h"
 #include "gameplay/StageFlowPrefab.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/PrimitiveObjects.h"
@@ -39,6 +40,19 @@ const Json &ReadArray(const Json &object, const char *key) {
 		throw std::runtime_error(std::string(key) + " must be an array.");
 	}
 	return value;
+}
+
+Json ReadProjectFile(const std::filesystem::path &path) {
+	std::ifstream input(path, std::ios::binary);
+	if (!input) {
+		throw std::runtime_error("Missing stage-flow.json in this project.");
+	}
+	auto json = Json::parse(input);
+	if (json.at("format") != "StageFlow" || !json.at("version").is_number_integer() ||
+	    json.at("version") != 1) {
+		throw std::runtime_error("Expected StageFlow version 1.");
+	}
+	return json;
 }
 
 /// <summary>
@@ -135,16 +149,7 @@ SceneObjectId AddPlayer(Scene &scene, const SceneWorldTransform &spawn, float mi
 bool LoadProject(const std::filesystem::path &projectRoot, Project &project, std::string &error) {
 	try {
 		const auto root = std::filesystem::canonical(projectRoot);
-		const auto path = root / L"stage-flow.json";
-		std::ifstream input(path, std::ios::binary);
-		if (!input) {
-			throw std::runtime_error("Missing stage-flow.json in this project.");
-		}
-		const auto json = Json::parse(input);
-		if (json.at("format") != "StageFlow" || !json.at("version").is_number_integer() ||
-		    json.at("version") != 1) {
-			throw std::runtime_error("Expected StageFlow version 1.");
-		}
+		const auto json = ReadProjectFile(root / L"stage-flow.json");
 		Project result;
 		const auto &graph = json.at("graph");
 		result.graph.start = graph.at("start").get<std::string>();
@@ -185,6 +190,33 @@ bool LoadProject(const std::filesystem::path &projectRoot, Project &project, std
 		project = std::move(result);
 		error.clear();
 		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool SaveGraph(const std::filesystem::path &projectRoot, const Graph &graph,
+               std::string &error) {
+	try {
+		std::vector<std::size_t> order;
+		if (!GetPlacementOrder(graph, order, error)) {
+			return false;
+		}
+		const auto path = projectRoot / L"stage-flow.json";
+		auto json = ReadProjectFile(path);
+		Json nodes = Json::array();
+		Json connections = Json::array();
+		for (const auto &node : graph.nodes) {
+			nodes.push_back({{"id", node.id}, {"type", node.sectionType}});
+		}
+		for (const auto &link : graph.connections) {
+			connections.push_back({{"from", link.from}, {"exit", link.exit},
+			                       {"to", link.to}, {"entry", link.entry}});
+		}
+		json["graph"] = {{"start", graph.start}, {"goal", graph.goal},
+		                 {"nodes", std::move(nodes)}, {"connections", std::move(connections)}};
+		return FileUtils::WriteTextAtomically(path, json.dump(2) + "\n", error);
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return false;
