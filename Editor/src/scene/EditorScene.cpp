@@ -40,6 +40,7 @@
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
 #include "scene/SceneObjects.h"
+#include "scene/StageDecorationGenerator.h"
 #include "selection/SelectionFrustum.h"
 #include "selection/SelectionMeasurement.h"
 
@@ -2519,6 +2520,11 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::CREATE_SIZED_BOX;
 		}
 
+		if (ui_.MenuItem("Generate Decorations...", nullptr,
+		                 enabled && !project_.GetRoot().empty())) {
+			action = EditorAction::GENERATE_DECORATIONS;
+		}
+
 		if (ui_.BeginMenu("UI")) {
 			if (ui_.MenuItem("Canvas", nullptr, enabled))
 				action = EditorAction::CREATE_CANVAS;
@@ -3533,6 +3539,23 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
 		return;
+	case EditorAction::GENERATE_DECORATIONS: {
+		if (playMode_.IsPlaying() || IsBusy() || project_.GetRoot().empty()) {
+			return;
+		}
+		auto name = PathUtils::ToUtf8(document_.GetFilePath().filename());
+		if (name.ends_with(".scene.json")) {
+			name.resize(name.size() - std::string_view(".scene.json").size());
+		} else {
+			name = PathUtils::ToUtf8(document_.GetFilePath().stem());
+		}
+		stageDecorationName_ = name.empty() ? "Decorated Stage" : name + " Decorated";
+		stageDecorationError_.clear();
+		decoratedScenePath_.clear();
+		openingStageDecorations_ = true;
+		stage_ = DialogStage::STAGE_DECORATIONS;
+		return;
+	}
 
 	case EditorAction::SNAP_POSITIONS:
 		SnapSelectedPositions();
@@ -5941,6 +5964,76 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		}
 
+		return;
+	}
+
+	case DialogStage::STAGE_DECORATIONS: {
+		constexpr const char *title = "Generate Decorations###StageDecorations";
+		if (std::exchange(openingStageDecorations_, false)) {
+			ui_.OpenPopup(title);
+		}
+		ImGui::SetNextWindowSize({475.0f, 0.0f}, ImGuiCond_Appearing);
+		if (!ui_.BeginPopupModal(title)) {
+			return;
+		}
+
+		const auto directory = project_.GetScenesDirectory();
+		ui_.Text(PathUtils::ToUtf8(directory));
+		ui_.InputText("Scene Name", stageDecorationName_);
+		ImGui::InputScalar("Seed", ImGuiDataType_U32, &stageDecorationSeed_);
+		if (ui_.Button("Generate and Save")) {
+			decoratedScenePath_.clear();
+			stageDecorationError_.clear();
+			try {
+				auto name = PathUtils::FromUtf8(stageDecorationName_);
+				if (!PathUtils::IsValidFileName(name)) {
+					throw std::runtime_error("Enter a single valid scene name.");
+				}
+				name += L".scene.json";
+				const auto destination = directory / name;
+				if (std::filesystem::exists(destination)) {
+					throw std::runtime_error("A scene with that name already exists.");
+				}
+				Scene generated;
+				const auto count = StageDecorationGenerator::Generate(
+				    document_.GetScene(), project_.GetRoot(), stageDecorationSeed_,
+				    models_, renderer_, generated, stageDecorationError_);
+				if (count != 0) {
+					if (document_.SaveCopy(destination, generated, false)) {
+						decoratedScenePath_ = destination;
+						Logger::Info(std::format("Saved {} decorations to {}.", count,
+						                         PathUtils::ToUtf8(destination)));
+					} else {
+						stageDecorationError_ = document_.GetError();
+					}
+				}
+			} catch (const std::exception &error) {
+				stageDecorationError_ = error.what();
+			}
+		}
+		ui_.SameLine();
+		const bool open = !decoratedScenePath_.empty() && ui_.Button("Open Saved Scene");
+		if (open) {
+			ui_.SameLine();
+		}
+		const bool close = ui_.Button("Close") ||
+		                   ImGui::IsKeyPressed(ImGuiKey_Escape, false);
+		if (!stageDecorationError_.empty()) {
+			ImGui::TextWrapped("%s", stageDecorationError_.c_str());
+		} else if (!decoratedScenePath_.empty()) {
+			ui_.Text("Saved " + PathUtils::ToUtf8(decoratedScenePath_.filename()));
+		}
+
+		if (open || close) {
+			ui_.CloseCurrentPopup();
+			stage_ = DialogStage::IDLE;
+		}
+		ui_.EndPopup();
+		if (open) {
+			pendingOpenPath_ = decoratedScenePath_;
+			pendingAction_ = EditorAction::OPEN_PATH;
+			ConfirmSceneChanges();
+		}
 		return;
 	}
 

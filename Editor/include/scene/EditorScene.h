@@ -174,6 +174,7 @@ class EditorScene final : public IScene {
 		CREATE_EMPTY,
 		CREATE_BOX,
 		CREATE_SIZED_BOX,
+		GENERATE_DECORATIONS,
 		CREATE_CAMERA,
 		CREATE_CANVAS,
 		CREATE_UI_TEXT,
@@ -321,6 +322,7 @@ class EditorScene final : public IScene {
 		BATCH_RENAME,
 		OBJECT_ARRAY,
 		BOX_CREATION,
+		STAGE_DECORATIONS,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -1113,6 +1115,11 @@ class EditorScene final : public IScene {
 	BatchRenameDialog batchRenameDialog_;
 	ObjectArrayDialog objectArrayDialog_;
 	BoxCreationDialog boxCreationDialog_;
+	bool openingStageDecorations_ = false;
+	std::uint32_t stageDecorationSeed_ = 0;
+	std::string stageDecorationName_;
+	std::string stageDecorationError_;
+	std::filesystem::path decoratedScenePath_;
 	FileDialog fileDialog_;
 	FileDialog openSceneDialog_;
 	FileDialog projectDialog_;
