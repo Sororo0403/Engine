@@ -525,6 +525,24 @@
     <ClCompile Include="src\gameplay\StagePlan.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
+    <ClInclude Include="include\gameplay\StageFlowGraph.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\StageFlowGraph.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClInclude Include="include\gameplay\StageFlowBuilder.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\StageFlowBuilder.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClInclude Include="include\gameplay\StageFlowPrefab.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\StageFlowPrefab.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h">

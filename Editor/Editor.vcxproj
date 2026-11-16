@@ -314,6 +314,12 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\SampleStage.cpp" />
     <ClInclude Include="include\gameplay\StagePlan.h" />
     <ClCompile Include="src\gameplay\StagePlan.cpp" />
+    <ClInclude Include="include\gameplay\StageFlowGraph.h" />
+    <ClCompile Include="src\gameplay\StageFlowGraph.cpp" />
+    <ClInclude Include="include\gameplay\StageFlowBuilder.h" />
+    <ClCompile Include="src\gameplay\StageFlowBuilder.cpp" />
+    <ClInclude Include="include\gameplay\StageFlowPrefab.h" />
+    <ClCompile Include="src\gameplay\StageFlowPrefab.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h" />
