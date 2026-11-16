@@ -1,0 +1,8 @@
+newmtl stone
+Kd 0.55 0.51 0.40
+
+newmtl brass
+Kd 0.94 0.66 0.23
+
+newmtl teal
+Kd 0.05 0.61 0.54
