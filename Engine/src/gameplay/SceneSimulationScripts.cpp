@@ -5,6 +5,7 @@
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneSerializer.h"
 #include <algorithm>
+#include <set>
 #include <utility>
 
 bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
@@ -63,6 +64,31 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	const auto &beforeObjects = scene_.GetObjects();
 	const auto &afterObjects = candidate.GetObjects();
 	std::optional<CameraPose> updatedPose;
+	std::optional<std::set<SceneObjectId>> simulationTransforms;
+	const auto needsTransformSync = [&](SceneObjectId id) {
+		if (!simulationTransforms) {
+			auto &required = simulationTransforms.emplace();
+			// 実行状態がワールド姿勢を参照する物体と、その祖先を記録する。
+			const auto includeAncestors = [&](SceneObjectId current) {
+				while (current && required.insert(current).second) {
+					const auto *object = candidate.FindObject(current);
+					current = object ? object->parentId : 0;
+				}
+			};
+			for (const auto &[objectId, object] : afterObjects) {
+				if (object.collider || object.rigidBody || object.character ||
+				    object.camera || object.motionPath || object.transformAnimation ||
+				    object.animator || object.particleEmitter || object.audioSource ||
+				    object.audioListener || object.directionalLight ||
+				    object.pointLight || object.spotLight) {
+					includeAncestors(objectId);
+				}
+				if (object.followCamera)
+					includeAncestors(object.followCamera->target);
+			}
+		}
+		return simulationTransforms->contains(id);
+	};
 	// 描画と音量だけが変わるフレームは、物理やTriggerの状態を保つ。
 	const bool presentationOnly = std::ranges::equal(
 	    beforeObjects, afterObjects, [&](const auto &before, const auto &after) {
@@ -81,23 +107,24 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 
 		    const bool moved = !TransformUtils::AreEqual(oldObject.transform,
 		                                                newObject.transform);
+		    const bool standaloneCamera =
+		        moved && after.first == camera_ && !cameraTransition_ &&
+		        newObject.camera && !newObject.parentId && !newObject.collider &&
+		        !newObject.rigidBody && !newObject.character && !newObject.followCamera &&
+		        !newObject.motionPath && !newObject.transformAnimation &&
+		        std::ranges::none_of(afterObjects, [&](const auto &entry) {
+			    const auto &object = entry.second;
+			    return object.parentId == camera_ ||
+			           (object.followCamera && object.followCamera->target == camera_);
+		        });
 		    if (moved) {
-			    // 他の物体や物理が参照する姿勢は、通常の同期処理で更新する。
-			    if (after.first != camera_ || cameraTransition_ ||
-			        !newObject.camera || newObject.parentId || newObject.collider ||
-			        newObject.rigidBody || newObject.character || newObject.followCamera ||
-			        newObject.motionPath || newObject.transformAnimation ||
-			        std::ranges::any_of(afterObjects, [&](const auto &entry) {
-				        const auto &object = entry.second;
-				        return object.parentId == camera_ ||
-				               (object.followCamera && object.followCamera->target == camera_);
-			        }))
+			    if (!standaloneCamera && needsTransformSync(after.first))
 				    return false;
 			    compared.transform = oldObject.transform;
 		    }
 		    if (!oldObject.HasSameSimulationSettings(compared))
 			    return false;
-		    if (moved) {
+		    if (standaloneCamera) {
 			    SceneWorldTransform transform;
 			    if (!SceneHierarchy::GetWorldTransform(candidate, camera_, transform))
 				    return false;
