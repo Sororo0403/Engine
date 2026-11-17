@@ -1083,6 +1083,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			}
 		}
 
+		// 落下復帰の位置を剛体にも反映し、次のフレームで復帰距離を速度に変換しない。
+		if (respawned && physics.GetWorld() &&
+		    !physics.Configure(working, true, lastUpdateError_)) {
+			return false;
+		}
+
 		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
 		                   nullptr, physics.GetWorld()))
