@@ -86,16 +86,6 @@ class CollisionWorld {
 	             bool includeTriggers = true);
 
 	/// <summary>
-	/// 指定物体のColliderの実形状と重なる、有効な他のColliderをID順に列挙する
-	/// </summary>
-	/// <param name="scene">形状と合成姿勢の参照元</param>
-	/// <param name="objectId">問い合わせ元のCollider。自身は結果から除外する</param>
-	/// <param name="objects">成功時だけ置き換えるID一覧。マスクとTrigger設定は絞り込まない</param>
-	/// <returns>true:検索成功 false:物体・階層・形状が無効</returns>
-	static bool FindColliderOverlaps(const Scene &scene, SceneObjectId objectId,
-	                                 std::vector<SceneObjectId> &objects);
-
-	/// <summary>
 	/// ボックスを直線移動したとき、最初に体積が重なり始めるColliderと移動割合を調べる
 	/// </summary>
 	/// <param name="body">開始位置の有効なワールド座標のボックス</param>

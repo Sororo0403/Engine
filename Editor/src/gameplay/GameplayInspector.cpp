@@ -2,7 +2,6 @@
 #include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
-#include "physics/AxisAlignedBox.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include <format>
@@ -60,7 +59,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	respawnRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
-	respawnBlockersRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -360,16 +358,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.EndDisabled();
 
-		AxisAlignedBox respawnBody;
-		ui.BeginDisabled(
-		    !RespawnPreview::GetColliderBounds(scene, id, respawnBody));
-
-		if (ui.Button("Select Blocking Colliders")) {
-			respawnBlockersRequest_ = id;
-		}
-
-		ui.EndDisabled();
-
 		ui.BeginDisabled(!object.respawn->IsValid());
 
 		if (ui.Button("Copy Respawn Settings")) {
@@ -410,7 +398,6 @@ void GameplayInspector::Clear() noexcept {
 	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
-	respawnBlockersRequest_ = 0;
 }
 
 GameplayInspector::CharacterRequest
@@ -424,10 +411,6 @@ GameplayInspector::FollowRequest GameplayInspector::GetFollowRequest() const {
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {
 	return respawnFrameRequest_;
-}
-
-SceneObjectId GameplayInspector::GetRespawnBlockersRequest() const {
-	return respawnBlockersRequest_;
 }
 
 SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {

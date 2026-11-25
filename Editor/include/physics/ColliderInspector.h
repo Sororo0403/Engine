@@ -18,7 +18,6 @@ class ColliderInspector {
 	enum class Action {
 		NONE,
 		FIT_TO_MODEL,
-		SELECT_OVERLAPS,
 		FRAME,
 		COPY,
 		PASTE

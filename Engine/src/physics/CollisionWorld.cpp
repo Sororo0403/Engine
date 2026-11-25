@@ -409,41 +409,6 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 	return true;
 }
 
-bool CollisionWorld::FindColliderOverlaps(const Scene &scene,
-                                          SceneObjectId objectId,
-                                          std::vector<SceneObjectId> &objects) {
-	const auto *source = scene.FindObject(objectId);
-	if (!source || !source->collider)
-		return false;
-	SceneHierarchy::WorldTransforms transforms;
-	SceneActivity::States active;
-	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
-	    !SceneActivity::BuildStates(scene, active))
-		return false;
-	WorldCollider query;
-	std::string error;
-	if (!WorldCollider::Create(*source->collider,
-	                           transforms.at(objectId).matrix, query, error))
-		return false;
-	std::vector<SceneObjectId> next;
-
-	for (const auto &[id, object] : scene.GetObjects()) {
-		if (id == objectId || !object.collider || !active.at(id))
-			continue;
-		WorldCollider shape;
-		bool overlap = false;
-		if (!WorldCollider::Create(*object.collider, transforms.at(id).matrix,
-		                           shape, error) ||
-		    !query.Overlaps(shape, kOverlapTolerance, overlap))
-			return false;
-		if (overlap)
-			next.push_back(id);
-	}
-
-	objects = std::move(next);
-	return true;
-}
-
 bool CollisionWorld::Sweep(const AxisAlignedBox &body,
                            const DirectX::XMFLOAT3 &displacement,
                            CollisionSweepResult &result,

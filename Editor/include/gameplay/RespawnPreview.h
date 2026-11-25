@@ -68,16 +68,6 @@ class RespawnPreview {
 	                              AxisAlignedBox &bounds);
 
 	/// <summary>
-	/// 復帰先を塞ぐColliderを検索する。自身の形状と面への接触は除く
-	/// </summary>
-	/// <param name="scene">検索する編集シーン。非表示の物体も対象</param>
-	/// <param name="id">復帰設定を確認する物体</param>
-	/// <param name="objects">成功時に置き換えるID昇順の結果。該当なしは空</param>
-	/// <returns>true:検索成功 false:対象や衝突形状が無効。失敗や例外時は結果を保持する</returns>
-	static bool FindBlockingObjects(const Scene &scene, SceneObjectId id,
-	                                std::vector<SceneObjectId> &objects);
-
-	/// <summary>
 	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
 	/// </summary>
 	/// <param name="renderer">更新済みのScene描画先</param>

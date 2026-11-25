@@ -7378,41 +7378,6 @@ void EditorScene::ApplyInspectorRequest(
 		}
 
 		if (request.action ==
-		        InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS ||
-		    request.action ==
-		        InspectorPanel::ObjectAction::SELECT_COLLIDER_OVERLAPS) {
-			std::vector<SceneObjectId> objects;
-			const bool respawn =
-			    request.action ==
-			    InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS;
-			bool inspected = false;
-
-			if (respawn) {
-				inspected = RespawnPreview::FindBlockingObjects(
-				    document_.GetScene(), request.objectId, objects);
-			} else {
-				inspected = CollisionWorld::FindColliderOverlaps(
-				    document_.GetScene(), request.objectId, objects);
-			}
-
-			if (!inspected) {
-				ShowError(respawn
-				              ? "Could not inspect the respawn colliders. "
-				                "Check the collider shapes and transforms."
-				              : "Could not inspect the overlapping colliders. "
-				                "Check the collider shapes and transforms.");
-				return;
-			}
-
-			if (!objects.empty()) {
-				selection_.Set(std::move(objects));
-				hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-			}
-
-			return;
-		}
-
-		if (request.action ==
 		    InspectorPanel::ObjectAction::SELECT_GROUND_COLLIDER) {
 			CollisionWorld world;
 			CharacterController controller;

@@ -1192,16 +1192,7 @@ void ControlsPanel::Draw() {
 	         "Colliders > All shows hidden or unselected shapes. Invalid "
 	         "colliders disable the action. Bounds outside the camera's "
 	         "clipping range leave the camera unchanged."},
-	        {"Inspector > Collider > Select Overlapping Colliders",
-	         "Select the other colliders sharing volume with the inspected "
-	         "object at its current position. Use this to find solids around "
-	         "a character's start position. Hidden objects count; self and "
-	         "face-only contact do not. No overlaps keeps the current "
-	         "selection. Hierarchy reveals the active result and Inspector "
-	         "locks are preserved. View > Colliders > Selected shows selected "
-	         "shapes even when their models are hidden. Selecting adds no "
-	         "history; pending edits finish first. Static obstacles may "
-	         "intentionally overlap each other."},
+
 	        {"Game while editing",
 	         "Preview the authored scene from the Primary Camera without "
 	         "running physics. Follow Cameras show their starting poses. "
@@ -1421,16 +1412,7 @@ void ControlsPanel::Draw() {
 	         "blocked positions can still be inspected. Fall Boundary is not "
 	         "included in the view bounds. The command also works with "
 	         "Respawn Guides hidden and opens the Scene tab if necessary."},
-	        {"Inspector > Respawn > Select Blocking Colliders",
-	         "Select every Collider overlapping the inspected object's "
-	         "recovery shape, including hidden objects. The character itself "
-	         "and face-only contact are excluded. Hierarchy reveals the active "
-	         "result. View > Colliders > Selected shows its shape even when "
-	         "the model is hidden. Inspector locks are preserved. "
-	         "No overlaps leaves the selection unchanged. Invalid collider "
-	         "data reports an error without changing selection. Selecting "
-	         "does not edit the scene or add history; pending edits finish "
-	         "first. Invalid or missing recovery shapes disable the action."},
+
 	        {"Selected Respawn in Scene",
 	         "The cross marks the recovery position and the wire box shows "
 	         "the character's collider there, including rotation and scale. "

@@ -77,8 +77,6 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			request = {Action::FIT_TO_MODEL, id};
 		if (ui.MenuItem("Frame Collider", nullptr, hasBounds))
 			request = {Action::FRAME, id};
-		if (ui.MenuItem("Select Overlapping Colliders", nullptr, hasBounds))
-			request = {Action::SELECT_OVERLAPS, id};
 		if (ui.MenuItem("Remove Collider", nullptr, true))
 			changed |= history.SetCollider(id, std::nullopt);
 		ImGui::EndPopup();

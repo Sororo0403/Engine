@@ -265,26 +265,6 @@ bool RespawnPreview::GetColliderBounds(const Scene &scene, SceneObjectId id,
 	                                     world.matrix, bounds);
 }
 
-bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
-                                         std::vector<SceneObjectId> &objects) {
-	SceneWorldTransform pose;
-	std::vector<SceneObjectId> result, ignored;
-
-	if (!GetRespawnPose(scene, id, pose) ||
-	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
-	    !CollisionWorld::FindOverlaps(scene, *scene.FindObject(id)->collider,
-	                                  pose.matrix, result)) {
-		return false;
-	}
-
-	std::erase_if(result, [&](SceneObjectId object) {
-		return std::find(ignored.begin(), ignored.end(), object) !=
-		       ignored.end();
-	});
-	objects.swap(result);
-	return true;
-}
-
 bool RespawnPreview::Update(SceneRenderer &renderer, const Scene &scene,
                             SceneObjectId id) const {
 	Geometry geometry;

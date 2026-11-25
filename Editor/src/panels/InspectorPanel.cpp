@@ -581,10 +581,6 @@ bool InspectorPanel::Draw(
 	} else if (colliderRequest.action ==
 	           ColliderInspector::Action::FIT_TO_MODEL) {
 		colliderFitRequest_ = colliderRequest.objectId;
-	} else if (colliderRequest.action ==
-	           ColliderInspector::Action::SELECT_OVERLAPS) {
-		objectRequest_ = {ObjectAction::SELECT_COLLIDER_OVERLAPS,
-		                  colliderRequest.objectId};
 	} else if (colliderRequest.action == ColliderInspector::Action::FRAME) {
 		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
 		                  colliderRequest.objectId};
@@ -887,11 +883,6 @@ bool InspectorPanel::Draw(
 	if (const auto frameId = gameplayInspector_.GetRespawnFrameRequest();
 	    frameId != 0) {
 		objectRequest_ = {ObjectAction::FRAME_RESPAWN, frameId};
-	}
-
-	if (const auto blockerId = gameplayInspector_.GetRespawnBlockersRequest();
-	    blockerId != 0) {
-		objectRequest_ = {ObjectAction::SELECT_RESPAWN_BLOCKERS, blockerId};
 	}
 
 	ui.Separator();

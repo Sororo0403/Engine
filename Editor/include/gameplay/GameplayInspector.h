@@ -83,12 +83,6 @@ class GameplayInspector {
 	SceneObjectId GetRespawnFrameRequest() const;
 
 	/// <summary>
-	/// このフレームで復帰先を塞ぐColliderの選択を要求した物体を取得する
-	/// </summary>
-	/// <returns>Inspectorの表示対象ID。要求なしは0。検索と選択は描画後に行う</returns>
-	SceneObjectId GetRespawnBlockersRequest() const;
-
-	/// <summary>
 	/// このフレームにコピー済みの位置を復帰先へ貼り付けることを要求した物体を取得する
 	/// </summary>
 	/// <returns>Inspectorの表示対象ID。要求なしは0。貼り付けは描画後に行う</returns>
@@ -119,5 +113,4 @@ class GameplayInspector {
 	FollowTargetPicker targetPicker_;
 	SceneObjectId respawnPasteRequest_ = 0;
 	SceneObjectId respawnFrameRequest_ = 0;
-	SceneObjectId respawnBlockersRequest_ = 0;
 };
