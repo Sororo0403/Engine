@@ -136,28 +136,17 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 	ImGui::SameLine();
 	ImGui::Checkbox("Snap", &snapping_);
 	ImGui::SetItemTooltip("Snap gizmo edits and model drops. Drops use the "
-	                      "Move step in world coordinates.");
-	ImGui::SameLine();
-	ImGui::BeginDisabled(!multiple);
-	const bool activePivot =
-	    !multiple || pivotMode_ == SelectionPivot::Mode::ACTIVE;
-
-	if (ImGui::Button(activePivot ? "Active###GizmoPivot"
-	                              : "Center###GizmoPivot")) {
-		SetPivotMode(pivotMode_ == SelectionPivot::Mode::CENTER
-		                 ? SelectionPivot::Mode::ACTIVE
-		                 : SelectionPivot::Mode::CENTER);
-	}
-
-	ImGui::EndDisabled();
-	ImGui::SetItemTooltip(
-	    multiple
-	        ? "Center: mean of object origins. Active: active object's origin."
-	        : "A single object uses its own origin.");
-	ImGui::SameLine();
-
-	if (ImGui::Button("Snap Settings")) {
+	                      "Move step in world coordinates. Right-click to edit snap settings.");
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup("GizmoSnapSettings");
+	if (multiple) {
+		ImGui::SameLine();
+		const bool activePivot = pivotMode_ == SelectionPivot::Mode::ACTIVE;
+		if (ImGui::Button(activePivot ? "Active###GizmoPivot" : "Center###GizmoPivot")) {
+			SetPivotMode(activePivot ? SelectionPivot::Mode::CENTER
+			                        : SelectionPivot::Mode::ACTIVE);
+		}
+		ImGui::SetItemTooltip("Center: mean of object origins. Active: active object's origin.");
 	}
 
 	ImGui::EndDisabled();

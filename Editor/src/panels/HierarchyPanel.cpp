@@ -9,6 +9,7 @@
 #include "selection/EditorSelection.h"
 
 #include <imgui.h>
+#include <imgui_stdlib.h>
 
 #include <algorithm>
 #include <format>
@@ -106,170 +107,150 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	revealRequested_ = false;
 
-	ui.InputText("Search", filter_.text);
+	const bool filtersActive = filter_.hiddenOnly || pickingDisabledOnly_ ||
+	                           filter_.component != HierarchyFilter::Component::ALL;
+	if (ui.Button(filtersActive ? "Options*###HierarchyOptionsButton"
+	                            : "Options###HierarchyOptionsButton"))
+		ImGui::OpenPopup("HierarchyOptions");
+	ImGui::SetItemTooltip("%zu selected. Filters, sorting, and object actions.",
+	                      selection.GetCount());
+	ui.SameLine();
+	ImGui::SetNextItemWidth(-1.f);
+	ImGui::InputTextWithHint("##HierarchySearch", "Search", &filter_.text);
 	ImGui::SetItemTooltip(
 	    "Search by name, tag:Player for an exact tag, or id:42 for an exact ID.");
 
-	ui.SameLine();
-	ui.BeginDisabled(filter_.text.empty());
+	if (ImGui::BeginPopup("HierarchyOptions")) {
+		ui.BeginDisabled(filter_.text.empty());
 
-	if (ui.Button("Clear")) {
-		// 検索だけを解除し、範囲選択の基準は保持する
-		filter_.text.clear();
-	}
-
-	ui.EndDisabled();
-
-	ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
-	if (previousFilters_) {
-		ui.SameLine();
-		if (ui.Button("Restore Filters")) {
-			filter_ = std::move(previousFilters_->filter);
-			pickingDisabledOnly_ = previousFilters_->pickingDisabledOnly;
-			previousFilters_.reset();
-			scrollToId_ = activeId;
+		if (ui.MenuItem("Clear Search", nullptr, true)) {
+			// 検索だけを解除し、範囲選択の基準は保持する
+			filter_.text.clear();
 		}
-		ImGui::SetItemTooltip("Restore the filters cleared to reveal an object.");
-	}
 
-	ImGui::Checkbox("Scene picking disabled only", &pickingDisabledOnly_);
-	using Component = HierarchyFilter::Component;
-	struct ComponentOption {
-		Component component;
-		const char *label;
-	};
-	constexpr ComponentOption options[] = {
-	    {Component::ALL, "All objects"},
-	    {Component::ANIMATION_PLAYER, "Animation Player"},
-	    {Component::ANIMATOR, "Animator"},
-	    {Component::AUDIO_LISTENER, "Audio Listener"},
-	    {Component::AUDIO_SOURCE, "Audio Source"},
-	    {Component::CAMERA, "Camera"},
-	    {Component::CANVAS, "Canvas"},
-	    {Component::CHARACTER, "Character Controller"},
-	    {Component::BOX_COLLIDER, "Collider"},
-	    {Component::COLOR_TINT, "Color Tint"},
-	    {Component::DIRECTIONAL_LIGHT, "Directional Light"},
-	    {Component::FOLLOW_CAMERA, "Follow Camera"},
-	    {Component::LUA_SCRIPT, "Lua Script"},
-	    {Component::MESH, "Mesh"},
-	    {Component::MESH_RENDERER, "Mesh Renderer"},
-	    {Component::MOTION_PATH, "Motion Path"},
-	    {Component::PARTICLE_EMITTER, "Particle Emitter"},
-	    {Component::POINT_LIGHT, "Point Light"},
-	    {Component::PREFAB_INSTANCE, "Prefab Instance"},
-	    {Component::RECT_TRANSFORM, "Rect Transform"},
-	    {Component::RESPAWN, "Respawn"},
-	    {Component::RIGID_BODY, "Rigid Body"},
-	    {Component::SPOT_LIGHT, "Spot Light"},
-	    {Component::TRANSFORM_ANIMATION, "Transform Animation"},
-	    {Component::TRIGGER_ACTIONS, "Trigger Actions"},
-	    {Component::UI_BUTTON, "UI Button"},
-	    {Component::UI_IMAGE, "UI Image"},
-	    {Component::UI_TEXT, "UI Text"},
-	    {Component::PRIMARY_CAMERA, "Primary Camera"},
-	    {Component::CHARACTERS_WITHOUT_COLLIDER, "Characters without Collider"},
-	    {Component::INCOMPLETE_RENDERING, "Incomplete Mesh / Renderer"},
-	    {Component::MODELS_WITHOUT_COLLIDER, "Models without Collider"},
-	};
-	const char *componentLabel = options[0].label;
-	for (const auto &option : options) {
-		if (option.component == filter_.component) {
-			componentLabel = option.label;
-			break;
+		ui.EndDisabled();
+
+		ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
+		if (previousFilters_) {
+			if (ui.MenuItem("Restore Filters", nullptr, true)) {
+				filter_ = std::move(previousFilters_->filter);
+				pickingDisabledOnly_ = previousFilters_->pickingDisabledOnly;
+				previousFilters_.reset();
+				scrollToId_ = activeId;
+			}
+			ImGui::SetItemTooltip("Restore the filters cleared to reveal an object.");
 		}
-	}
 
-	if (ImGui::BeginCombo("Component", componentLabel, ImGuiComboFlags_HeightLarge)) {
+		ImGui::Checkbox("Scene picking disabled only", &pickingDisabledOnly_);
+		using Component = HierarchyFilter::Component;
+		struct ComponentOption {
+			Component component;
+			const char *label;
+		};
+		constexpr ComponentOption options[] = {
+		    {Component::ALL, "All objects"},
+		    {Component::ANIMATION_PLAYER, "Animation Player"},
+		    {Component::ANIMATOR, "Animator"},
+		    {Component::AUDIO_LISTENER, "Audio Listener"},
+		    {Component::AUDIO_SOURCE, "Audio Source"},
+		    {Component::CAMERA, "Camera"},
+		    {Component::CANVAS, "Canvas"},
+		    {Component::CHARACTER, "Character Controller"},
+		    {Component::BOX_COLLIDER, "Collider"},
+		    {Component::COLOR_TINT, "Color Tint"},
+		    {Component::DIRECTIONAL_LIGHT, "Directional Light"},
+		    {Component::FOLLOW_CAMERA, "Follow Camera"},
+		    {Component::LUA_SCRIPT, "Lua Script"},
+		    {Component::MESH, "Mesh"},
+		    {Component::MESH_RENDERER, "Mesh Renderer"},
+		    {Component::MOTION_PATH, "Motion Path"},
+		    {Component::PARTICLE_EMITTER, "Particle Emitter"},
+		    {Component::POINT_LIGHT, "Point Light"},
+		    {Component::PREFAB_INSTANCE, "Prefab Instance"},
+		    {Component::RECT_TRANSFORM, "Rect Transform"},
+		    {Component::RESPAWN, "Respawn"},
+		    {Component::RIGID_BODY, "Rigid Body"},
+		    {Component::SPOT_LIGHT, "Spot Light"},
+		    {Component::TRANSFORM_ANIMATION, "Transform Animation"},
+		    {Component::TRIGGER_ACTIONS, "Trigger Actions"},
+		    {Component::UI_BUTTON, "UI Button"},
+		    {Component::UI_IMAGE, "UI Image"},
+		    {Component::UI_TEXT, "UI Text"},
+		    {Component::PRIMARY_CAMERA, "Primary Camera"},
+		    {Component::CHARACTERS_WITHOUT_COLLIDER, "Characters without Collider"},
+		    {Component::INCOMPLETE_RENDERING, "Incomplete Mesh / Renderer"},
+		    {Component::MODELS_WITHOUT_COLLIDER, "Models without Collider"},
+		};
+		const char *componentLabel = options[0].label;
 		for (const auto &option : options) {
-			if (option.component == Component::PRIMARY_CAMERA) {
-				ImGui::Separator();
-			}
-
-			const bool selected = option.component == filter_.component;
-			if (ImGui::Selectable(option.label, selected)) {
-				filter_.component = option.component;
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
+			if (option.component == filter_.component) {
+				componentLabel = option.label;
+				break;
 			}
 		}
-		ImGui::EndCombo();
-	}
 
-	int sort = static_cast<int>(sortMode_);
+		ImGui::SetNextItemWidth(185.f);
+		if (ImGui::BeginCombo("Component", componentLabel, ImGuiComboFlags_HeightLarge)) {
+			for (const auto &option : options) {
+				if (option.component == Component::PRIMARY_CAMERA) {
+					ImGui::Separator();
+				}
 
-	if (ImGui::Combo("Sort", &sort, "Creation order\0Name A-Z\0Name Z-A\0")) {
-		sortMode_ = static_cast<SortMode>(sort);
-		// 並び順を変えた後の範囲選択は、現在のアクティブ物体を基準にする
-		rangeAnchorId_ = selection.GetActiveId();
-		scrollToId_ = selection.GetActiveId();
-	}
-
-	ImGui::SetItemTooltip("Names ignore ASCII letter case; ties keep creation "
-	                      "order. Selection is kept.");
-	const SceneObject *active = scene.FindObject(selection.GetActiveId());
-
-	if (active) {
-		const std::string_view name = active->name.empty()
-		                                  ? std::string_view{"Object"}
-		                                  : std::string_view{active->name};
-
-		ui.Text(std::format("Active: {}", name));
-	} else {
-		ui.Text("Active: None");
-	}
-
-	std::size_t filteredCount = 0;
-
-	for (const SceneObjectId id : selection.GetIds()) {
-		const SceneObject *object = scene.FindObject(id);
-
-		if (!object) {
-			continue;
+				const bool selected = option.component == filter_.component;
+				if (ImGui::Selectable(option.label, selected)) {
+					filter_.component = option.component;
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
 		}
 
-		if (!MatchesFilters(id, *object)) {
-			++filteredCount;
+		int sort = static_cast<int>(sortMode_);
+
+		ImGui::SetNextItemWidth(185.f);
+		if (ImGui::Combo("Sort", &sort, "Creation order\0Name A-Z\0Name Z-A\0")) {
+			sortMode_ = static_cast<SortMode>(sort);
+			// 並び順を変えた後の範囲選択は、現在のアクティブ物体を基準にする
+			rangeAnchorId_ = selection.GetActiveId();
+			scrollToId_ = selection.GetActiveId();
 		}
+
+		ImGui::SetItemTooltip("Names ignore ASCII letter case; ties keep creation "
+		                      "order. Selection is kept.");
+		ImGui::Separator();
+		ui.BeginDisabled(!editable);
+
+		if (ui.MenuItem("Create Empty", nullptr, true)) {
+			result.action = Action::CREATE_EMPTY;
+		}
+		if (ui.MenuItem("Create Box", nullptr, true)) {
+			result.action = Action::CREATE_BOX;
+		}
+
+		ui.BeginDisabled(selection.GetCount() == 0);
+
+		if (ui.MenuItem("Delete Selected", nullptr, true)) {
+			result.action = Action::DELETE_OBJECTS;
+		}
+
+		ui.EndDisabled();
+
+		ui.BeginDisabled(scenePickingDisabled_.empty() && !pickingDisabledOnly_);
+
+		if (ui.MenuItem("Enable All Scene Picking", nullptr, true) && editable) {
+			scenePickingDisabled_.clear();
+			pickingDisabledOnly_ = false;
+		}
+
+		ui.EndDisabled();
+		ui.EndDisabled();
+
+		if (ui.MenuItem("Invert Listed", nullptr, !GetVisibleIds(scene).empty()))
+			result.selectionChanged |= InvertVisible(scene, selection);
+		ImGui::EndPopup();
 	}
-
-	// 選択状態に関係なく行数を保ち、クリック中に一覧の位置を動かさない
-	ui.Text(std::format("Selected: {} | filtered: {}", selection.GetCount(),
-	                    filteredCount));
-	ImGui::SetItemTooltip("Up/Down and Home/End navigate the filtered list; "
-	                      "Shift selects a range. Ctrl+click toggles objects.");
-
-	ui.BeginDisabled(!editable);
-
-	if (ui.Button("Create Empty")) {
-		result.action = Action::CREATE_EMPTY;
-	}
-
-	ui.SameLine();
-
-	if (ui.Button("Create Box")) {
-		result.action = Action::CREATE_BOX;
-	}
-
-	ui.BeginDisabled(selection.GetCount() == 0);
-
-	if (ui.Button("Delete Selected")) {
-		result.action = Action::DELETE_OBJECTS;
-	}
-
-	ui.EndDisabled();
-
-	ui.BeginDisabled(scenePickingDisabled_.empty() && !pickingDisabledOnly_);
-
-	if (ui.Button("Enable All Scene Picking") && editable) {
-		scenePickingDisabled_.clear();
-		pickingDisabledOnly_ = false;
-	}
-
-	ui.EndDisabled();
-	ui.EndDisabled();
-
 	// 外部から選ばれた子を表示するときは、祖先の折りたたみを解除する。
 	if (scrollToId_ != 0) {
 		auto parent = scene.FindObject(scrollToId_)->parentId;
@@ -284,16 +265,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	const auto visibleIds = GetVisibleIds(scene);
-	ui.BeginDisabled(visibleIds.empty());
-
-	if (ui.Button("Invert Listed")) {
-		result.selectionChanged |= InvertVisible(scene, selection);
-	}
-
-	ui.EndDisabled();
-
-	ui.Separator();
-
 	const auto &objects = scene.GetObjects();
 
 	const bool drawObjects = ui.BeginChild("HierarchyObjects", 0.0f, 0.0f);

@@ -450,7 +450,19 @@ bool InspectorPanel::Draw(
 	changed |= TransformAnimationInspector{}.Draw(ui, inspectedObjectId,
 	                                              *object, history);
 
-	if (object->mesh && ui.CollapsingHeader("Mesh")) {
+	bool meshOpen = false;
+	if (object->mesh) {
+		meshOpen = ui.CollapsingHeader("Mesh");
+		ImGui::SetItemTooltip("Right-click for mesh actions.");
+		if (ImGui::BeginPopupContextItem("MeshActions")) {
+			if (ui.MenuItem("Clear Mesh Reference", nullptr, !object->mesh->modelPath.empty()))
+				modelRequest_ = {inspectedObjectId, {}};
+			if (ui.MenuItem("Remove Mesh", nullptr, true))
+				objectRequest_ = {ObjectAction::REMOVE_MESH, inspectedObjectId};
+			ImGui::EndPopup();
+		}
+	}
+	if (meshOpen) {
 		const auto label = std::format(
 		    "{}###MeshAsset{}",
 		    object->mesh->modelPath.empty()
@@ -485,18 +497,20 @@ bool InspectorPanel::Draw(
 			changed |= history.SetMesh(inspectedObjectId, std::move(mesh));
 		}
 
-		if (ImGui::Button("Clear Mesh Reference")) {
-			modelRequest_ = {inspectedObjectId, {}};
-		}
-
 		ImGui::EndDisabled();
-
-		if (ui.Button("Remove Mesh")) {
-			objectRequest_ = {ObjectAction::REMOVE_MESH, inspectedObjectId};
-		}
 	}
 
-	if (object->meshRenderer && ui.CollapsingHeader("Mesh Renderer")) {
+	bool rendererOpen = false;
+	if (object->meshRenderer) {
+		rendererOpen = ui.CollapsingHeader("Mesh Renderer");
+		ImGui::SetItemTooltip("Right-click for renderer actions.");
+		if (ImGui::BeginPopupContextItem("MeshRendererActions")) {
+			if (ui.MenuItem("Remove Mesh Renderer", nullptr, true))
+				objectRequest_ = {ObjectAction::REMOVE_MESH_RENDERER, inspectedObjectId};
+			ImGui::EndPopup();
+		}
+	}
+	if (rendererOpen) {
 		bool visible = object->meshRenderer->visible;
 
 		if (ImGui::Checkbox("Visible", &visible)) {
@@ -548,10 +562,6 @@ bool InspectorPanel::Draw(
 			}
 		}
 
-		if (ui.Button("Remove Mesh Renderer")) {
-			objectRequest_ = {ObjectAction::REMOVE_MESH_RENDERER,
-			                  inspectedObjectId};
-		}
 	}
 
 	changed |=

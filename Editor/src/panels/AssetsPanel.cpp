@@ -18,6 +18,7 @@
 #include <exception>
 #include <format>
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <iterator>
 #include <set>
 #include <stdexcept>
@@ -446,7 +447,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		refreshAfterExplorer_ = true;
 		explorerTookFocus_ = false;
 	};
-	const bool refreshClicked = ui.Button("Refresh");
+	bool refreshRequested = false;
 	if (refreshAfterExplorer_) {
 		DWORD foregroundProcess = 0;
 		GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
@@ -458,25 +459,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 	const bool returnedFromExplorer =
 	    !refreshAfterExplorer_ && std::exchange(explorerTookFocus_, false);
-	if (refreshClicked || returnedFromExplorer) {
+	if (returnedFromExplorer) {
 		refresh();
-	}
-	ui.SameLine();
-	ui.BeginDisabled(assets.GetRootDirectory().empty());
-	if (ui.Button("Open in Explorer")) {
-		unavailableRevealPath_.clear();
-		if (ShellUtils::OpenDirectory(assets.GetRootDirectory() / currentDirectory_, revealMessage_)) {
-			trackExplorer();
-		}
-	}
-	ui.EndDisabled();
-	ImGui::SetItemTooltip("Open the current Assets folder in Windows Explorer.");
-	if (canReturnToExport) {
-		ui.SameLine();
-		if (ui.Button("Return to Export Check")) {
-			exportCheckRequested_ = true;
-		}
-		ImGui::SetItemTooltip("Run the check again with the current export draft.");
 	}
 
 	if (!revealPath_.empty()) {
@@ -592,66 +576,31 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 
-	ui.SameLine();
-	ui.BeginDisabled(currentDirectory_.empty() && filter_.empty());
-
-	if (ui.Button("Root")) {
-		OpenDirectory({});
+	if (ui.Button("Actions")) {
+		ImGui::OpenPopup("AssetActions");
 	}
+	const auto directoryLabel = PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_);
+	ImGui::SetItemTooltip("%s", directoryLabel.c_str());
 
-	acceptFolder(assets.GetRootDirectory());
-	ui.EndDisabled();
-	ui.SameLine();
-	ui.BeginDisabled(currentDirectory_.empty());
-
-	if (ui.Button("Up")) {
-		OpenDirectory(currentDirectory_.parent_path());
-	} else if (!currentDirectory_.empty()) {
-		acceptFolder(assets.GetRootDirectory() / currentDirectory_.parent_path());
+	if (!currentDirectory_.empty() || !filter_.empty()) {
+		ui.SameLine();
+		if (ui.Button("Root"))
+			OpenDirectory({});
+		acceptFolder(assets.GetRootDirectory());
 	}
-
-	ui.EndDisabled();
-	ui.SameLine();
-	ui.BeginDisabled(!canWriteAssets);
-
-	if (ui.Button("New Folder")) {
-		folderCreateRequested_ = true;
+	if (!currentDirectory_.empty()) {
+		ui.SameLine();
+		if (ui.Button("Up"))
+			OpenDirectory(currentDirectory_.parent_path());
+		else
+			acceptFolder(assets.GetRootDirectory() / currentDirectory_.parent_path());
 	}
-
-	ui.EndDisabled();
-	ui.BeginDisabled(!canWriteAssets);
-
-	ui.BeginDisabled(!canCreatePrefab);
-
-	if (ui.Button("Create Prefab from Selection")) {
-		prefabCreateRequested_ = true;
+	if (!currentDirectory_.empty()) {
+		ui.SameLine();
+		const auto folder = PathUtils::ToUtf8(currentDirectory_.filename());
+		ImGui::TextUnformatted(folder.c_str());
+		ImGui::SetItemTooltip("%s", directoryLabel.c_str());
 	}
-
-	ui.EndDisabled();
-
-	if (ui.Button("Create Script"))
-		scriptCreateRequested_ = true;
-	if (ui.Button("Create Animation Clip"))
-		clipCreateRequested_ = true;
-	if (ui.Button("Import Texture")) {
-		textureImportRequested_ = true;
-	}
-
-	ui.SameLine();
-
-	if (ui.Button("Import Model")) {
-		modelImportRequested_ = true;
-	}
-
-	ui.SameLine();
-
-	if (ui.Button("Import Audio")) {
-		audioImportRequested_ = true;
-	}
-
-	ui.EndDisabled();
-	ui.Text(PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_));
-	ImGui::SetNextItemWidth(160.0f);
 
 	const auto typeLabel = [](AssetType type) {
 		switch (type) {
@@ -678,7 +627,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		return "";
 	};
 
-	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
+	const float filterWidth = ImGui::GetContentRegionAvail().x;
+	ImGui::SetNextItemWidth(filterWidth * .42f);
+	if (ImGui::BeginCombo("##AssetType", typeLabel(type_))) {
 		for (const auto type :
 		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
 		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS,
@@ -691,7 +642,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ImGui::EndCombo();
 	}
 
-	const bool searchChanged = ui.InputText("Search", filter_);
+	ui.SameLine();
+	ImGui::SetNextItemWidth(-1.f);
+	const bool searchChanged = ImGui::InputTextWithHint("##AssetSearch", "Search", &filter_);
 	ImGui::SetItemTooltip("Search by name or paste a file or folder path.");
 	bool scopeChanged = false;
 	if (!filter_.empty()) {
@@ -716,7 +669,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (previousView_ && unavailableRevealPath_.empty()) {
-		ui.SameLine();
 		const auto *label = !previousView_->results.empty() ? "Back to Results"
 		                  : !previousView_->search.empty() ? "Back to Search"
 		                                                   : "Back to Folder";
@@ -753,8 +705,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			scrollToSelected_ = !selectedItems_.empty();
 			previousView_ = std::move(previous);
 		}
-	} else if (filter_.empty() && type_ != AssetType::AUDIO) {
-		ImGui::TextDisabled("Double-click a folder to open it.");
 	}
 
 	auto search = NormalizeSearch(filter_);
@@ -1010,17 +960,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	const auto contentSize = ui.GetContentSize();
-	const float footerHeight =
-	    (!mixedTypes && type_ == AssetType::AUDIO
-	         ? ImGui::GetFrameHeightWithSpacing()
-	         : ImGui::GetTextLineHeightWithSpacing() +
-	               ImGui::GetFrameHeightWithSpacing() *
-	                   (mixedTypes || type_ == AssetType::TEXTURE ? 6.0f : 4.0f)) +
-	    ImGui::GetStyle().ItemSpacing.y;
-	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
-
-	const bool drawEntries = ui.BeginChild("AssetEntries", 0.0f, listHeight);
+	const bool drawEntries = ui.BeginChild("AssetEntries", 0.0f, 0.0f);
 	std::filesystem::path nextDirectory;
 	bool openRequested = false;
 
@@ -1328,192 +1268,227 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (selectedItems_.size() > 1) {
-		ui.Text(std::format("{} items selected", selectedItems_.size()));
-	}
-	if (canBatchReload()) {
-		ui.BeginDisabled(!canEditAssets);
-		if (ui.Button("Reload Selected Models and Textures")) {
-			batchReloadRequested = true;
+	if (ImGui::BeginPopup("AssetActions")) {
+		if (ui.MenuItem("Refresh", nullptr, true))
+			refreshRequested = true;
+		if (ui.MenuItem("Open in Explorer", nullptr, !assets.GetRootDirectory().empty())) {
+			unavailableRevealPath_.clear();
+			if (ShellUtils::OpenDirectory(assets.GetRootDirectory() / currentDirectory_, revealMessage_))
+				trackExplorer();
 		}
-		ui.EndDisabled();
-		ImGui::SetItemTooltip("Refresh Assets before reloading models and textures, including selected subfolders.");
-	}
+		if (canReturnToExport && ui.MenuItem("Return to Export Check", nullptr, true))
+			exportCheckRequested_ = true;
 
-	if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
-		const auto displayPath =
-		    selectedPath_.lexically_relative(assets.GetRootDirectory());
-
-		ui.Text(PathUtils::ToUtf8(displayPath));
-	}
-
-	if (selectedType == AssetType::MODEL) {
-		ui.BeginDisabled(selectedPath_.empty());
-
-		if (ui.Button("Add to Scene")) {
-			requestedPath = selectedPath_;
+		if (ImGui::BeginMenu("Create", canWriteAssets)) {
+			if (ui.MenuItem("Folder", nullptr, true))
+				folderCreateRequested_ = true;
+			if (ui.MenuItem("Prefab from Selection", nullptr, canCreatePrefab))
+				prefabCreateRequested_ = true;
+			if (ui.MenuItem("Script", nullptr, true))
+				scriptCreateRequested_ = true;
+			if (ui.MenuItem("Animation Clip", nullptr, true))
+				clipCreateRequested_ = true;
+			ImGui::EndMenu();
 		}
-
-		ui.BeginDisabled(!canEditAssets || !canReplaceMesh);
-
-		if (ui.Button("Replace Mesh of Selection")) {
-			meshReplacementPath_ = selectedPath_;
+		if (ImGui::BeginMenu("Import", canWriteAssets)) {
+			if (ui.MenuItem("Texture", nullptr, true))
+				textureImportRequested_ = true;
+			if (ui.MenuItem("Model", nullptr, true))
+				modelImportRequested_ = true;
+			if (ui.MenuItem("Audio", nullptr, true))
+				audioImportRequested_ = true;
+			ImGui::EndMenu();
 		}
+		if (!selectedItems_.empty() || selectedType == AssetType::TEXTURE) {
+			ImGui::Separator();
+			if (selectedItems_.size() > 1) {
+				ui.Text(std::format("{} items selected", selectedItems_.size()));
+			}
+			if (canBatchReload()) {
+				ui.BeginDisabled(!canEditAssets);
+				if (ui.MenuItem("Reload Selected Models and Textures", nullptr, true)) {
+					batchReloadRequested = true;
+				}
+				ui.EndDisabled();
+				ImGui::SetItemTooltip("Refresh Assets before reloading models and textures, including selected subfolders.");
+			}
 
-		ui.EndDisabled();
+			if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
+				const auto displayPath =
+				    selectedPath_.lexically_relative(assets.GetRootDirectory());
 
-		ui.BeginDisabled(!canEditAssets);
+				ui.Text(PathUtils::ToUtf8(displayPath));
+			}
 
-		if (ui.Button("Reload Model")) {
-			modelReloadPath_ = selectedPath_;
-		}
+			if (selectedType == AssetType::MODEL) {
+				ui.BeginDisabled(selectedPath_.empty());
 
-		ui.EndDisabled();
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::TEXTURE) {
-		ui.BeginDisabled(selectedPath_.empty());
-
-		if (ui.Button("Preview Image")) {
-			texturePreviewPath_ = selectedPath_;
-		}
-
-		ui.BeginDisabled(!canEditAssets);
-
-		if (ui.Button("Reload Texture")) {
-			textureReloadPath_ = selectedPath_;
-		}
-
-		ui.EndDisabled();
-
-		ui.EndDisabled();
-		ImGui::InputInt("Texture Slot", &textureSlot_);
-
-		if (!textureSlots.empty() &&
-		    ImGui::BeginCombo("Model Slots",
-		                      std::to_string(textureSlot_).c_str())) {
-			if (ImGui::BeginTable("TextureSlotChoices", 2,
-			                      ImGuiTableFlags_RowBg)) {
-				ImGui::TableSetupColumn(
-				    "Slot", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-				ImGui::TableSetupColumn("Material / Objects");
-				ImGui::TableHeadersRow();
-
-				for (const auto &choice : textureSlots) {
-					if (choice.index < 0) {
-						continue;
-					}
-
-					ImGui::TableNextRow();
-					ImGui::TableNextColumn();
-					ImGui::PushID(choice.index);
-					const auto label = std::to_string(choice.index);
-
-					if (ImGui::Selectable(
-					        label.c_str(), textureSlot_ == choice.index,
-					        ImGuiSelectableFlags_SpanAllColumns)) {
-						textureSlot_ = choice.index;
-					}
-
-					ImGui::PopID();
-					ImGui::TableNextColumn();
-					ui.Text(std::format("{} | Used: {}/{}{}", choice.name,
-					                    choice.usedBy, choice.selectedCount,
-					                    choice.usedBy == 0 ? " [Unused]" : ""));
+				if (ui.MenuItem("Add to Scene", nullptr, true)) {
+					requestedPath = selectedPath_;
 				}
 
-				ImGui::EndTable();
+				ui.BeginDisabled(!canEditAssets || !canReplaceMesh);
+
+				if (ui.MenuItem("Replace Mesh of Selection", nullptr, true)) {
+					meshReplacementPath_ = selectedPath_;
+				}
+
+				ui.EndDisabled();
+
+				ui.BeginDisabled(!canEditAssets);
+
+				if (ui.MenuItem("Reload Model", nullptr, true)) {
+					modelReloadPath_ = selectedPath_;
+				}
+
+				ui.EndDisabled();
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::TEXTURE) {
+				ui.BeginDisabled(selectedPath_.empty());
+
+				if (ui.MenuItem("Preview Image", nullptr, true)) {
+					texturePreviewPath_ = selectedPath_;
+				}
+
+				ui.BeginDisabled(!canEditAssets);
+
+				if (ui.MenuItem("Reload Texture", nullptr, true)) {
+					textureReloadPath_ = selectedPath_;
+				}
+
+				ui.EndDisabled();
+
+				ui.EndDisabled();
+				ImGui::InputInt("Texture Slot", &textureSlot_);
+
+				if (!textureSlots.empty() &&
+				    ImGui::BeginCombo("Model Slots",
+				                      std::to_string(textureSlot_).c_str())) {
+					if (ImGui::BeginTable("TextureSlotChoices", 2,
+					                      ImGuiTableFlags_RowBg)) {
+						ImGui::TableSetupColumn(
+						    "Slot", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+						ImGui::TableSetupColumn("Material / Objects");
+						ImGui::TableHeadersRow();
+
+						for (const auto &choice : textureSlots) {
+							if (choice.index < 0) {
+								continue;
+							}
+
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							ImGui::PushID(choice.index);
+							const auto label = std::to_string(choice.index);
+
+							if (ImGui::Selectable(
+							        label.c_str(), textureSlot_ == choice.index,
+							        ImGuiSelectableFlags_SpanAllColumns)) {
+								textureSlot_ = choice.index;
+							}
+
+							ImGui::PopID();
+							ImGui::TableNextColumn();
+							ui.Text(std::format("{} | Used: {}/{}{}", choice.name,
+							                    choice.usedBy, choice.selectedCount,
+							                    choice.usedBy == 0 ? " [Unused]" : ""));
+						}
+
+						ImGui::EndTable();
+					}
+
+					ImGui::EndCombo();
+				}
+
+				ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
+				ui.BeginDisabled(selectedPath_.empty());
+
+				if (ui.MenuItem("Assign Texture to Selection", nullptr, true)) {
+					textureSelectionPath_ = selectedPath_;
+				}
+
+				ui.EndDisabled();
+
+				if (ui.MenuItem("Clear Texture Slot", nullptr, true)) {
+					textureSelectionPath_.clear();
+					textureClearRequested_ = true;
+				}
+
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::AUDIO) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+
+				if (ui.MenuItem("Preview Audio", nullptr, true)) {
+					audioPreviewPath_ = selectedPath_;
+				}
+
+				ui.EndDisabled();
+
+				if (!selectedPath_.empty()) {
+					ui.Text(PathUtils::ToUtf8(
+					    selectedPath_.lexically_relative(assets.GetRootDirectory())));
+				}
 			}
 
-			ImGui::EndCombo();
-		}
+			if (selectedType == AssetType::ANIMATION_CLIP) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+				if (ui.MenuItem("Edit Animation Clip", nullptr, true))
+					clipEditPath_ = selectedPath_;
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::SCRIPT) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+				if (ui.MenuItem("Edit Script", nullptr, true))
+					scriptEditPath_ = selectedPath_;
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::SCENE) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
-		ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
-		ui.BeginDisabled(selectedPath_.empty());
+				if (ui.MenuItem("Open Scene", nullptr, true)) {
+					sceneOpenPath_ = selectedPath_;
+				}
+				if (ui.MenuItem("Play Scene", nullptr, true)) {
+					scenePlayPath_ = selectedPath_;
+				}
 
-		if (ui.Button("Assign Texture to Selection")) {
-			textureSelectionPath_ = selectedPath_;
-		}
+				if (ui.MenuItem("Add Objects", nullptr, true)) {
+					sceneAppendPath_ = selectedPath_;
+				}
 
-		ui.EndDisabled();
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::PREFAB) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
-		if (ui.Button("Clear Texture Slot")) {
-			textureSelectionPath_.clear();
-			textureClearRequested_ = true;
-		}
+				if (ui.MenuItem("Add Prefab", nullptr, true)) {
+					prefabAppendPath_ = selectedPath_;
+				}
 
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::AUDIO) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::GAME_SETTINGS) {
+				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
-		if (ui.Button("Preview Audio")) {
-			audioPreviewPath_ = selectedPath_;
-		}
+				if (ui.MenuItem("Load Game Settings", nullptr, true)) {
+					gameSettingsPath_ = selectedPath_;
+				}
 
-		ui.EndDisabled();
+				ui.EndDisabled();
+			} else if (selectedType == AssetType::MODEL || selectedType == AssetType::TEXTURE) {
+				ui.BeginDisabled(selectedPath_.empty());
 
-		if (!selectedPath_.empty()) {
-			ui.SameLine();
-			ui.Text(PathUtils::ToUtf8(
-			    selectedPath_.lexically_relative(assets.GetRootDirectory())));
-		}
-	}
+				if (ui.MenuItem("Select Instances", nullptr, true)) {
+					if (selectedType == AssetType::MODEL) {
+						instanceSelectionPath_ = selectedPath_;
+					} else {
+						textureUsageSelectionPath_ = selectedPath_;
+					}
+				}
 
-	if (selectedType == AssetType::ANIMATION_CLIP) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-		if (ui.Button("Edit Animation Clip"))
-			clipEditPath_ = selectedPath_;
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::SCRIPT) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-		if (ui.Button("Edit Script"))
-			scriptEditPath_ = selectedPath_;
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::SCENE) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-		if (ui.Button("Open Scene")) {
-			sceneOpenPath_ = selectedPath_;
-		}
-		ui.SameLine();
-		if (ui.Button("Play Scene")) {
-			scenePlayPath_ = selectedPath_;
-		}
-
-		if (ui.Button("Add Objects")) {
-			sceneAppendPath_ = selectedPath_;
-		}
-
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::PREFAB) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-		if (ui.Button("Add Prefab")) {
-			prefabAppendPath_ = selectedPath_;
-		}
-
-		ui.EndDisabled();
-	} else if (selectedType == AssetType::GAME_SETTINGS) {
-		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-		if (ui.Button("Load Game Settings")) {
-			gameSettingsPath_ = selectedPath_;
-		}
-
-		ui.EndDisabled();
-	} else if (selectedType != AssetType::AUDIO) {
-		ui.BeginDisabled(selectedPath_.empty());
-
-		if (ui.Button("Select Instances")) {
-			if (selectedType == AssetType::MODEL) {
-				instanceSelectionPath_ = selectedPath_;
-			} else {
-				textureUsageSelectionPath_ = selectedPath_;
+				ImGui::SetItemTooltip(
+				    "Select all objects using this asset, including hidden objects.");
+				ui.EndDisabled();
 			}
-		}
 
-		ImGui::SetItemTooltip(
-		    "Select all objects using this asset, including hidden objects.");
-		ui.EndDisabled();
+		}
+		ImGui::EndPopup();
 	}
 
 	drawBackgroundMenu();
@@ -1552,6 +1527,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			revealMessage_ = "Could not refresh Assets. The selected files were not reloaded.";
 		}
 	}
+	if (refreshRequested && !batchReloadRequested)
+		refresh();
 	ui.EndWindow();
 	return requestedPath;
 }

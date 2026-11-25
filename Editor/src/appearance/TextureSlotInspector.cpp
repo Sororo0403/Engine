@@ -50,25 +50,29 @@ bool TextureSlotInspector::DrawMaterialSlot(SceneObjectId id, std::uint32_t slot
 		ImGui::EndCombo();
 	}
 
-	ImGui::BeginDisabled(assets.GetRootDirectory().empty());
-	if (ImGui::Button("New Material...")) {
+	bool create = false;
+	bool edit = false;
+	if (ImGui::SmallButton("Material Actions"))
+		ImGui::OpenPopup("MaterialActions");
+	if (ImGui::BeginPopup("MaterialActions")) {
+		create = ImGui::MenuItem("New Material...", nullptr, false, !assets.GetRootDirectory().empty());
+		edit = ImGui::MenuItem("Edit Material...", nullptr, false, !assigned.empty());
+		ImGui::EndPopup();
+	}
+	if (create) {
 		editingMaterial_.clear();
 		materialName_ = "New Material";
 		materialDraft_ = {};
 		materialError_.clear();
 		ImGui::OpenPopup("Material");
 	}
-	ImGui::EndDisabled();
-	ImGui::SameLine();
-	ImGui::BeginDisabled(assigned.empty());
-	if (ImGui::Button("Edit Material...")) {
+	if (edit) {
 		editingMaterial_ = assigned;
 		if (MaterialSerializer::Load(assigned, materialDraft_, materialError_))
 			ImGui::OpenPopup("Material");
 		else
 			ImGui::OpenPopup("Material Load Error");
 	}
-	ImGui::EndDisabled();
 	if (ImGui::BeginPopupModal("Material Load Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextWrapped("%s", materialError_.c_str());
 		if (ImGui::Button("Close"))
@@ -180,59 +184,67 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		}
 	};
 
-	editRenderer([](auto &renderer) {
-		return ImGui::DragFloat2("UV Tiling", renderer.uvScale.data(), .01f);
-	});
-	editRenderer([](auto &renderer) {
-		return ImGui::DragFloat2("UV Offset", renderer.uvOffset.data(), .01f);
-	});
-	if (ImGui::TreeNode("Radial Reveal")) {
+	if (ImGui::TreeNode("UV and Effects")) {
 		editRenderer([](auto &renderer) {
-			return ImGui::DragFloat3("World Origin",
-			                        renderer.reveal.originRadius.data(), .1f);
+			return ImGui::DragFloat2("UV Tiling", renderer.uvScale.data(), .01f);
 		});
 		editRenderer([](auto &renderer) {
-			return ImGui::DragFloat("Radius", &renderer.reveal.originRadius[3], .1f);
+			return ImGui::DragFloat2("UV Offset", renderer.uvOffset.data(), .01f);
 		});
-		editRenderer([](auto &renderer) {
-			return ImGui::DragFloat("Edge Width (0 = Off)", &renderer.reveal.feather,
-			                       .01f, 0.f, 100000.f, "%.2f",
-			                       ImGuiSliderFlags_AlwaysClamp);
-		});
+		if (ImGui::TreeNode("Radial Reveal")) {
+			editRenderer([](auto &renderer) {
+				return ImGui::DragFloat3("World Origin",
+				                        renderer.reveal.originRadius.data(), .1f);
+			});
+			editRenderer([](auto &renderer) {
+				return ImGui::DragFloat("Radius", &renderer.reveal.originRadius[3], .1f);
+			});
+			editRenderer([](auto &renderer) {
+				return ImGui::DragFloat("Edge Width (0 = Off)", &renderer.reveal.feather,
+				                       .01f, 0.f, 100000.f, "%.2f",
+				                       ImGuiSliderFlags_AlwaysClamp);
+			});
+			ImGui::TreePop();
+		}
+
+		if (ui.Button("UV Actions"))
+			ImGui::OpenPopup("UVActions");
+		if (ImGui::BeginPopup("UVActions")) {
+			if (ui.MenuItem("Reset UV", nullptr, true)) {
+				const auto before = object.meshRenderer;
+				auto reset = *object.meshRenderer;
+				reset.uvScale = {1.0f, 1.0f};
+				reset.uvOffset = {0.0f, 0.0f};
+				changed |=
+				    history.SetMeshRenderer(id, reset) && object.meshRenderer != before;
+			}
+
+			ui.BeginDisabled(!object.meshRenderer->IsValid());
+
+			if (ui.MenuItem("Copy UV", nullptr, true) && object.meshRenderer->IsValid()) {
+				request.copyUv = true;
+			}
+
+			ui.EndDisabled();
+			ui.BeginDisabled(!canPasteUv || !canApplyUvToSelection);
+
+			if (ui.MenuItem("Paste UV to Selected Objects", nullptr, true) && canPasteUv &&
+			    canApplyUvToSelection) {
+				request.pasteUvToSelection = true;
+			}
+
+			ui.EndDisabled();
+			ui.BeginDisabled(!canApplyUvToSelection);
+
+			if (ui.MenuItem("Apply UV to Selected Objects", nullptr, true) && canApplyUvToSelection) {
+				request.applyUvToSelection = true;
+			}
+
+			ui.EndDisabled();
+			ImGui::EndPopup();
+		}
 		ImGui::TreePop();
 	}
-
-	if (ui.Button("Reset UV")) {
-		const auto before = object.meshRenderer;
-		auto reset = *object.meshRenderer;
-		reset.uvScale = {1.0f, 1.0f};
-		reset.uvOffset = {0.0f, 0.0f};
-		changed |=
-		    history.SetMeshRenderer(id, reset) && object.meshRenderer != before;
-	}
-
-	ui.BeginDisabled(!object.meshRenderer->IsValid());
-
-	if (ui.Button("Copy UV") && object.meshRenderer->IsValid()) {
-		request.copyUv = true;
-	}
-
-	ui.EndDisabled();
-	ui.BeginDisabled(!canPasteUv || !canApplyUvToSelection);
-
-	if (ui.Button("Paste UV to Selected Objects") && canPasteUv &&
-	    canApplyUvToSelection) {
-		request.pasteUvToSelection = true;
-	}
-
-	ui.EndDisabled();
-	ui.BeginDisabled(!canApplyUvToSelection);
-
-	if (ui.Button("Apply UV to Selected Objects") && canApplyUvToSelection) {
-		request.applyUvToSelection = true;
-	}
-
-	ui.EndDisabled();
 
 	{
 		const auto model = !object.HasMesh()
@@ -247,13 +259,8 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			                return models.GetMaterialMeshCount(
 			                           model, binding.first) == 0;
 		                });
-		ui.BeginDisabled(!canClearUnused);
-
-		if (ui.Button("Clear Unused Texture Assignments") && canClearUnused) {
+		if (canClearUnused && ui.Button("Clear Unused Texture Assignments"))
 			request.clearUnusedTextures = true;
-		}
-
-		ui.EndDisabled();
 
 		for (std::size_t slot = 0; slot < count; ++slot) {
 			ImGui::PushID(static_cast<int>(slot));

@@ -119,71 +119,86 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 	if (IsPlaying()) {
 		const auto &runningScene = playSourcePath.empty() ? editingScenePath : playSourcePath;
-		ui.Text(runningScene.empty()
-		            ? "Scene: Untitled Scene"
-		            : "Scene: " + PathUtils::ToUtf8(runningScene.filename()));
-		if (!runningScene.empty()) {
-			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(runningScene).c_str());
-		}
-
-		if (ui.Button("Stop")) {
+		if (ui.Button("Stop"))
 			action = Action::STOP;
-		}
-
+		const auto sourceLabel = runningScene.empty() ? std::string{"Untitled Scene"}
+		                                              : PathUtils::ToUtf8(runningScene);
+		ImGui::SetItemTooltip("%s", sourceLabel.c_str());
 		ImGui::SameLine();
-
-		if (ui.Button("Restart")) {
-			action = Action::RESTART;
-		}
-
-		ImGui::SameLine();
-
-		if (ui.Button(session_.IsPaused() ? "Resume" : "Pause")) {
+		if (ui.Button(session_.IsPaused() ? "Resume" : "Pause"))
 			action = Action::TOGGLE_PAUSE;
-		}
-
 		ImGui::SameLine();
-		ui.BeginDisabled(!session_.IsPaused());
+		if (ui.Button("Options"))
+			ImGui::OpenPopup("GameOptions");
 
-		if (ui.Button("Step")) {
-			action = Action::STEP;
-		}
+		bool pickScript = false;
+		if (ImGui::BeginPopup("GameOptions")) {
+			if (ui.MenuItem("Restart", nullptr, true))
+				action = Action::RESTART;
+			ui.BeginDisabled(!session_.IsPaused());
 
-		ui.EndDisabled();
-		ui.BeginDisabled(!canStart);
-		ImGui::SetNextItemWidth(110.0f);
-		const auto speedLabel = std::format("{:g}x", session_.GetTimeScale());
-
-		if (ImGui::BeginCombo("Playback Speed", speedLabel.c_str())) {
-			for (const float speed : {0.1f, 0.25f, 0.5f, 1.0f}) {
-				const auto label = std::format("{:g}x", speed);
-
-				if (ui.Selectable(label.c_str(),
-				                  session_.GetTimeScale() == speed)) {
-					session_.SetTimeScale(speed);
-				}
+			if (ui.MenuItem("Step", nullptr, true)) {
+				action = Action::STEP;
 			}
 
-			ImGui::EndCombo();
+			ui.EndDisabled();
+			ui.BeginDisabled(!canStart);
+			ImGui::SetNextItemWidth(110.0f);
+			const auto speedLabel = std::format("{:g}x", session_.GetTimeScale());
+
+			if (ImGui::BeginCombo("Playback Speed", speedLabel.c_str())) {
+				for (const float speed : {0.1f, 0.25f, 0.5f, 1.0f}) {
+					const auto label = std::format("{:g}x", speed);
+
+					if (ui.Selectable(label.c_str(),
+					                  session_.GetTimeScale() == speed)) {
+						session_.SetTimeScale(speed);
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+
+			ui.EndDisabled();
+			ui.BeginDisabled(!canUseSelection || !session_.IsInitialScene());
+
+			if (ui.MenuItem("Stop and Select in Editing Scene", nullptr, true)) {
+				action = Action::STOP_AND_SELECT;
+			}
+
+			if (ui.MenuItem("Stop and Keep Selected Transforms", nullptr, true)) {
+				action = Action::STOP_AND_KEEP_TRANSFORMS;
+			}
+
+			ui.EndDisabled();
+			ui.BeginDisabled(!canStart);
+
+			pickScript = scriptToEdit && ui.MenuItem("Edit Script...", nullptr, true);
+			if (const auto *path = session_.GetLoadedScenePath()) {
+				if (ui.MenuItem("Restart Current Scene", nullptr, true)) {
+					action = Action::RESTART_CURRENT_SCENE;
+				}
+				ImGui::SetItemTooltip(
+				    "Restart %s from its entry point. Shared game data is kept.",
+				    PathUtils::ToUtf8(path->filename()).c_str());
+			}
+			if (!playSourcePath.empty()) {
+				if (ui.MenuItem(canRevealPlayObject ? "Stop and Show Source Object"
+				                                  : "Stop and Open Scene", nullptr, true)) {
+					action = Action::STOP_AND_OPEN_SCENE;
+				}
+				ImGui::SetItemTooltip("%s",
+				                      PathUtils::ToUtf8(playSourcePath).c_str());
+			}
+			if (ui.MenuItem(maximized_ ? "Restore Layout" : "Maximize Game", nullptr, true)) {
+				maximizeRequested_ = true;
+			}
+
+			ui.EndDisabled();
+			ImGui::EndPopup();
 		}
-
-		ui.EndDisabled();
-		ui.BeginDisabled(!canUseSelection || !session_.IsInitialScene());
-
-		if (ui.Button("Stop and Select in Editing Scene")) {
-			action = Action::STOP_AND_SELECT;
-		}
-
-		if (ui.Button("Stop and Keep Selected Transforms")) {
-			action = Action::STOP_AND_KEEP_TRANSFORMS;
-		}
-
-		ui.EndDisabled();
-		ui.BeginDisabled(!canStart);
-
-		if (scriptToEdit && ui.Button("Edit Script...")) {
+		if (pickScript)
 			ImGui::OpenPopup("PlayScriptPicker");
-		}
 		if (scriptToEdit && ImGui::BeginPopup("PlayScriptPicker")) {
 			std::set<std::filesystem::path> scripts;
 			for (const auto &[id, object] : session_.GetScene().GetObjects()) {
@@ -212,28 +227,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			}
 			ImGui::EndPopup();
 		}
-
-		if (const auto *path = session_.GetLoadedScenePath()) {
-			if (ui.Button("Restart Current Scene")) {
-				action = Action::RESTART_CURRENT_SCENE;
-			}
-			ImGui::SetItemTooltip(
-			    "Restart %s from its entry point. Shared game data is kept.",
-			    PathUtils::ToUtf8(path->filename()).c_str());
-		}
-		if (!playSourcePath.empty()) {
-			if (ui.Button(canRevealPlayObject ? "Stop and Show Source Object"
-			                                  : "Stop and Open Scene")) {
-				action = Action::STOP_AND_OPEN_SCENE;
-			}
-			ImGui::SetItemTooltip("%s",
-			                      PathUtils::ToUtf8(playSourcePath).c_str());
-		}
-		if (ui.Button(maximized_ ? "Restore Layout" : "Maximize Game")) {
-			maximizeRequested_ = true;
-		}
-
-		ui.EndDisabled();
 	} else {
 		if (previewCamera_ != 0 && editingScene) {
 			const auto *object = editingScene->FindObject(previewCamera_);
@@ -245,26 +238,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		ui.BeginDisabled(!canStart);
 
-		if (previewCamera_ != 0) {
-			const auto *object = editingScene
-			                         ? editingScene->FindObject(previewCamera_)
-			                         : nullptr;
-			ui.Text(std::format("Preview Camera: {} (ID {})",
-			                    object && !object->name.empty() ? object->name
-			                                                    : "Camera",
-			                    previewCamera_));
-
-			if (ui.Button("Preview Primary Camera")) {
-				SetPreviewCamera(0);
-			}
-		}
-
-		ui.Checkbox("Maximize on Play", maximizeOnPlay_);
-		ui.Checkbox("Start Paused", startPaused_);
-		ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
-		ui.Checkbox("Load Test Save", loadTestSave_);
-		ImGui::SetItemTooltip("Read the exported game's Editor test save at Play. Changes stay in memory.");
-
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
 		}
@@ -272,45 +245,70 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		    "%s", editingScenePath.empty() ? "Untitled Scene"
 		                                  : PathUtils::ToUtf8(editingScenePath).c_str());
 
-		const auto drawPlayScene = [&](const char *label, Action requested,
-		                               const std::filesystem::path &path,
-		                               bool usesEditingScene,
-		                               bool usesLastCamera = false) {
-			std::error_code status;
-			const bool available = usesEditingScene ||
-			                       std::filesystem::is_regular_file(
-			                           PathUtils::ResolveFromExecutable(path), status);
-			ui.BeginDisabled(!available);
-			if (ui.Button(label)) {
-				action = requested;
-			}
-			ui.EndDisabled();
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip |
-			                         ImGuiHoveredFlags_AllowWhenDisabled)) {
-				const auto name = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
-				const auto *tooltip = !available ? "Scene file is unavailable.\n%s"
-				                      : usesLastCamera ? "Play %s with the same camera as last time."
-				                                       : "Start a new play session in %s.";
-				ImGui::SetTooltip(tooltip, name.c_str());
-			}
-		};
+		ui.SameLine();
+		if (ui.Button("Options"))
+			ImGui::OpenPopup("GameOptions");
+		if (ImGui::BeginPopup("GameOptions")) {
+			if (previewCamera_ != 0) {
+				const auto *object = editingScene
+				                         ? editingScene->FindObject(previewCamera_)
+				                         : nullptr;
+				ui.Text(std::format("Preview Camera: {} (ID {})",
+				                    object && !object->name.empty() ? object->name
+				                                                    : "Camera",
+				                    previewCamera_));
 
-		if (!startupScenePath.empty()) {
-			ui.SameLine();
-			drawPlayScene("Play Startup Scene", Action::PLAY_STARTUP, startupScenePath,
-			              !editingScenePath.empty() &&
-			                  PathUtils::IsSameFile(startupScenePath, editingScenePath));
-		}
-		const bool lastUsesEditingScene = lastPlayScenePath.empty() ||
-		    (!editingScenePath.empty() && PathUtils::IsSameFile(lastPlayScenePath, editingScenePath));
-		const bool lastUsesStartupScene = !lastPlayScenePath.empty() && !startupScenePath.empty() &&
-		    PathUtils::IsSameFile(lastPlayScenePath, startupScenePath);
-		if (lastPlayCameraOverride != 0 ||
-		    (!lastUsesEditingScene && !lastUsesStartupScene)) {
-			drawPlayScene("Play Last Scene", Action::PLAY_LAST_SCENE, lastPlayScenePath,
-			              lastUsesEditingScene, lastPlayCameraOverride != 0);
-		}
+				if (ui.MenuItem("Preview Primary Camera", nullptr, true)) {
+					SetPreviewCamera(0);
+				}
+			}
 
+			ui.Checkbox("Maximize on Play", maximizeOnPlay_);
+			ui.Checkbox("Start Paused", startPaused_);
+			ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
+			ui.Checkbox("Load Test Save", loadTestSave_);
+			ImGui::SetItemTooltip("Read the exported game's Editor test save at Play. Changes stay in memory.");
+
+			const auto drawPlayScene = [&](const char *label, Action requested,
+			                               const std::filesystem::path &path,
+			                               bool usesEditingScene,
+			                               bool usesLastCamera = false) {
+				std::error_code status;
+				const bool available = usesEditingScene ||
+				                       std::filesystem::is_regular_file(
+				                           PathUtils::ResolveFromExecutable(path), status);
+				ui.BeginDisabled(!available);
+				if (ui.MenuItem(label, nullptr, true)) {
+					action = requested;
+				}
+				ui.EndDisabled();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip |
+				                         ImGuiHoveredFlags_AllowWhenDisabled)) {
+					const auto name = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
+					const auto *tooltip = !available ? "Scene file is unavailable.\n%s"
+					                      : usesLastCamera ? "Play %s with the same camera as last time."
+					                                       : "Start a new play session in %s.";
+					ImGui::SetTooltip(tooltip, name.c_str());
+				}
+			};
+
+			if (!startupScenePath.empty()) {
+				drawPlayScene("Play Startup Scene", Action::PLAY_STARTUP, startupScenePath,
+				              !editingScenePath.empty() &&
+				                  PathUtils::IsSameFile(startupScenePath, editingScenePath));
+			}
+			const bool lastUsesEditingScene = lastPlayScenePath.empty() ||
+			    (!editingScenePath.empty() && PathUtils::IsSameFile(lastPlayScenePath, editingScenePath));
+			const bool lastUsesStartupScene = !lastPlayScenePath.empty() && !startupScenePath.empty() &&
+			    PathUtils::IsSameFile(lastPlayScenePath, startupScenePath);
+			if (lastPlayCameraOverride != 0 ||
+			    (!lastUsesEditingScene && !lastUsesStartupScene)) {
+				drawPlayScene("Play Last Scene", Action::PLAY_LAST_SCENE, lastPlayScenePath,
+				              lastUsesEditingScene, lastPlayCameraOverride != 0);
+			}
+
+			ImGui::EndPopup();
+		}
 		ui.EndDisabled();
 	}
 

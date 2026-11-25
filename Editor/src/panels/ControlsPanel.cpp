@@ -147,7 +147,7 @@ void ControlsPanel::Draw() {
 	         "when it requires local shear; Keep Local can retain the existing "
 	         "local SRT. Copying a branch without its external parent also "
 	         "requires a representable root SRT."},
-	        {"Hierarchy > Invert Listed",
+	        {"Hierarchy > Options > Invert Listed",
 	         "Toggle selection only for objects matching the current search, "
 	         "component, Hidden only and Scene picking filters. Objects "
 	         "outside the list keep their selection. Newly selected objects "
@@ -155,7 +155,7 @@ void ControlsPanel::Draw() {
 	         "the next Shift-selection anchor. An empty list leaves selection "
 	         "unchanged. Available during Play; scene data, picking exclusions "
 	         "and Undo history are unchanged."},
-	        {"Hierarchy > Sort",
+	        {"Hierarchy > Options > Sort",
 	         "Choose creation order or name A-Z / Z-A. Range selection, Select "
 	         "All and arrow keys follow the displayed order; changing sort "
 	         "keeps the selection."},
@@ -250,7 +250,7 @@ void ControlsPanel::Draw() {
 	         "resource validation. All combine with name/ID and Hidden only, "
 	         "sorting, range selection and Select All Visible, including "
 	         "Play."},
-	        {"Assets > Textures > Model Slots",
+	        {"Assets > Actions > Model Slots",
 	         "Choose a slot number from the selected objects' loaded models. "
 	         "The table shows source material names and Used counts: how many "
 	         "selected objects actually draw with each slot. Mixed Materials "
@@ -261,7 +261,7 @@ void ControlsPanel::Draw() {
 	         "for unused or not-yet-loaded slots. Slot numbers and existing "
 	         "assignments are never changed automatically."},
 	        {"Inspector > Mesh Renderer > Material Asset",
-	         "Assign a shared material to a model slot. New Material saves "
+	         "Assign a shared material to a model slot. Material Actions > New Material saves "
 	         "an asset in the Assets folder and assigns it to the slot. "
 	         "Save Shared Material updates every slot using the asset. "
 	         "Texture Override replaces the base color image for this slot."},
@@ -318,7 +318,7 @@ void ControlsPanel::Draw() {
 	         "workspace flags survive Undo/Redo and Play, but reset on scene "
 	         "New/Open/Reload. They do not affect runtime selection, physics, "
 	         "rendering, scene files or history."},
-	        {"Hierarchy > Hidden only", "List hidden models. Search and range "
+	        {"Hierarchy > Options > Hidden only", "List hidden models. Search and range "
 	                                    "selection use this filtered list."},
 	        {"Edit > Show All Models",
 	         "Restore every hidden model in one undoable operation without "
@@ -436,7 +436,7 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
-	        {"Assets > Open in Explorer",
+	        {"Assets > Actions > Open in Explorer",
 	         "Open the current Assets folder in Windows Explorer. The Assets "
 	         "list refreshes when you return to Editor. Use Refresh to update "
 	         "the list after other external changes. For moves and renames "
@@ -700,7 +700,7 @@ void ControlsPanel::Draw() {
 	         "Collider. Scale it into floors, walls or platforms. Creation "
 	         "supports Undo/Redo and scene saving. Hierarchy has the same "
 	         "creation controls."},
-	        {"Hierarchy > Component",
+	        {"Hierarchy > Options > Component",
 	         "Combine component filters with Search and Hidden only. Models "
 	         "without Collider finds model objects missing collision shapes. "
 	         "Ctrl+A and range selection use the filtered list. Existing "
@@ -841,7 +841,7 @@ void ControlsPanel::Draw() {
 	         "the original appearance. Alpha and UV settings are preserved. "
 	         "Color edits, Reset Color and removal support Undo/Redo, scene "
 	         "saving, duplication and Play. Objects sharing one model keep "
-	         "independent colors. Hierarchy > Component > Color Tint finds "
+	         "independent colors. Hierarchy > Options > Component > Color Tint finds "
 	         "objects with the component. During Play it is read-only."},
 	        {"Edit > Colliders > Paste Colliders",
 	         "Apply the copied local collider shape to every selected object, "

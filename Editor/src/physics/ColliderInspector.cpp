@@ -64,7 +64,28 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::PushID("ColliderInspector");
 	bool changed = false;
 
-	if (ui.CollapsingHeader("Collider")) {
+	const bool open = ui.CollapsingHeader("Collider");
+	ImGui::SetItemTooltip("Right-click for collider actions.");
+	if (ImGui::BeginPopupContextItem("ColliderActions")) {
+		AxisAlignedBox bounds;
+		const bool hasBounds = ColliderUtils::GetWorldBounds(*object.collider, scene, id, bounds);
+		if (ui.MenuItem("Copy Collider", nullptr, ColliderUtils::IsValid(*object.collider)))
+			request = {Action::COPY, id};
+		if (ui.MenuItem("Paste Collider", nullptr, canPasteCollider))
+			request = {Action::PASTE, id};
+		if (ui.MenuItem("Fit Collider to Model", nullptr, true))
+			request = {Action::FIT_TO_MODEL, id};
+		if (ui.MenuItem("Frame Collider", nullptr, hasBounds))
+			request = {Action::FRAME, id};
+		if (ui.MenuItem("Use Top as Work Plane", nullptr, hasBounds))
+			request = {Action::SET_WORK_PLANE, id};
+		if (ui.MenuItem("Select Overlapping Colliders", nullptr, hasBounds))
+			request = {Action::SELECT_OVERLAPS, id};
+		if (ui.MenuItem("Remove Collider", nullptr, true))
+			changed |= history.SetCollider(id, std::nullopt);
+		ImGui::EndPopup();
+	}
+	if (open && object.collider) {
 		AxisAlignedBox bounds;
 
 		if (!ColliderUtils::GetWorldBounds(*object.collider, scene, id,
@@ -222,49 +243,6 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ImGui::EndCombo();
 		}
 
-		ui.BeginDisabled(!ColliderUtils::IsValid(*object.collider));
-
-		if (ui.Button("Copy Collider")) {
-			request = {Action::COPY, id};
-		}
-
-		ui.EndDisabled();
-		ui.SameLine();
-		ui.BeginDisabled(!canPasteCollider);
-
-		if (ui.Button("Paste Collider")) {
-			request = {Action::PASTE, id};
-		}
-
-		ui.EndDisabled();
-
-		if (ui.Button("Fit Collider to Model")) {
-			request = {Action::FIT_TO_MODEL, id};
-		}
-
-		ImGui::SetItemTooltip("Fit this shape to model bounds. Empty objects "
-		                      "use default dimensions.");
-
-		ui.BeginDisabled(!ColliderUtils::GetWorldBounds(*object.collider, scene,
-		                                                id, bounds));
-
-		if (ui.Button("Frame Collider")) {
-			request = {Action::FRAME, id};
-		}
-
-		if (ui.Button("Use Top as Work Plane")) {
-			request = {Action::SET_WORK_PLANE, id};
-		}
-
-		if (ui.Button("Select Overlapping Colliders")) {
-			request = {Action::SELECT_OVERLAPS, id};
-		}
-
-		ui.EndDisabled();
-
-		if (ui.Button("Remove Collider")) {
-			changed |= history.SetCollider(id, std::nullopt);
-		}
 	}
 
 	ImGui::PopID();
