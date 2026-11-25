@@ -145,6 +145,10 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	}
 
 	if (object.audioListener && ui.CollapsingHeader("Audio Listener")) {
+		auto listener = *object.audioListener;
+		if (ui.Checkbox("Preferred Listener", listener.preferred))
+			changed |= history.SetAudioListener(id, listener);
+		ImGui::SetItemTooltip("Use this listener for spatial audio while it is active.");
 		if (ImGui::Button("Remove Audio Listener"))
 			changed |= history.SetAudioListener(id, std::nullopt);
 	}

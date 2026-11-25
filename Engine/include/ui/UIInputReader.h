@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ui/UIInput.h"
+#include "gameplay/GameInputBindings.h"
 class Keyboard;
 class Mouse;
 class Gamepad;
@@ -18,5 +19,5 @@ namespace UIInputReader {
 /// <returns>正規化された入力。描画寸法が無効な場合は操作を無効にする</returns>
 UIInput Read(const Keyboard &keyboard, const Mouse *mouse,
              const Gamepad *gamepad, int width, int height, bool enabled = true,
-             bool navigationEnabled = true);
+             bool navigationEnabled = true, const GameInputBindings::UI &bindings = {});
 } // namespace UIInputReader

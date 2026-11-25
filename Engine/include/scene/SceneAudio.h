@@ -38,7 +38,7 @@ namespace SceneAudio {
 /// <param name="frame">全件成功時にだけ置き換える結果</param>
 /// <param name="error">成功時は空、失敗時は理由</param>
 /// <param name="invalidObject">指定時は問題のID。階層・予備姿勢の不正や成功時は0</param>
-/// <returns>true:収集成功 false:階層・姿勢・設定・距離・有効リスナー数が無効</returns>
+/// <returns>true:収集成功 false:階層・姿勢・設定・距離が無効</returns>
 bool Collect(const Scene &scene, const CameraPose &camera,
              SceneAudioFrame &frame, std::string &error,
              SceneObjectId *invalidObject = nullptr);

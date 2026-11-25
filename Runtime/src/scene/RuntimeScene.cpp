@@ -184,12 +184,12 @@ bool RuntimeScene::Update(float seconds) {
 		const auto uiInput = UIInputReader::Read(
 		    keys, &input_.GetMouse(),
 		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, size[0],
-		    size[1]);
+		    size[1], true, true, config_.input.ui);
 		if (!simulation_.Update(
 		        seconds, input,
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
-		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
+		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, config_.input.camera),
 		        uiInput, actions, &invalidObject,
 		        std::span<const GameActionBinding>{config_.actions})) {
 			if (const auto failed = simulation_.GetFailedSceneDestination()) {

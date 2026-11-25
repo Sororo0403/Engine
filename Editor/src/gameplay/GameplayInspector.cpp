@@ -156,6 +156,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		auto character = *object.character;
 		if (ui.Checkbox("Input Enabled", character.inputEnabled))
 			changed |= history.SetCharacter(id, character);
+		if (ui.Checkbox("Preferred Player Character", character.preferredInputTarget))
+			changed |= history.SetCharacter(id, character);
+		ImGui::SetItemTooltip("Use this character for player input and tagged scene arrivals.");
 
 		auto field = [&](const char *label, float CharacterSettings::*member,
 		                 float maximum, float minimum = 0.01f,

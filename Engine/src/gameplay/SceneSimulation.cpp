@@ -19,6 +19,23 @@
 #include <string_view>
 
 namespace {
+SceneObjectId SelectInputCharacter(const Scene &scene, SceneObjectId previous = 0) {
+	SceneObjectId first = 0, enabled = 0;
+	bool previousActive = false;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.character || !SceneActivity::IsActive(scene, id))
+			continue;
+		if (object.character->preferredInputTarget)
+			return id;
+		if (!first)
+			first = id;
+		if (!enabled && object.character->inputEnabled)
+			enabled = id;
+		previousActive |= id == previous;
+	}
+	return previousActive ? previous : enabled ? enabled : first;
+}
+
 /// <summary>
 /// 遷移先の編集データを読み込んだ候補で、主人公をタグ付き物体の位置へ移す
 /// </summary>
@@ -26,14 +43,15 @@ namespace {
 /// <param name="tag">到着地点のタグ。空は元の配置を使う</param>
 /// <param name="error">失敗理由</param>
 /// <param name="invalidObject">特定できる場合は遷移先の問題物体を返す</param>
-/// <returns>true:準備成功 false:タグや主人公を一意に解決できない、または位置が無効</returns>
+/// <returns>true:準備成功 false:到着地点か操作対象を解決できない、または位置が無効</returns>
 bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error,
                        SceneObjectId *invalidObject = nullptr) {
 	if (invalidObject)
 		*invalidObject = 0;
 	if (tag.empty())
 		return true;
-	SceneObjectId arrival = 0, character = 0;
+	SceneObjectId arrival = 0;
+	const auto character = SelectInputCharacter(scene);
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!SceneActivity::IsActive(scene, id))
@@ -50,10 +68,6 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error,
 			arrival = id;
 		}
 
-		if (object.character &&
-		    (!character || (!scene.FindObject(character)->character->inputEnabled &&
-		                   object.character->inputEnabled)))
-			character = id;
 	}
 
 	if (!arrival) {
@@ -445,16 +459,14 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			return false;
 		}
 
-		SceneObjectId character = 0, camera = 0;
+		const auto *previousInput = preserve ? scene_.FindObject(character_) : nullptr;
+		const auto previous = previousInput && previousInput->character &&
+		                      !previousInput->character->preferredInputTarget ? character_ : 0;
+		const auto character = SelectInputCharacter(working, previous);
+		SceneObjectId camera = 0;
 		for (const auto &[id, object] : working.GetObjects()) {
 			if (!SceneActivity::IsActive(working, id))
 				continue;
-			if (object.character &&
-			    (!character || (preserve && id == character_) ||
-			     ((!preserve || character != character_) &&
-			      !working.FindObject(character)->character->inputEnabled &&
-			      object.character->inputEnabled)))
-				character = id;
 			if (object.camera && object.camera->primary)
 				camera = id;
 		}
@@ -784,11 +796,13 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		}
 
 		const bool paused = working.gamePaused_;
-		const auto controls = paused || working.ui_.ConsumesNavigation()
+		const bool navigationCaptured = uiInput.capturesGameplay && working.ui_.ConsumesNavigation();
+		const bool pointerCaptured = uiInput.capturesGameplay && working.ui_.ConsumesPointer();
+		const auto controls = paused || navigationCaptured
 		                          ? CharacterInput{}
 		                          : input;
 		const auto orbit =
-		    (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer())
+		    (navigationCaptured || pointerCaptured)
 		        ? OrbitCameraInput{}
 		        : cameraInput;
 		if (paused) {
@@ -827,7 +841,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 
 		std::string error;
 		const bool uiConsumesInput =
-		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer();
+		    navigationCaptured || pointerCaptured;
 		if (!working.ApplyTriggerActions(error, nullptr,
 		                                 controls.interactPressed, actions,
 		                                 seconds, uiConsumesInput)) {
@@ -837,7 +851,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 
 		std::vector<GameActionState> scriptActions(actions.begin(),
 		                                           actions.end());
-		if (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()) {
+		if (uiConsumesInput) {
 			for (auto &action : scriptActions) {
 				action.down = action.pressed = action.released = false;
 				action.value = 0;
@@ -846,7 +860,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 
 		auto scriptViewport = uiInput;
 		// UIがポインターを使用した更新では、同じクリックを3D操作へ渡さない。
-		scriptViewport.pointerValid &= !working.ui_.ConsumesPointer();
+		scriptViewport.pointerValid &= !pointerCaptured;
 		SceneObjectId scriptObject = 0;
 		if (!working.ApplyScripts(paused ? 0.f : seconds, controls, false,
 		                          error, &scriptObject, scriptActions,

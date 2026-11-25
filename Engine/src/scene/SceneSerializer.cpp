@@ -592,8 +592,11 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"maxDistance", v.maxDistance}};
 			}
 
-			if (object.audioListener)
+			if (object.audioListener) {
 				objects.back()["audioListener"] = Json::object();
+				if (object.audioListener->preferred)
+					objects.back()["audioListener"]["preferred"] = true;
+			}
 
 			if (object.pointLight) {
 				const auto &light = *object.pointLight;
@@ -763,6 +766,8 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"groundSnapDistance", v.groundSnapDistance},
 				    {"stepHeight", v.stepHeight},
 				    {"inputEnabled", v.inputEnabled}};
+				if (v.preferredInputTarget)
+					objects.back()["character"]["preferredInputTarget"] = true;
 			}
 
 			if (object.followCamera) {
@@ -1190,7 +1195,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				if (!item.at("audioListener").is_object())
 					throw std::runtime_error(
 					    "Audio Listenerの設定にはオブジェクトが必要です。");
-				object.audioListener.emplace();
+				object.audioListener.emplace().preferred =
+				    item.at("audioListener").value("preferred", false);
 			}
 
 			if (version >= 19 && item.contains("pointLight")) {
@@ -1615,6 +1621,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 
 				if (version >= 79)
 					object.character->inputEnabled = v.at("inputEnabled").get<bool>();
+				object.character->preferredInputTarget = v.value("preferredInputTarget", false);
 			}
 
 			if (version >= 5 && item.contains("followCamera")) {

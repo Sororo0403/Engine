@@ -2,6 +2,7 @@
 
 #include "input/Key.h"
 #include "input/GamepadButton.h"
+#include "input/MouseButton.h"
 #include <array>
 #include <optional>
 #include <string_view>
@@ -22,6 +23,29 @@ struct GameInputBindings {
 	bool dpadMovement = true;
 	std::optional<GamepadButton> gamepadJump = GamepadButton::SOUTH;
 	std::optional<GamepadButton> gamepadInteract = GamepadButton::WEST;
+
+	struct Camera {
+		MoveStick stick = MoveStick::RIGHT;
+		std::optional<MouseButton> rotate = MouseButton::RIGHT;
+		std::optional<MouseButton> mouseReset = MouseButton::MIDDLE;
+		std::optional<GamepadButton> padReset = GamepadButton::RIGHT_STICK;
+		bool wheelZoom = true;
+		bool operator==(const Camera &) const = default;
+	} camera;
+
+	struct UI {
+		enum Action : std::size_t { LEFT, RIGHT, UP, DOWN, SUBMIT, COUNT };
+		std::array<std::optional<Key>, COUNT> keys{
+		    Key::LEFT, Key::RIGHT, Key::UP, Key::DOWN, Key::ENTER};
+		std::array<std::optional<GamepadButton>, COUNT> buttons{
+		    GamepadButton::DPAD_LEFT, GamepadButton::DPAD_RIGHT,
+		    GamepadButton::DPAD_UP, GamepadButton::DPAD_DOWN, GamepadButton::SOUTH};
+		std::optional<Key> next = Key::TAB;
+		std::optional<Key> alternateSubmit = Key::SPACE;
+		std::optional<MouseButton> pointer = MouseButton::LEFT;
+		bool capturesGameplay = true;
+		bool operator==(const UI &) const = default;
+	} ui;
 
 	/// <summary>
 	/// 設定ファイルで使用するキー名と共通キーの対応
@@ -98,6 +122,22 @@ struct GameInputBindings {
 	/// </summary>
 	/// <returns>true:有効 false:未対応のキー、または重複あり</returns>
 	constexpr bool IsValid() const {
+		const auto validStick = [](MoveStick stick) {
+			return stick == MoveStick::NONE || stick == MoveStick::LEFT || stick == MoveStick::RIGHT;
+		};
+		const auto validKey = [](auto key) {
+			return !key || !GetName(*key).empty() || *key == Key::ENTER ||
+			       *key == Key::ESCAPE || *key == Key::TAB;
+		};
+		const auto validPad = [](auto button) { return !button || *button < GamepadButton::COUNT; };
+		const auto validMouse = [](auto button) { return !button || *button < MouseButton::COUNT; };
+		if (!validStick(camera.stick) || !validMouse(camera.rotate) ||
+		    !validMouse(camera.mouseReset) || !validPad(camera.padReset) ||
+		    !validMouse(ui.pointer) || !validKey(ui.next) || !validKey(ui.alternateSubmit))
+			return false;
+		for (std::size_t index = 0; index < UI::COUNT; ++index)
+			if (!validKey(ui.keys[index]) || !validPad(ui.buttons[index]))
+				return false;
 		if ((moveStick != MoveStick::NONE && moveStick != MoveStick::LEFT &&
 		     moveStick != MoveStick::RIGHT) ||
 		    (gamepadJump && *gamepadJump >= GamepadButton::COUNT) ||

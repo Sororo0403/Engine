@@ -17,6 +17,7 @@ struct CharacterSettings {
 	float stepHeight = 0.0f;
 	// 移動・ジャンプ入力を使うか。無効でも重力と接触を更新する
 	bool inputEnabled = true;
+	bool preferredInputTarget = false;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;

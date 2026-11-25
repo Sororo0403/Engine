@@ -199,6 +199,30 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		inputJson["gamepadJump"] = gamepadButton(input.gamepadJump);
 		inputJson["gamepadInteract"] = gamepadButton(input.gamepadInteract);
 
+		const auto mouseButton = [](const auto &button) -> nlohmann::json {
+			return button ? nlohmann::json(GameActionBinding::kMouseOptions[static_cast<std::size_t>(*button)].name)
+			              : nlohmann::json(nullptr);
+		};
+		const auto uiKey = [](const auto &key) -> nlohmann::json {
+			return key ? nlohmann::json(GameActionBinding::GetKeyName(*key)) : nlohmann::json(nullptr);
+		};
+		const auto &camera = input.camera;
+		inputJson["camera"] = {
+		    {"stick", camera.stick == GameInputBindings::MoveStick::LEFT ? "Left"
+		        : camera.stick == GameInputBindings::MoveStick::RIGHT ? "Right" : "None"},
+		    {"rotate", mouseButton(camera.rotate)}, {"mouseReset", mouseButton(camera.mouseReset)},
+		    {"padReset", gamepadButton(camera.padReset)}, {"wheelZoom", camera.wheelZoom}};
+		auto uiKeys = nlohmann::json::array();
+		auto uiButtons = nlohmann::json::array();
+		for (std::size_t i = 0; i < GameInputBindings::UI::COUNT; ++i) {
+			uiKeys.push_back(uiKey(input.ui.keys[i]));
+			uiButtons.push_back(gamepadButton(input.ui.buttons[i]));
+		}
+		inputJson["ui"] = {
+		    {"keys", std::move(uiKeys)}, {"buttons", std::move(uiButtons)},
+		    {"next", uiKey(input.ui.next)}, {"alternateSubmit", uiKey(input.ui.alternateSubmit)},
+		    {"pointer", mouseButton(input.ui.pointer)}, {"capturesGameplay", input.ui.capturesGameplay}};
+
 		auto actionsJson = nlohmann::json::array();
 
 		for (const auto &action : actions) {
@@ -365,8 +389,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			else
 				throw std::runtime_error("Unsupported gameplay move stick.");
 			candidate.input.dpadMovement = bindings.at("dpadMovement").get<bool>();
-			const auto readGamepad = [&](const char *name) -> std::optional<GamepadButton> {
-				const auto &value = bindings.at(name);
+			const auto readGamepad = [](const nlohmann::json &value) -> std::optional<GamepadButton> {
 				if (value.is_null())
 					return std::nullopt;
 				for (const auto &option : GameActionBinding::kGamepadOptions)
@@ -374,8 +397,59 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 						return option.button;
 				throw std::runtime_error("Unsupported gameplay gamepad button.");
 			};
-			candidate.input.gamepadJump = readGamepad("gamepadJump");
-			candidate.input.gamepadInteract = readGamepad("gamepadInteract");
+			candidate.input.gamepadJump = readGamepad(bindings.at("gamepadJump"));
+			candidate.input.gamepadInteract = readGamepad(bindings.at("gamepadInteract"));
+
+			const auto readMouse = [](const nlohmann::json &value) -> std::optional<MouseButton> {
+				if (value.is_null())
+					return std::nullopt;
+				for (const auto &option : GameActionBinding::kMouseOptions)
+					if (value == option.name)
+						return option.button;
+				throw std::runtime_error("Unsupported mouse button.");
+			};
+			const auto readKey = [](const nlohmann::json &value) -> std::optional<Key> {
+				if (value.is_null())
+					return std::nullopt;
+				const auto key = GameActionBinding::FromKeyName(value.get<std::string>());
+				if (!key)
+					throw std::runtime_error("Unsupported UI key.");
+				return key;
+			};
+			if (bindings.contains("camera")) {
+				const auto &settings = bindings.at("camera");
+				auto &camera = candidate.input.camera;
+				const auto axis = settings.at("stick").get<std::string>();
+				if (axis == "Left")
+					camera.stick = GameInputBindings::MoveStick::LEFT;
+				else if (axis == "Right")
+					camera.stick = GameInputBindings::MoveStick::RIGHT;
+				else if (axis == "None")
+					camera.stick = GameInputBindings::MoveStick::NONE;
+				else
+					throw std::runtime_error("Unsupported camera stick.");
+				camera.rotate = readMouse(settings.at("rotate"));
+				camera.mouseReset = readMouse(settings.at("mouseReset"));
+				camera.padReset = readGamepad(settings.at("padReset"));
+				camera.wheelZoom = settings.at("wheelZoom").get<bool>();
+			}
+			if (bindings.contains("ui")) {
+				const auto &settings = bindings.at("ui");
+				auto &ui = candidate.input.ui;
+				const auto &keys = settings.at("keys");
+				const auto &buttons = settings.at("buttons");
+				if (!keys.is_array() || !buttons.is_array() ||
+				    keys.size() != GameInputBindings::UI::COUNT || buttons.size() != keys.size())
+					throw std::runtime_error("Invalid UI bindings.");
+				for (std::size_t i = 0; i < keys.size(); ++i) {
+					ui.keys[i] = readKey(keys[i]);
+					ui.buttons[i] = readGamepad(buttons[i]);
+				}
+				ui.next = readKey(settings.at("next"));
+				ui.alternateSubmit = readKey(settings.at("alternateSubmit"));
+				ui.pointer = readMouse(settings.at("pointer"));
+				ui.capturesGameplay = settings.at("capturesGameplay").get<bool>();
+			}
 		}
 
 		if (data.at("version") < 6 && !candidate.input.IsValid()) {

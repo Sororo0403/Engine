@@ -145,6 +145,52 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 		input_ = {};
 	}
 
+	const auto mouseButton = [&](const char *label, std::optional<MouseButton> &button) {
+		const auto &options = GameActionBinding::kMouseOptions;
+		if (ImGui::BeginCombo(label, button ? options[static_cast<std::size_t>(*button)].name : "None")) {
+			if (ui.Selectable("None", !button))
+				button.reset();
+			for (const auto &option : options)
+				if (ui.Selectable(option.name, button == option.button))
+					button = option.button;
+			ImGui::EndCombo();
+		}
+	};
+	if (ImGui::CollapsingHeader("Camera Input")) {
+		int cameraStick = static_cast<int>(input_.camera.stick);
+		if (ImGui::Combo("Orbit Stick", &cameraStick, "None\0Left Stick\0Right Stick\0"))
+			input_.camera.stick = static_cast<GameInputBindings::MoveStick>(cameraStick);
+		ImGui::Checkbox("Mouse Wheel Zoom", &input_.camera.wheelZoom);
+		gamepadButton("Gamepad Camera Reset", input_.camera.padReset);
+		mouseButton("Orbit Drag", input_.camera.rotate);
+		mouseButton("Mouse Camera Reset", input_.camera.mouseReset);
+	}
+	if (ImGui::CollapsingHeader("Game UI Input")) {
+		const auto key = [&](const char *label, std::optional<Key> &value) {
+			if (ImGui::BeginCombo(label, value ? GameActionBinding::GetKeyName(*value).data() : "None")) {
+				if (ui.Selectable("None", !value))
+					value.reset();
+				for (const auto &option : GameInputBindings::kOptions)
+					if (ui.Selectable(option.name.data(), value == option.key))
+						value = option.key;
+				for (const auto &option : GameActionBinding::kAdditionalKeyboardOptions)
+					if (ui.Selectable(option.name.data(), value == option.key))
+						value = option.key;
+				ImGui::EndCombo();
+			}
+		};
+		constexpr std::array uiLabels{"Left", "Right", "Up", "Down", "Submit"};
+		for (std::size_t i = 0; i < uiLabels.size(); ++i) {
+			const auto keyLabel = std::string("UI Key ") + uiLabels[i];
+			const auto buttonLabel = std::string("UI Gamepad ") + uiLabels[i];
+			key(keyLabel.c_str(), input_.ui.keys[i]);
+			gamepadButton(buttonLabel.c_str(), input_.ui.buttons[i]);
+		}
+		key("UI Cycle Focus", input_.ui.next);
+		key("UI Alternate Submit", input_.ui.alternateSubmit);
+		mouseButton("UI Pointer Button", input_.ui.pointer);
+		ImGui::Checkbox("UI Captures Gameplay Input", &input_.ui.capturesGameplay);
+	}
 	ImGui::SeparatorText("Named Input Actions");
 	const bool focusInputAction = std::exchange(focusInputAction_, false);
 	if (focusInputAction) {

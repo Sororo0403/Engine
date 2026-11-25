@@ -70,13 +70,11 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 				continue;
 			current = id;
 
-			if (object.audioListener) {
-				if (next.listenerObject)
-					throw std::runtime_error(
-					    "Only one Audio Listener may be active at once.");
+			if (object.audioListener &&
+			    (!next.listenerObject ||
+			     (object.audioListener->preferred &&
+			      !scene.FindObject(next.listenerObject)->audioListener->preferred)))
 				next.listenerObject = id;
-				next.listener = FromWorld(transforms.at(id));
-			}
 
 			if (!object.audioSource)
 				continue;
@@ -98,6 +96,8 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 		}
 
 		current = next.listenerObject;
+		if (next.listenerObject)
+			next.listener = FromWorld(transforms.at(next.listenerObject));
 
 		if (!next.listenerObject && !next.sources.empty()) {
 			Camera checked;

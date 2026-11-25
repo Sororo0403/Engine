@@ -13,6 +13,7 @@ struct UIInput {
 	bool next = false, previous = false;
 	int horizontal = 0, vertical = 0;
 	bool submitPressed = false, submitDown = false;
+	bool capturesGameplay = true;
 
 	/// <summary>
 	/// 描画寸法・ポインター位置・選択方向が表現可能か確認する

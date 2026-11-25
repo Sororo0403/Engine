@@ -1,21 +1,23 @@
 #pragma once
 
 /// <summary>
-/// 物体のワールド位置と向きを音の受信姿勢にする。同時に有効なリスナーは1つまで
+/// 物体のワールド位置と向きを音の受信姿勢にする
 /// </summary>
 struct AudioListenerComponent {
+	bool preferred = false;
+
 	/// <summary>
-	/// 受信位置はTransformから取得し、このコンポーネント自身には追加設定を持たない
+	/// 受信位置はTransformから取得する
 	/// </summary>
-	/// <returns>常にtrue。重複とワールド姿勢はシーン全体で検証する</returns>
+	/// <returns>常にtrue。ワールド姿勢は収集時に検証する</returns>
 	bool IsValid() const {
 		return true;
 	}
 
 	/// <summary>
-	/// 設定を持たないリスナー同士を比較する
+	/// リスナーの設定を比較する
 	/// </summary>
 	/// <param name="other">比較するリスナー</param>
-	/// <returns>常にtrue</returns>
+	/// <returns>true:設定が一致</returns>
 	bool operator==(const AudioListenerComponent &other) const = default;
 };

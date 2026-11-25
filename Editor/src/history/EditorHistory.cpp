@@ -2304,6 +2304,28 @@ bool EditorHistory::SetCharacter(SceneObjectId id,
 		return false;
 	}
 
+	if (value && value->preferredInputTarget) {
+		std::vector<CommandGroup::Command> commands;
+		CharacterCommand target{id, object->character, value};
+		if (target.HasChanges())
+			commands.emplace_back(std::move(target));
+		for (const auto &[otherId, other] : scene_.GetObjects()) {
+			if (otherId == id || !other.character || !other.character->preferredInputTarget)
+				continue;
+			auto disabled = *other.character;
+			disabled.preferredInputTarget = false;
+			commands.emplace_back(CharacterCommand{otherId, other.character, disabled});
+		}
+		if (commands.empty())
+			return true;
+		CommandGroup group{std::move(commands)};
+		const auto next = PrepareAppend();
+		if (!group.Redo(scene_))
+			return false;
+		AppendPrepared(Command{std::move(group)}, next, "Set Preferred Player Character");
+		return true;
+	}
+
 	const bool adding = !object->character;
 	CharacterCommand command{id, object->character, value};
 
@@ -3081,6 +3103,28 @@ bool EditorHistory::SetAudioListener(
 
 	if (!object || (value && !value->IsValid())) {
 		return false;
+	}
+
+	if (value && value->preferred) {
+		std::vector<CommandGroup::Command> commands;
+		AudioListenerCommand target{id, object->audioListener, value};
+		if (target.HasChanges())
+			commands.emplace_back(std::move(target));
+		for (const auto &[otherId, other] : scene_.GetObjects()) {
+			if (otherId == id || !other.audioListener || !other.audioListener->preferred)
+				continue;
+			auto disabled = *other.audioListener;
+			disabled.preferred = false;
+			commands.emplace_back(AudioListenerCommand{otherId, other.audioListener, disabled});
+		}
+		if (commands.empty())
+			return true;
+		CommandGroup group{std::move(commands)};
+		const auto next = PrepareAppend();
+		if (!group.Redo(scene_))
+			return false;
+		AppendPrepared(Command{std::move(group)}, next, "Set Preferred Audio Listener");
+		return true;
 	}
 
 	const bool adding = !object->audioListener;

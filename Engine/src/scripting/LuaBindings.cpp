@@ -61,6 +61,8 @@ enum class Op {
 	FIND_ID,
 	GET_CAMERA,
 	SET_CAMERA,
+	SET_INPUT_CHARACTER,
+	SET_AUDIO_LISTENER,
 	CAMERA_LENS,
 	SET_CAMERA_LENS,
 	SET_CAMERA_FOV,
@@ -110,7 +112,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::SET_CHARACTER_INPUT_ENABLED ||
 		    op == Op::SET_MESH_VISIBLE || op == Op::SET_MESH_TINT ||
 		    op == Op::SET_MESH_UV_OFFSET ||
-		    op == Op::SET_CAMERA ||
+		    op == Op::SET_CAMERA || op == Op::SET_INPUT_CHARACTER ||
+		    op == Op::SET_AUDIO_LISTENER ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
@@ -139,6 +142,22 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			if (!SceneCameraUtils::SetPrimary(*call.scene, id))
 				throw std::runtime_error(
 				    "Set Camera requires an active target Camera.");
+			return true;
+		}
+
+		if (op == Op::SET_INPUT_CHARACTER || op == Op::SET_AUDIO_LISTENER) {
+			const bool character = op == Op::SET_INPUT_CHARACTER;
+			const auto *target = call.scene->FindObject(id);
+			if (id && (!target || !SceneActivity::IsActive(*call.scene, id) ||
+			           (character ? !target->character : !target->audioListener)))
+				throw std::runtime_error(character ? "Expected an active Character Controller."
+				                                   : "Expected an active Audio Listener.");
+			for (const auto &[objectId, object] : call.scene->GetObjects()) {
+				if (character && object.character)
+					call.scene->FindObject(objectId)->character->preferredInputTarget = objectId == id;
+				if (!character && object.audioListener)
+					call.scene->FindObject(objectId)->audioListener->preferred = objectId == id;
+			}
 			return true;
 		}
 
@@ -510,6 +529,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::FIND_ID:
 		case Op::GET_CAMERA:
 		case Op::SET_CAMERA:
+		case Op::SET_INPUT_CHARACTER:
+		case Op::SET_AUDIO_LISTENER:
 		case Op::LOG:
 			break;
 		}
@@ -545,7 +566,7 @@ int Dispatch(lua_State *state) {
 	bool flag = false;
 	SceneObjectId parent = 0;
 
-	if (op == Op::SET_CAMERA) {
+	if (op == Op::SET_CAMERA || op == Op::SET_INPUT_CHARACTER || op == Op::SET_AUDIO_LISTENER) {
 		if (!lua_isnil(state, 1))
 			id = *static_cast<SceneObjectId *>(
 			    luaL_checkudata(state, 1, kObjectType));
@@ -560,7 +581,8 @@ int Dispatch(lua_State *state) {
 	    op == Op::CAMERA_LENS || op == Op::CHARACTER_SPEEDS ||
 	    op == Op::CHARACTER_INPUT_ENABLED ||
 	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
-	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA) {
+	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA ||
+	    op == Op::SET_INPUT_CHARACTER || op == Op::SET_AUDIO_LISTENER) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
 	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
@@ -940,6 +962,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "find_id", Op::FIND_ID);
 	Method(state, "get_camera", Op::GET_CAMERA);
 	Method(state, "set_camera", Op::SET_CAMERA);
+	Method(state, "set_input_character", Op::SET_INPUT_CHARACTER);
+	Method(state, "set_audio_listener", Op::SET_AUDIO_LISTENER);
 	lua_pushcfunction(state, FindAllByTag);
 	lua_setfield(state, -2, "find_all_by_tag");
 	Method(state, "log", Op::LOG);

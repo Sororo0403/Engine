@@ -6,8 +6,10 @@
 
 UIInput UIInputReader::Read(const Keyboard &keyboard, const Mouse *mouse,
                             const Gamepad *gamepad, int width, int height,
-                            bool enabled, bool navigationEnabled) {
+                            bool enabled, bool navigationEnabled,
+                            const GameInputBindings::UI &bindings) {
 	UIInput result;
+	result.capturesGameplay = bindings.capturesGameplay;
 	if (width < 1 || height < 1 || width > 16384 || height > 16384)
 		return result;
 	result.width = width;
@@ -29,31 +31,30 @@ UIInput UIInputReader::Read(const Keyboard &keyboard, const Mouse *mouse,
 			                  static_cast<float>(height);
 		}
 
-		result.pointerPressed = mouse->IsPressed(MouseButton::LEFT);
-		result.pointerDown = mouse->IsDown(MouseButton::LEFT);
+		result.pointerPressed = bindings.pointer && mouse->IsPressed(*bindings.pointer);
+		result.pointerDown = bindings.pointer && mouse->IsDown(*bindings.pointer);
 	}
 
-	const bool shift = keyboard.IsDown(Key::SHIFT),
-	           tab = keyboard.IsPressed(Key::TAB);
-	result.next = tab && !shift;
-	result.previous = tab && shift;
-	result.horizontal = int(keyboard.IsPressed(Key::RIGHT)) -
-	                    int(keyboard.IsPressed(Key::LEFT));
-	result.vertical =
-	    int(keyboard.IsPressed(Key::DOWN)) - int(keyboard.IsPressed(Key::UP));
-	result.submitPressed =
-	    keyboard.IsPressed(Key::ENTER) || keyboard.IsPressed(Key::SPACE);
-	result.submitDown =
-	    keyboard.IsDown(Key::ENTER) || keyboard.IsDown(Key::SPACE);
-	if (gamepad) {
-		result.horizontal +=
-		    int(gamepad->IsPressed(GamepadButton::DPAD_RIGHT)) -
-		    int(gamepad->IsPressed(GamepadButton::DPAD_LEFT));
-		result.vertical += int(gamepad->IsPressed(GamepadButton::DPAD_DOWN)) -
-		                   int(gamepad->IsPressed(GamepadButton::DPAD_UP));
-		result.submitPressed |= gamepad->IsPressed(GamepadButton::SOUTH);
-		result.submitDown |= gamepad->IsDown(GamepadButton::SOUTH);
-	}
+	using UI = GameInputBindings::UI;
+	const auto pressed = [&](UI::Action action) {
+		const auto key = bindings.keys[action];
+		const auto button = bindings.buttons[action];
+		return (key && keyboard.IsPressed(*key)) ||
+		       (gamepad && button && gamepad->IsPressed(*button));
+	};
+	const bool shift = keyboard.IsDown(Key::SHIFT);
+	const bool cycle = bindings.next && keyboard.IsPressed(*bindings.next);
+	result.next = cycle && !shift;
+	result.previous = cycle && shift;
+	result.horizontal = int(pressed(UI::RIGHT)) - int(pressed(UI::LEFT));
+	result.vertical = int(pressed(UI::DOWN)) - int(pressed(UI::UP));
+	const auto primary = bindings.keys[UI::SUBMIT];
+	const auto alternate = bindings.alternateSubmit;
+	const auto button = bindings.buttons[UI::SUBMIT];
+	result.submitPressed = pressed(UI::SUBMIT) || (alternate && keyboard.IsPressed(*alternate));
+	result.submitDown = (primary && keyboard.IsDown(*primary)) ||
+	                    (alternate && keyboard.IsDown(*alternate)) ||
+	                    (gamepad && button && gamepad->IsDown(*button));
 
 	result.horizontal = std::clamp(result.horizontal, -1, 1);
 	result.vertical = std::clamp(result.vertical, -1, 1);

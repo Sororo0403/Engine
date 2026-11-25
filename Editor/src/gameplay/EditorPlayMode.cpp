@@ -585,7 +585,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	        ? OrbitCameraInput{}
 	        : GameplayInput::ReadOrbit(
 	              input.GetMouse(), viewport_, ImGui::GetIO().WantTextInput,
-	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
+	              gamepadEnabled_ ? &input.GetGamepad() : nullptr, inputBindings_.camera);
 	const auto revision = session_.GetSceneRevision();
 	auto uiInput = UIInputReader::Read(
 	    input.GetKeyboard(), nullptr,
@@ -594,13 +594,17 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	    texture_ ? texture_->GetHeight() : gameHeight_,
 	    !inputBlocked && visible_ && viewport_.applicationFocused &&
 	        !viewport_.widgetActive && !ImGui::GetIO().WantTextInput,
-	    viewport_.windowFocused);
+	    viewport_.windowFocused, inputBindings_.ui);
 	uiInput.pointerValid =
 	    viewport_.imageHovered && viewport_.imagePositionValid;
 	uiInput.pointerX = viewport_.imageX;
 	uiInput.pointerY = viewport_.imageY;
-	uiInput.pointerPressed = viewport_.leftPressed;
-	uiInput.pointerDown = viewport_.leftDown;
+	if (const auto button = inputBindings_.ui.pointer) {
+		uiInput.pointerPressed = *button == MouseButton::LEFT ? viewport_.leftPressed
+		    : viewport_.imageHovered && input.GetMouse().IsPressed(*button);
+		uiInput.pointerDown = *button == MouseButton::LEFT ? viewport_.leftDown
+		    : input.GetMouse().IsDown(*button);
+	}
 
 	if (suspended) {
 		session_.CancelUIInput();

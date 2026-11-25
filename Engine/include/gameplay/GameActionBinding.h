@@ -33,8 +33,8 @@ struct GameActionBinding {
 	std::optional<GamepadAxis> gamepadAxis;
 
 
-	static constexpr std::array<GameInputBindings::Option, 2>
-	    kAdditionalKeyboardOptions{{{Key::ESCAPE, "Escape"}, {Key::ENTER, "Enter"}}};
+	static constexpr std::array<GameInputBindings::Option, 3>
+	    kAdditionalKeyboardOptions{{{Key::ESCAPE, "Escape"}, {Key::ENTER, "Enter"}, {Key::TAB, "Tab"}}};
 
 	template <class T> struct Option {
 		T button;

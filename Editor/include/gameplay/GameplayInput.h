@@ -40,13 +40,14 @@ inline CharacterInput Read(const Keyboard &keys, const ViewportInput &viewport,
 inline OrbitCameraInput ReadOrbit(const Mouse &mouse,
                                   const ViewportInput &viewport,
                                   bool textEditing,
-                                  const Gamepad *gamepad = nullptr) {
+                                  const Gamepad *gamepad,
+                                  const GameInputBindings::Camera &bindings) {
 	if (!viewport.windowFocused || !viewport.applicationFocused ||
 	    viewport.widgetActive || textEditing) {
 		return {};
 	}
 
 	return OrbitCameraInputReader::Read(
-	    viewport.imageHovered ? &mouse : nullptr, gamepad);
+	    viewport.imageHovered ? &mouse : nullptr, gamepad, bindings);
 }
 } // namespace GameplayInput
