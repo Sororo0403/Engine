@@ -271,11 +271,6 @@ class RenderWorld {
 	/// <returns>true:設定成功 false:無効な値。以前の設定は保持する</returns>
 	bool SetShadows(const ShadowSettings &settings);
 
-	/// <summary>
-	/// 物体を平行光の影の描画対象に含めるか設定する
-	/// </summary>
-	bool SetShadowCaster(RenderObjectHandle handle, bool enabled);
-
   private:
 	friend class RenderSystem;
 	/// <summary>

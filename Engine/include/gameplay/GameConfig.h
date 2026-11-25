@@ -16,7 +16,7 @@ struct GameConfig {
 	/// <summary>
 	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
 	/// </summary>
-	static constexpr int kCurrentVersion = 14;
+	static constexpr int kCurrentVersion = 15;
 
 	std::string title = "Game";
 	int width = 1280, height = 720;
@@ -27,8 +27,6 @@ struct GameConfig {
 	LightingSettings lighting;
 	bool cameraRelativeMovement = false;
 	bool gamepadEnabled = true;
-	// 出力対象にゲーム内で編集可能なスクリプトがあるとき、出力処理で有効にする
-	bool enableScriptEditing = false;
 
 	/// <summary>
 	/// ユーザー設定の保存先を識別するIDと、保存するスクリプト共有テーブルのキー

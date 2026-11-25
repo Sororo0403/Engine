@@ -20,8 +20,6 @@ struct ScriptComponent {
 	std::vector<std::pair<std::string, std::filesystem::path>> prefabs;
 	// 遷移に使うシーン。Prefab・物体参照とは別の名前空間を使用する
 	std::vector<std::pair<std::string, std::filesystem::path>> scenes;
-	// 同じ物体のButtonを押すと、ゲーム内でコードを試せるようにする
-	bool editInGame = false;
 	static constexpr std::size_t kMaximumScenes = 32;
 	static constexpr std::size_t kMaximumPrefabs = 32;
 	static constexpr std::size_t kMaximumReferences = 32;

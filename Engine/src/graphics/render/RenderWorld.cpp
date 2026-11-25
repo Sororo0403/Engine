@@ -102,7 +102,6 @@ struct RenderWorld::Impl {
 		Transform transform_{};
 		std::optional<DirectX::XMFLOAT4X4> worldMatrix_;
 		bool matrixHasSrt_ = true;
-		bool castsShadow_ = true;
 		bool visibleInCamera_ = false;
 		bool visibleInShadow_ = false;
 		ColorTint tint_{};
@@ -617,7 +616,7 @@ bool RenderWorld::Update(int width, int height) {
 		    !hasBounds || !IsOutsideClipVolume(corners, world * view * projection);
 		// 画面外の物体も、光源の範囲に入っていれば影を描く。
 		object.visibleInShadow_ =
-		    impl_->shadowSettings_.enabled && object.castsShadow_ &&
+		    impl_->shadowSettings_.enabled &&
 		    (!hasBounds || !IsOutsideClipVolume(corners, world * lightClip));
 		if (!object.visibleInCamera_ && !object.visibleInShadow_)
 			continue;
@@ -838,17 +837,6 @@ bool RenderWorld::SetShadows(const ShadowSettings &settings) {
 	if (!settings.IsValid())
 		return false;
 	impl_->shadowSettings_ = settings;
-	return true;
-}
-
-bool RenderWorld::SetShadowCaster(RenderObjectHandle handle, bool enabled) {
-	if (!impl_->initialized_ || !impl_->Contains(handle))
-		return false;
-	auto &object = impl_->GetObject(handle);
-	if (object.castsShadow_ != enabled) {
-		object.castsShadow_ = enabled;
-		impl_->prepared_ = false;
-	}
 	return true;
 }
 

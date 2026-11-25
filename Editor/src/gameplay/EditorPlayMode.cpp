@@ -463,7 +463,6 @@ bool EditorPlayMode::Restart(std::string &error, bool currentScene,
 		return false;
 	}
 
-	gameScriptEditor_.Reset();
 	actionReader_.Reset();
 
 	if (!renderer_.PrepareSceneModels(error, invalidObject) ||
@@ -502,7 +501,6 @@ bool EditorPlayMode::IsPaused() const {
 }
 
 void EditorPlayMode::Stop() {
-	gameScriptEditor_.Reset();
 	actionReader_.Reset();
 	renderer_.ClearPrefabResources();
 	audioPlayer_.Stop();
@@ -536,10 +534,6 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
-	if (gameScriptEditor_.IsOpen()) {
-		gameScriptEditor_.Draw(session_.GetScene());
-		suspended = true;
-	}
 	lastUpdateError_.clear();
 	inputBlocked = inputBlocked || suspended;
 	const bool actionsEnabled =
@@ -622,7 +616,6 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	if (session_.GetSceneRevision() != revision) {
-		gameScriptEditor_.Reset();
 		if (!renderer_.PrepareSceneModels(lastUpdateError_, invalidObject) ||
 		    !audioPlayer_.Start(session_.GetCameraPose(),
 		                        session_.IsPaused() || session_.IsGamePaused(),
@@ -630,12 +623,6 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		                        session_.GetAudioActions()))
 			return false;
 	} else {
-		if (!suspended) {
-			gameScriptEditor_.OpenClickedScript(session_.GetScene(),
-			                                    session_.GetUI().GetClicks());
-			gameScriptEditor_.Draw(session_.GetScene());
-			suspended = gameScriptEditor_.IsOpen();
-		}
 		if (!audioPlayer_.Update(session_.GetCameraPose(),
 		                         suspended || session_.IsPaused() || session_.IsGamePaused(),
 		                         lastUpdateError_, invalidObject,

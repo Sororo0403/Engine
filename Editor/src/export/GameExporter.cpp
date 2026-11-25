@@ -1186,11 +1186,6 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			const auto &entry = graph[i];
 			Scene snapshot;
 			snapshot.ReplaceObjects(entry.objects);
-			config.enableScriptEditing |= std::ranges::any_of(
-			    entry.objects, [](const auto &pair) {
-				    const auto &object = pair.second;
-				    return object.button && object.script && object.script->editInGame;
-			    });
 			snapshot.SetLighting(entry.lighting);
 			snapshot.SetFog(entry.fog);
 			snapshot.SetUseLegacyDirectionalLight(entry.legacyDirectionalLight);
