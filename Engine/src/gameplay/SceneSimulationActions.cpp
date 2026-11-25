@@ -39,7 +39,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	world_ = source.world_;
 	triggers_ = source.triggers_;
 	collisions_ = source.collisions_;
-	controller_ = source.controller_;
+	controllers_ = source.controllers_;
 	motion_ = source.motion_;
 	animations_ = source.animations_;
 	particles_ = source.particles_;
@@ -54,7 +54,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	updateOrder_ = source.updateOrder_;
 	followPoses_ = source.followPoses_;
 	orbitStates_ = source.orbitStates_;
-	spawn_ = source.spawn_;
+	spawns_ = source.spawns_;
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;
 	pose_ = source.pose_;
@@ -87,7 +87,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	world_ = std::move(source.world_);
 	triggers_ = std::move(source.triggers_);
 	collisions_ = std::move(source.collisions_);
-	controller_ = source.controller_;
+	controllers_ = std::move(source.controllers_);
 	motion_ = std::move(source.motion_);
 	animations_ = std::move(source.animations_);
 	particles_ = std::move(source.particles_);
@@ -102,7 +102,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	updateOrder_ = std::move(source.updateOrder_);
 	followPoses_ = std::move(source.followPoses_);
 	orbitStates_ = std::move(source.orbitStates_);
-	spawn_ = source.spawn_;
+	spawns_ = std::move(source.spawns_);
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;
 	pose_ = source.pose_;
@@ -287,9 +287,9 @@ bool SceneSimulation::ApplyTriggerActions(
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
-	SceneObjectId checkpoint = 0, checkpointTarget = 0;
-	SceneObjectId launchTarget = 0, respawnTarget = 0;
-	float launchSpeed = 0;
+	std::map<SceneObjectId, SceneObjectId> checkpoints;
+	std::map<SceneObjectId, float> launches;
+	std::set<SceneObjectId> respawns;
 	SceneObjectId selectedCamera = 0;
 	float cameraBlendSeconds = 0;
 	auto requestedScene = pendingScene_;
@@ -355,7 +355,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			}
 
 			if (action.TargetsContactCharacter() &&
-			    (action.target != character_ ||
+			    (!controllers_.contains(action.target) ||
 			     (action.UsesContact() && signal.other != action.target)))
 				continue;
 			if (!signal.delayElapsed && action.delaySeconds > 0) {
@@ -424,8 +424,7 @@ bool SceneSimulation::ApplyTriggerActions(
 
 			if (action.operation ==
 			    TriggerAction::Operation::LAUNCH_CHARACTER) {
-				launchTarget = action.target;
-				launchSpeed = action.launchSpeed;
+				launches[action.target] = action.launchSpeed;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -433,7 +432,7 @@ bool SceneSimulation::ApplyTriggerActions(
 
 			if (action.operation ==
 			    TriggerAction::Operation::RESPAWN_CHARACTER) {
-				respawnTarget = action.target;
+				respawns.insert(action.target);
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -454,8 +453,7 @@ bool SceneSimulation::ApplyTriggerActions(
 				}
 
 				if (settingCheckpoint) {
-					checkpoint = action.destination;
-					checkpointTarget = action.target;
+					checkpoints[action.target] = action.destination;
 				} else {
 					destinations[action.target] = action.destination;
 				}
@@ -643,9 +641,9 @@ bool SceneSimulation::ApplyTriggerActions(
 		frameEvents_.swap(events);
 	}
 
-	std::optional<DirectX::XMFLOAT3> checkpointPosition;
+	std::map<SceneObjectId, DirectX::XMFLOAT3> checkpointPositions;
 
-	if (checkpoint && character_ == checkpointTarget) {
+	for (const auto &[target, checkpoint] : checkpoints) {
 		SceneWorldTransform destination;
 
 		if (!SceneHierarchy::GetWorldTransform(scene_, checkpoint,
@@ -656,7 +654,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			return false;
 		}
 
-		checkpointPosition = destination.GetPosition();
+		checkpointPositions[target] = destination.GetPosition();
 	}
 
 	if (!destinations.empty()) {
@@ -694,15 +692,15 @@ bool SceneSimulation::ApplyTriggerActions(
 
 	const bool changingCamera = selectedCamera && selectedCamera != camera_;
 
-	if (checkpointPosition || changingCamera || !animationPlayback.empty()) {
+	if (!checkpointPositions.empty() || changingCamera || !animationPlayback.empty()) {
 		const auto previousCameraPose = pose_;
 		Scene candidate;
 		candidate.CopyFrom(scene_);
 
-		if (checkpointPosition) {
-			auto &settings = *candidate.FindObject(checkpointTarget)->respawn;
+		for (const auto &[target, position] : checkpointPositions) {
+			auto &settings = *candidate.FindObject(target)->respawn;
 			settings.useStartPosition = false;
-			settings.position = *checkpointPosition;
+			settings.position = position;
 		}
 
 		// 再生シーンだけのPrimaryを切り替え、追従姿勢や他の実行状態を引き継ぐ。
@@ -743,7 +741,7 @@ bool SceneSimulation::ApplyTriggerActions(
 		if (!SynchronizeSceneChanges(candidate, transformed, error,
 		                             invalidObject)) {
 			const char *operation =
-			    checkpointPosition
+			    !checkpointPositions.empty()
 			        ? (selectedCamera ? "Set Camera / Set Checkpoint"
 			                          : "Set Checkpoint")
 			        : "Set Camera";
@@ -760,18 +758,18 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 	}
 
-	const bool respawning = respawnTarget && respawnTarget == character_;
-
-	if (respawning) {
-		const auto position = spawn_;
-
-		if (!ApplyTeleports({{respawnTarget, position}}, error,
-		                    invalidObject)) {
-			error = "Respawn Character failed: " + error;
-			return false;
-		}
+	std::map<SceneObjectId, DirectX::XMFLOAT3> respawnPositions;
+	for (const auto id : respawns)
+		if (const auto spawn = spawns_.find(id); spawn != spawns_.end())
+			respawnPositions.emplace(id, spawn->second);
+	if (!respawnPositions.empty() &&
+	    !ApplyTeleports(respawnPositions, error, invalidObject)) {
+		error = "Respawn Character failed: " + error;
+		return false;
+	}
+	if (const auto found = respawnPositions.find(character_); found != respawnPositions.end()) {
 		++respawnCount_;
-		lastRespawnPosition_ = position;
+		lastRespawnPosition_ = found->second;
 	}
 
 	for (const auto &[id, playback] : motionPlayback) {
@@ -832,12 +830,16 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 	}
 
-	if (!respawning && launchTarget && launchTarget == character_ &&
-	    !controller_.Launch(launchSpeed)) {
-		error = "Launch Character could not set the vertical speed.";
-		if (invalidObject)
-			*invalidObject = launchTarget;
-		return false;
+	for (const auto &[id, speed] : launches) {
+		const auto controller = controllers_.find(id);
+		if (controller == controllers_.end() || respawnPositions.contains(id))
+			continue;
+		if (!controller->second.Launch(speed)) {
+			error = "Launch Character could not set the vertical speed.";
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
 	}
 
 	for (const auto &[id, startMarkersDispatched] : animationClips) {
@@ -977,7 +979,6 @@ bool SceneSimulation::SynchronizeSceneChanges(
 	std::erase_if(next.pendingActionSignals_, [&](const auto &signal) {
 		return !working.Contains(signal.receiver);
 	});
-	bool resetCharacter = false;
 	std::set<SceneObjectId> teleported;
 
 	for (const auto id : transformed) {
@@ -989,13 +990,11 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		}
 
 		teleported.insert(subtree.begin(), subtree.end());
-		resetCharacter |= std::find(subtree.begin(), subtree.end(),
-		                            character_) != subtree.end();
 	}
 
 	// 追従で移動したColliderと主人公も瞬間移動として扱う。
 	for (const auto &[id, object] : next.scene_.GetObjects()) {
-		if ((!object.collider && id != character_) || teleported.contains(id))
+		if (!object.collider || teleported.contains(id))
 			continue;
 		SceneWorldTransform before, after;
 
@@ -1007,18 +1006,19 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		}
 	}
 
-	resetCharacter |= teleported.contains(character_);
-
-	if (next.character_ && resetCharacter &&
-	    !next.controller_.Teleport(next.controller_.GetTransform().translation,
-	                               next.world_)) {
-		error = "Teleport character destination overlaps a solid collider.";
-
-		if (invalidObject) {
-			*invalidObject = character_;
+	for (auto &[id, controller] : next.controllers_) {
+		if (!teleported.contains(id))
+			continue;
+		auto characterWorld = next.world_;
+		std::vector<SceneObjectId> ignored;
+		if (!SceneHierarchy::GetSubtree(next.scene_, id, ignored) ||
+		    !characterWorld.Rebuild(next.scene_, ignored, nullptr, next.physics_.GetWorld()) ||
+		    !controller.Teleport(controller.GetTransform().translation, characterWorld)) {
+			error = "Teleport character destination overlaps a solid collider.";
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
 		}
-
-		return false;
 	}
 
 	const std::vector<SceneObjectId> ids(teleported.begin(), teleported.end());

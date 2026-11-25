@@ -1,6 +1,7 @@
 #pragma once
 
 #include "input/Key.h"
+#include "input/GamepadButton.h"
 #include <array>
 #include <optional>
 #include <string_view>
@@ -16,6 +17,11 @@ struct GameInputBindings {
 	Key jump = Key::SPACE;
 	Key interact = Key::E;
 	bool arrowMovement = false;
+	enum class MoveStick { NONE, LEFT, RIGHT };
+	MoveStick moveStick = MoveStick::LEFT;
+	bool dpadMovement = true;
+	std::optional<GamepadButton> gamepadJump = GamepadButton::SOUTH;
+	std::optional<GamepadButton> gamepadInteract = GamepadButton::WEST;
 
 	/// <summary>
 	/// 設定ファイルで使用するキー名と共通キーの対応
@@ -92,6 +98,11 @@ struct GameInputBindings {
 	/// </summary>
 	/// <returns>true:有効 false:未対応のキー、または重複あり</returns>
 	constexpr bool IsValid() const {
+		if ((moveStick != MoveStick::NONE && moveStick != MoveStick::LEFT &&
+		     moveStick != MoveStick::RIGHT) ||
+		    (gamepadJump && *gamepadJump >= GamepadButton::COUNT) ||
+		    (gamepadInteract && *gamepadInteract >= GamepadButton::COUNT))
+			return false;
 		for (std::size_t i = 0; i < kActions.size(); ++i) {
 			const auto key = this->*kActions[i].member;
 

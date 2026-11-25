@@ -28,14 +28,13 @@ class SceneMotion {
 	/// </summary>
 	/// <param name="scene">作業中の再生用シーン。失敗時は呼び出し側のトランザクションで破棄する</param>
 	/// <param name="seconds">有限な0以上の秒数。1フレームは0.1秒を上限とする</param>
-	/// <param name="controller">主人公が有効な場合のコントローラー。主人公なしはnullptr</param>
-	/// <param name="character">有効な主人公のID。なしは0</param>
+	/// <param name="controllers">有効なキャラクターのコントローラー</param>
 	/// <param name="triggers">指定時は各移動区間の接触を追跡する。eventsと同時に指定する</param>
 	/// <param name="events">区間内のEnter/Exitを発生順に追加する。未指定は接触を追跡しない</param>
 	/// <returns>true:更新または障害物で停止 false:設定・形状・階層が無効</returns>
 	/// <remarks>固体は障害物や空中の主人公を押し潰さず停止する。Triggerと描画だけの物体は衝突で止まらない。無効な枝の時間は進めない</remarks>
-	bool Advance(Scene &scene, float seconds, CharacterController *controller,
-	             SceneObjectId character, TriggerWorld *triggers = nullptr,
+	bool Advance(Scene &scene, float seconds, std::map<SceneObjectId, CharacterController> &controllers,
+	             TriggerWorld *triggers = nullptr,
 	             std::vector<TriggerEvent> *events = nullptr);
 
 	/// <summary>

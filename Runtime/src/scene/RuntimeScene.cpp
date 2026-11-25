@@ -174,12 +174,6 @@ bool RuntimeScene::Update(float seconds) {
 	if (input_.IsActive()) {
 		const auto &keys = input_.GetKeyboard();
 
-		if (keys.IsPressed(Key::ESCAPE) &&
-		    !GameActionBinding::UsesKey(config_.actions, Key::ESCAPE)) {
-			close_ = true;
-			return true;
-		}
-
 		input = CharacterInputReader::Read(
 		    keys, config_.input,
 		    config_.cameraRelativeMovement ? &simulation_.GetCameraPose()

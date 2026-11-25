@@ -18,7 +18,7 @@ inline constexpr double kMinimumHeadingRatio = 0.000001;
 /// <param name="keyboard">呼び出し側でフォーカスを確認したキーボード</param>
 /// <param name="bindings">有効なキー設定。未指定はWASD移動とSpaceジャンプ</param>
 /// <param name="movementCamera">指定時は水平な注視方向に移動を合わせる。真上・真下に近い向きはワールド基準。nullptrは常にワールド基準</param>
-/// <param name="gamepad">指定時は左スティック・十字キーの移動と南側ボタンのジャンプ・西側ボタンの操作押下を加える。nullptrや未接続はキーボードだけを使う</param>
+/// <param name="gamepad">指定時は設定された移動軸とボタン入力を加える。nullptrや未接続はキーボードだけを使う</param>
 /// <returns>ワールドX/Z方向の入力とジャンプ押下。キー設定やカメラ位置・注視点が無効な場合は全てゼロ</returns>
 inline CharacterInput Read(const Keyboard &keyboard,
                            const GameInputBindings &bindings = {},
@@ -46,15 +46,21 @@ inline CharacterInput Read(const Keyboard &keyboard,
 	                     keyboard.IsPressed(bindings.interact)};
 
 	if (gamepad && gamepad->IsConnected()) {
-		const auto &stick = gamepad->GetState().leftStick;
-		input.moveX += stick.x +
-		               float(gamepad->IsDown(GamepadButton::DPAD_RIGHT)) -
-		               float(gamepad->IsDown(GamepadButton::DPAD_LEFT));
-		input.moveZ += stick.y +
-		               float(gamepad->IsDown(GamepadButton::DPAD_UP)) -
-		               float(gamepad->IsDown(GamepadButton::DPAD_DOWN));
-		input.jumpPressed |= gamepad->IsPressed(GamepadButton::SOUTH);
-		input.interactPressed |= gamepad->IsPressed(GamepadButton::WEST);
+		if (bindings.moveStick != GameInputBindings::MoveStick::NONE) {
+			const auto &state = gamepad->GetState();
+			const auto &stick = bindings.moveStick == GameInputBindings::MoveStick::LEFT
+			    ? state.leftStick : state.rightStick;
+			input.moveX += stick.x;
+			input.moveZ += stick.y;
+		}
+		if (bindings.dpadMovement) {
+			input.moveX += float(gamepad->IsDown(GamepadButton::DPAD_RIGHT)) -
+			               float(gamepad->IsDown(GamepadButton::DPAD_LEFT));
+			input.moveZ += float(gamepad->IsDown(GamepadButton::DPAD_UP)) -
+			               float(gamepad->IsDown(GamepadButton::DPAD_DOWN));
+		}
+		input.jumpPressed |= bindings.gamepadJump && gamepad->IsPressed(*bindings.gamepadJump);
+		input.interactPressed |= bindings.gamepadInteract && gamepad->IsPressed(*bindings.gamepadInteract);
 	}
 
 	if (!movementCamera) {

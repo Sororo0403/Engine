@@ -188,6 +188,17 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 			    GameInputBindings::GetName(input.*action.member);
 		}
 
+		const auto gamepadButton = [](const auto &button) -> nlohmann::json {
+			if (!button)
+				return nullptr;
+			return GameActionBinding::kGamepadOptions[static_cast<std::size_t>(*button)].name;
+		};
+		inputJson["moveStick"] = input.moveStick == GameInputBindings::MoveStick::LEFT ? "Left"
+		    : input.moveStick == GameInputBindings::MoveStick::RIGHT ? "Right" : "None";
+		inputJson["dpadMovement"] = input.dpadMovement;
+		inputJson["gamepadJump"] = gamepadButton(input.gamepadJump);
+		inputJson["gamepadInteract"] = gamepadButton(input.gamepadInteract);
+
 		auto actionsJson = nlohmann::json::array();
 
 		for (const auto &action : actions) {
@@ -340,6 +351,31 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 
 				candidate.input.*action.member = *key;
 			}
+		}
+
+		if (data.at("version") >= 16) {
+			const auto &bindings = data.at("input");
+			const auto stick = bindings.at("moveStick").get<std::string>();
+			if (stick == "Left")
+				candidate.input.moveStick = GameInputBindings::MoveStick::LEFT;
+			else if (stick == "Right")
+				candidate.input.moveStick = GameInputBindings::MoveStick::RIGHT;
+			else if (stick == "None")
+				candidate.input.moveStick = GameInputBindings::MoveStick::NONE;
+			else
+				throw std::runtime_error("Unsupported gameplay move stick.");
+			candidate.input.dpadMovement = bindings.at("dpadMovement").get<bool>();
+			const auto readGamepad = [&](const char *name) -> std::optional<GamepadButton> {
+				const auto &value = bindings.at(name);
+				if (value.is_null())
+					return std::nullopt;
+				for (const auto &option : GameActionBinding::kGamepadOptions)
+					if (value == option.name)
+						return option.button;
+				throw std::runtime_error("Unsupported gameplay gamepad button.");
+			};
+			candidate.input.gamepadJump = readGamepad("gamepadJump");
+			candidate.input.gamepadInteract = readGamepad("gamepadInteract");
 		}
 
 		if (data.at("version") < 6 && !candidate.input.IsValid()) {

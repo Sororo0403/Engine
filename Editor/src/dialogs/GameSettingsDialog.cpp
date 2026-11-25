@@ -121,7 +121,27 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 		}
 	}
 
-	if (ui.Button("Reset Gameplay Keys")) {
+	ImGui::BeginDisabled(!gamepadEnabled_);
+	int stick = static_cast<int>(input_.moveStick);
+	if (ImGui::Combo("Gamepad Move Stick", &stick, "None\0Left Stick\0Right Stick\0"))
+		input_.moveStick = static_cast<GameInputBindings::MoveStick>(stick);
+	ImGui::Checkbox("Also Move with D-Pad", &input_.dpadMovement);
+	const auto gamepadButton = [&](const char *label, std::optional<GamepadButton> &button) {
+		const auto &options = GameActionBinding::kGamepadOptions;
+		if (ImGui::BeginCombo(label, button ? options[static_cast<std::size_t>(*button)].name : "None")) {
+			if (ui.Selectable("None", !button))
+				button.reset();
+			for (const auto &option : options)
+				if (ui.Selectable(option.name, button == option.button))
+					button = option.button;
+			ImGui::EndCombo();
+		}
+	};
+	gamepadButton("Gamepad Jump", input_.gamepadJump);
+	gamepadButton("Gamepad Interact", input_.gamepadInteract);
+	ImGui::EndDisabled();
+
+	if (ui.Button("Reset Gameplay Input")) {
 		input_ = {};
 	}
 

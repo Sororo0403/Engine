@@ -50,17 +50,10 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error,
 			arrival = id;
 		}
 
-		if (object.character) {
-			if (character) {
-				error = "A tagged arrival requires exactly one active "
-				        "Character Controller.";
-				if (invalidObject)
-					*invalidObject = id;
-				return false;
-			}
-
+		if (object.character &&
+		    (!character || (!scene.FindObject(character)->character->inputEnabled &&
+		                   object.character->inputEnabled)))
 			character = id;
-		}
 	}
 
 	if (!arrival) {
@@ -453,88 +446,68 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		}
 
 		SceneObjectId character = 0, camera = 0;
-
 		for (const auto &[id, object] : working.GetObjects()) {
-			if (!SceneActivity::IsActive(working, id)) {
+			if (!SceneActivity::IsActive(working, id))
 				continue;
-			}
-
-			if (object.character) {
+			if (object.character &&
+			    (!character || (preserve && id == character_) ||
+			     ((!preserve || character != character_) &&
+			      !working.FindObject(character)->character->inputEnabled &&
+			      object.character->inputEnabled)))
 				character = id;
-			}
-
-			if (object.camera && object.camera->primary) {
+			if (object.camera && object.camera->primary)
 				camera = id;
-			}
-		}
-
-		std::vector<SceneObjectId> ignored;
-
-		if (character &&
-		    !SceneHierarchy::GetSubtree(working, character, ignored)) {
-			return fail(character, "Character hierarchy is invalid.");
 		}
 
 		auto physics = preserve ? physics_ : ScenePhysics{};
 		if (!physics.Configure(working, preserve, error, invalidObject))
 			return false;
 		auto world = preserve ? world_ : CollisionWorld{};
-		SceneObjectId invalidCollider = 0;
+		std::map<SceneObjectId, CharacterController> controllers;
+		std::map<SceneObjectId, DirectX::XMFLOAT3> spawns;
+		for (const auto &[id, object] : working.GetObjects()) {
+			if (!object.character || !SceneActivity::IsActive(working, id))
+				continue;
+			std::vector<SceneObjectId> ignored;
+			SceneObjectId invalidCollider = 0;
+			auto characterWorld = world;
+			if (!SceneHierarchy::GetSubtree(working, id, ignored) ||
+			    !characterWorld.Rebuild(working, ignored, &invalidCollider, physics.GetWorld()))
+				return fail(invalidCollider ? invalidCollider : id, "Character collision world is invalid.");
 
-		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
-		                   &invalidCollider, physics.GetWorld())) {
-			return fail(
-			    invalidCollider,
-			    "Collider cannot be represented at its world transform.");
-		}
-
-		const bool continuing =
-		    preserve && character != 0 && character == character_;
-		CharacterController controller;
-
-		if (continuing) {
-			controller = controller_;
-		}
-
-		DirectX::XMFLOAT3 spawn{};
-
-		if (character) {
-			const auto &object = *working.FindObject(character);
+			auto &controller = controllers[id];
+			const auto existing = controllers_.find(id);
+			const bool continuing = preserve && existing != controllers_.end();
+			if (continuing)
+				controller = existing->second;
 			SceneWorldTransform transform;
-			if (!SceneHierarchy::GetWorldTransform(working, character,
-			                                       transform) ||
+			if (!SceneHierarchy::GetWorldTransform(working, id, transform) ||
 			    (continuing ? (!controller.SetSettings(*object.character) ||
-			                   !controller.SynchronizeWorldMatrix(
-			                       transform.matrix, world) ||
-			                   !controller.RefreshContacts(world))
-			                : !controller.Initialize(
-			                      transform.matrix, *object.collider,
-			                      *object.character, world))) {
-				return fail(character, "The character overlaps a collider or "
-				                       "has an invalid world transform.");
-			}
-			spawn = continuing ? spawn_ : transform.GetPosition();
+			                   !controller.SynchronizeWorldMatrix(transform.matrix, characterWorld) ||
+			                   !controller.RefreshContacts(characterWorld))
+			                : !controller.Initialize(transform.matrix, *object.collider,
+			                                         *object.character, characterWorld)))
+				return fail(id, "The character overlaps a collider or has an invalid world transform.");
 
+			auto &spawn = spawns[id];
+			spawn = continuing ? spawns_.at(id) : transform.GetPosition();
 			if (object.respawn) {
 				const auto &settings = *object.respawn;
-
-				if (!settings.useStartPosition) {
+				if (!settings.useStartPosition)
 					spawn = settings.position;
-				}
-
-				// 復帰先の検証はコピーで行い、継続する主人公の速度と入力を消さない。
 				auto placement = controller;
 				if (spawn.y <= settings.minimumY ||
-				    (!continuing &&
-				     transform.GetPosition().y <= settings.minimumY) ||
-				    !placement.Teleport(spawn, world)) {
-					return fail(
-					    character,
-					    "The character and its respawn point must be above "
-					    "Fall Below Y and outside solid colliders.");
-				}
+				    (!continuing && transform.GetPosition().y <= settings.minimumY) ||
+				    !placement.Teleport(spawn, characterWorld))
+					return fail(id, "The character and its respawn point must be above "
+					                "Fall Below Y and outside solid colliders.");
 			}
+
+			if (id == character)
+				world = std::move(characterWorld);
 		}
+		if (!character && !world.Rebuild(working, SceneObjectId{}, nullptr, physics.GetWorld()))
+			return fail(0, "Collider cannot be represented at its world transform.");
 
 		std::map<SceneObjectId, CameraPose> follows;
 		SceneCameraUtils::FollowObstacleCache initialObstacles(working);
@@ -624,7 +597,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		world_ = std::move(world);
 		if (!deferTriggerUpdate)
 			triggers_ = std::move(triggers);
-		controller_ = controller;
+		controllers_.swap(controllers);
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
 		particles_ = std::move(particles);
@@ -632,6 +605,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		physics_ = std::move(physics);
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
+		const bool sameInputTarget = preserve && character && character == character_;
 		character_ = character;
 		if (!preserve || camera != camera_)
 			cameraTransition_.reset();
@@ -640,9 +614,9 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		followPoses_ = std::move(follows);
 		orbitStates_ = std::move(orbits);
 		cameraSettings_ = lens;
-		spawn_ = spawn;
+		spawns_.swap(spawns);
 
-		if (!continuing) {
+		if (!sameInputTarget) {
 			respawnCount_ = 0;
 			lastRespawnPosition_.reset();
 		}
@@ -687,6 +661,8 @@ void SceneSimulation::Stop() {
 	collisions_ = CollisionEvents{};
 	scene_.Clear();
 	character_ = camera_ = 0;
+	controllers_.clear();
+	spawns_.clear();
 	updateOrder_.clear();
 	followPoses_.clear();
 	orbitStates_.clear();
@@ -906,7 +882,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 	try {
 		Scene working;
 		working.CopyFrom(scene_);
-		auto next = controller_;
+		auto controllers = controllers_;
 		auto animations = animations_;
 		std::string animationError;
 
@@ -926,8 +902,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		std::vector<TriggerEvent> motionEvents;
 		if (seconds > 0)
 			triggers = triggers_;
-		if (!motion.Advance(working, seconds, character_ ? &next : nullptr,
-		                    character_, triggers ? &*triggers : nullptr,
+		if (!motion.Advance(working, seconds, controllers, triggers ? &*triggers : nullptr,
 		                    triggers ? &motionEvents : nullptr))
 			return false;
 		auto physics = physics_;
@@ -947,12 +922,9 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			return false;
 		}
 
-		auto world = character_ ? world_ : CollisionWorld{};
-		std::vector<SceneObjectId> ignored;
-		if (character_ &&
-		    !SceneHierarchy::GetSubtree(working, character_, ignored))
-			return false;
-		bool respawned = false;
+		auto world = world_;
+		std::vector<SceneObjectId> respawnedBranches;
+		std::set<SceneObjectId> respawned;
 		SceneCameraUtils::FollowObstacleCache cameraObstacles(working);
 		// 親と追従対象を先に更新する。カメラを親にした主人公も同じ依存順で処理する。
 		for (const auto id : updateOrder_) {
@@ -973,26 +945,24 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				cameraObstacles.TransformChanged(id);
 			}
 
-			if (id == character_) {
+			if (const auto entry = controllers.find(id); entry != controllers.end()) {
+				auto &next = entry->second;
+				std::vector<SceneObjectId> ignored;
 				SceneWorldTransform transform;
 				if (!object->collider || !object->character ||
-				    !world.Rebuild(working,
-				                   std::span<const SceneObjectId>{ignored},
-				                   nullptr, physics.GetWorld()) ||
-				    !SceneHierarchy::GetWorldTransform(working, id,
-				                                       transform) ||
+				    !SceneHierarchy::GetSubtree(working, id, ignored) ||
+				    !world.Rebuild(working, ignored, nullptr, physics.GetWorld()) ||
+				    !SceneHierarchy::GetWorldTransform(working, id, transform) ||
 				    !next.SynchronizeWorldMatrix(transform.matrix, world) ||
-				    !next.Update(seconds, input, world))
+				    !next.Update(seconds, id == character_ ? input : CharacterInput{}, world))
 					return false;
-				if (object->respawn && next.GetTransform().translation.y <
-				                           object->respawn->minimumY) {
-					if (!next.Teleport(spawn_, world))
+				if (object->respawn && next.GetTransform().translation.y < object->respawn->minimumY) {
+					if (!next.Teleport(spawns_.at(id), world))
 						return false;
-					respawned = true;
+					respawned.insert(id);
+					respawnedBranches.insert(respawnedBranches.end(), ignored.begin(), ignored.end());
 				}
-
-				if (!SceneHierarchy::SetWorldPosition(
-				        working, id, next.GetTransform().translation))
+				if (!SceneHierarchy::SetWorldPosition(working, id, next.GetTransform().translation))
 					return false;
 				cameraObstacles.TransformChanged(id);
 			}
@@ -1011,7 +981,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				        ? orbit->second.MakePose(target.GetPosition(), settings)
 				        : SceneCameraUtils::MakeFollowPose(target.GetPosition(),
 				                                           settings);
-				const float blend = respawned || settings.smoothing == 0
+				const float blend = respawned.contains(settings.target) || settings.smoothing == 0
 				                        ? 1.0f
 				                        : static_cast<float>(-std::expm1(
 				                              -double(settings.smoothing) *
@@ -1080,32 +1050,33 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		}
 
 		// 落下復帰の位置を剛体にも反映し、次のフレームで復帰距離を速度に変換しない。
-		if (respawned && physics.GetWorld() &&
+		if (!respawned.empty() && physics.GetWorld() &&
 		    !physics.Configure(working, true, lastUpdateError_)) {
 			return false;
 		}
 
-		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
-		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
-		                   nullptr, physics.GetWorld()))
-			return false;
-		if (character_) {
+		// 移動後の姿勢と接触を同期し、操作対象の衝突ワールドを保持する。
+		CollisionWorld inputWorld;
+		for (auto &[id, controller] : controllers) {
+			std::vector<SceneObjectId> ignored;
 			SceneWorldTransform transform;
-			if (!SceneHierarchy::GetWorldTransform(working, character_,
-			                                       transform) ||
-			    !next.SynchronizeWorldMatrix(transform.matrix, world))
+			if (!SceneHierarchy::GetSubtree(working, id, ignored) ||
+			    !world.Rebuild(working, ignored, nullptr, physics.GetWorld()) ||
+			    !SceneHierarchy::GetWorldTransform(working, id, transform) ||
+			    !controller.SynchronizeWorldMatrix(transform.matrix, world))
 				return false;
+			if (id == character_)
+				inputWorld = world;
 		}
+		if (!character_ && !inputWorld.Rebuild(working, SceneObjectId{}, nullptr, physics.GetWorld()))
+			return false;
 
-		// 落下復帰では主人公と子孫の瞬間移動経路を検知しない。
-		// 終点でのEnterと、開始時の接触に対するExitは通常どおり生成する。
-		if (seconds > 0) {
-			if (!triggers->Update(
-			        working, respawned ? std::span<const SceneObjectId>{ignored}
-			                           : std::span<const SceneObjectId>{})) {
-				return false;
-			}
-		}
+		// 落下復帰の瞬間移動経路は検知せず、終点の接触だけ処理する。
+		std::ranges::sort(respawnedBranches);
+		respawnedBranches.erase(std::unique(respawnedBranches.begin(), respawnedBranches.end()),
+		                       respawnedBranches.end());
+		if (seconds > 0 && !triggers->Update(working, respawnedBranches))
+			return false;
 
 		auto particles = particles_;
 		if (!particles.Advance(working, seconds, lastUpdateError_))
@@ -1129,7 +1100,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		}
 
 		scene_.AdoptValidated(working);
-		controller_ = next;
+		controllers_.swap(controllers);
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
 		animationClips_ = std::move(clips);
@@ -1137,15 +1108,15 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		particles_ = std::move(particles);
 		animators_ = std::move(animators);
 		physics_ = std::move(physics);
-		world_ = std::move(world);
+		world_ = std::move(inputWorld);
 		followPoses_ = std::move(follows);
 		orbitStates_ = std::move(orbits);
 		pose_ = pose;
 		cameraTransition_ = transition;
 
-		if (respawned) {
+		if (respawned.contains(character_)) {
 			++respawnCount_;
-			lastRespawnPosition_ = next.GetTransform().translation;
+			lastRespawnPosition_ = controllers_.at(character_).GetTransform().translation;
 		}
 
 		return true;
@@ -1160,16 +1131,17 @@ SceneSimulation::GetCharacterState() const {
 		return std::nullopt;
 	}
 
+	const auto &controller = controllers_.at(character_);
 	SceneObjectId groundObject = 0;
 
-	if (controller_.IsGrounded()) {
-		controller_.FindGroundObject(world_, groundObject);
+	if (controller.IsGrounded()) {
+		controller.FindGroundObject(world_, groundObject);
 	}
 
 	return CharacterRuntimeState{character_,
-	                             controller_.GetTransform().translation,
-	                             controller_.GetVerticalVelocity(),
-	                             controller_.IsGrounded(),
+	                             controller.GetTransform().translation,
+	                             controller.GetVerticalVelocity(),
+	                             controller.IsGrounded(),
 	                             respawnCount_,
 	                             lastRespawnPosition_,
 	                             groundObject};

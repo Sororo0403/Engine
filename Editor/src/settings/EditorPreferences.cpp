@@ -952,7 +952,9 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 			}
 
-			if (settings.contains("lighting") || settings.contains("actions")) {
+			const bool hasGamepadBindings = settings.contains("input") &&
+			                                settings.at("input").contains("moveStick");
+			if (settings.contains("lighting") || settings.contains("actions") || hasGamepadBindings) {
 				std::string text, error;
 
 				if (!loaded.gameExport.Serialize(text, error)) {
@@ -960,6 +962,8 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 
 				auto configuration = nlohmann::json::parse(text);
+				if (hasGamepadBindings)
+					configuration["input"] = settings.at("input");
 
 				if (settings.contains("lighting")) {
 					configuration["lighting"] = settings.at("lighting");
@@ -1128,13 +1132,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			recentJson.push_back(PathUtils::ToUtf8(recentPath));
 		}
 
-		nlohmann::json inputJson{{"arrowMovement", gameExport.input.arrowMovement}};
-
-		for (const auto &action : GameInputBindings::kActions) {
-			inputJson[action.name] =
-			    GameInputBindings::GetName(gameExport.input.*action.member);
-		}
-
 		auto assetDirectories = nlohmann::json::array();
 
 		for (const auto &directory : assets.GetDirectories()) {
@@ -1148,6 +1145,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 
 		const auto gameJson = nlohmann::json::parse(gameText);
+		const auto &inputJson = gameJson.at("input");
 		const auto lighting = gameJson.at("lighting");
 
 		auto bookmarks = nlohmann::json::array();

@@ -37,7 +37,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		             : std::string(reason),
 		     asset});
 	};
-	SceneObjectId firstCharacter = 0, primary = 0;
+	SceneObjectId primary = 0;
 	SceneActivity::States active;
 
 	if (!SceneActivity::BuildStates(scene, active)) {
@@ -332,15 +332,6 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		}
 
 		if (object.character) {
-			if (firstCharacter) {
-				add(id, std::format(
-				            "Only one input-controlled Character Controller is "
-				            "supported per scene. Conflicts with object ID {}.",
-				            firstCharacter));
-			} else {
-				firstCharacter = id;
-			}
-
 			if (!object.collider || object.collider->isTrigger ||
 			    !object.character->IsValid()) {
 				add(id, "Character Controller requires a non-trigger "

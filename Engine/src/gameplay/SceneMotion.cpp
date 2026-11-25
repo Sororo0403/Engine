@@ -149,19 +149,21 @@ bool SceneMotion::SetPlayback(SceneObjectId id, Playback playback) {
 }
 
 bool SceneMotion::Advance(Scene &scene, float seconds,
-                          CharacterController *controller,
-                          SceneObjectId character, TriggerWorld *triggers,
+                          std::map<SceneObjectId, CharacterController> &controllers,
+                          TriggerWorld *triggers,
                           std::vector<TriggerEvent> *events) {
 	if (!std::isfinite(seconds) || seconds < 0 ||
-	    bool(controller) != bool(character) || bool(triggers) != bool(events))
+	    bool(triggers) != bool(events))
 		return false;
 	if (seconds == 0 || states_.empty())
 		return true;
-	std::vector<SceneObjectId> order, characterBranch;
-	if (!SceneHierarchy::GetEvaluationOrder(scene, order) ||
-	    (character &&
-	     !SceneHierarchy::GetSubtree(scene, character, characterBranch)))
+	std::vector<SceneObjectId> order;
+	if (!SceneHierarchy::GetEvaluationOrder(scene, order))
 		return false;
+	std::map<SceneObjectId, std::vector<SceneObjectId>> characterBranches;
+	for (const auto &[id, controller] : controllers)
+		if (!SceneHierarchy::GetSubtree(scene, id, characterBranches[id]))
+			return false;
 	double remaining = (std::min)(seconds, kMaximumFrameSeconds);
 
 	while (remaining > 0) {
@@ -225,21 +227,24 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			const auto inBranch = [&](SceneObjectId object) {
 				return std::ranges::find(branch, object) != branch.end();
 			};
-			SceneObjectId ground = 0;
-
-			if (controller && controller->IsGrounded()) {
-				CollisionWorld oldWorld;
-				if (!oldWorld.Rebuild(scene, characterBranch) ||
-				    !controller->FindGroundObject(oldWorld, ground))
-					return false;
-			}
-
-			const bool carried = controller && (inBranch(character) ||
-			                                    (ground && inBranch(ground)));
+			std::map<SceneObjectId, SceneObjectId> carried;
 			auto ignored = branch;
-			if (carried)
-				ignored.insert(ignored.end(), characterBranch.begin(),
-				               characterBranch.end());
+			auto movingBranches = std::vector<SceneObjectId>{};
+			for (const auto &[character, controller] : controllers) {
+				const auto &characterBranch = characterBranches.at(character);
+				SceneObjectId ground = 0;
+				if (controller.IsGrounded()) {
+					CollisionWorld oldWorld;
+					if (!oldWorld.Rebuild(scene, characterBranch) ||
+					    !controller.FindGroundObject(oldWorld, ground))
+						return false;
+				}
+				if (!inBranch(character) && (!ground || !inBranch(ground)))
+					continue;
+				carried.emplace(character, ground);
+				ignored.insert(ignored.end(), characterBranch.begin(), characterBranch.end());
+				movingBranches.insert(movingBranches.end(), characterBranch.begin(), characterBranch.end());
+			}
 			// 動的な箱は剛体ワールド側で移動床から力を受ける。
 			for (const auto &[bodyId, body] : scene.GetObjects())
 				if (body.rigidBody && body.rigidBody->enabled &&
@@ -249,21 +254,24 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			if (!obstacles.Rebuild(scene, ignored))
 				return false;
 			bool blocked = false;
-			if (!CheckBranch(scene, candidate, branch, characterBranch,
+			if (!CheckBranch(scene, candidate, branch, movingBranches,
 			                 obstacles, blocked))
 				return false;
 			if (blocked)
 				continue;
-			std::optional<CharacterController> passenger;
+			auto passengers = controllers;
 
-			if (controller) {
+			for (const auto &[character, passenger] : passengers) {
+				const auto carriedEntry = carried.find(character);
+				const bool riding = carriedEntry != carried.end();
+				const auto ground = riding ? carriedEntry->second : 0;
 				SceneWorldTransform beforePose, afterPose;
 				if (!SceneHierarchy::GetWorldTransform(scene, character,
 				                                       beforePose) ||
 				    !SceneHierarchy::GetWorldTransform(candidate, character,
 				                                       afterPose))
 					return false;
-				if (carried && ground && inBranch(ground)) {
+				if (riding && ground && inBranch(ground)) {
 					SceneWorldTransform oldGround, newGround;
 					if (!SceneHierarchy::GetWorldTransform(scene, ground,
 					                                       oldGround) ||
@@ -283,30 +291,43 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				}
 
 				const auto &collider = *scene.FindObject(character)->collider;
-				if (carried && ground && inBranch(ground) &&
+				if (riding && ground && inBranch(ground) &&
 				    collider.shape == Collider::Shape::BOX &&
-				    !SeparatePassenger(candidate, character, ground, afterPose))
-					continue;
-				if (carried) {
+				    !SeparatePassenger(candidate, character, ground, afterPose)) {
+					blocked = true;
+					break;
+				}
+				if (riding) {
 					CollisionSweepResult hit;
 					if (!obstacles.Sweep(collider, beforePose.matrix,
 					                     Difference(afterPose.GetPosition(),
 					                                beforePose.GetPosition()),
 					                     hit))
 						return false;
-					if (hit.objectId && hit.fraction < 1.0)
-						continue;
+					if (hit.objectId && hit.fraction < 1.0) {
+						blocked = true;
+						break;
+					}
 				}
-
-				CollisionWorld finalWorld;
-				if (!finalWorld.Rebuild(candidate, characterBranch))
-					return false;
-				passenger = *controller;
-				if (!passenger->SynchronizeWorldMatrix(afterPose.matrix,
-				                                       finalWorld) ||
-				    !passenger->RefreshContacts(finalWorld))
-					continue;
 			}
+			if (blocked)
+				continue;
+
+			for (auto &[character, passenger] : passengers) {
+				CollisionWorld finalWorld;
+				SceneWorldTransform pose;
+				if (!finalWorld.Rebuild(candidate, characterBranches.at(character)) ||
+				    !SceneHierarchy::GetWorldTransform(candidate, character, pose))
+					return false;
+				if (!passenger.SynchronizeWorldMatrix(pose.matrix, finalWorld) ||
+				    !passenger.RefreshContacts(finalWorld)) {
+					blocked = true;
+					break;
+				}
+			}
+
+			if (blocked)
+				continue;
 
 			if (triggers) {
 				if (!triggers->Update(candidate))
@@ -318,8 +339,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			}
 
 			scene.CopyFrom(candidate);
-			if (passenger)
-				*controller = *passenger;
+			controllers.swap(passengers);
 			found->second = state;
 		}
 

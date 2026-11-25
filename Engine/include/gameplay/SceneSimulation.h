@@ -584,7 +584,7 @@ class SceneSimulation {
 	CollisionWorld world_;
 	TriggerWorld triggers_;
 	CollisionEvents collisions_;
-	CharacterController controller_;
+	std::map<SceneObjectId, CharacterController> controllers_;
 	SceneMotion motion_;
 	SceneAnimations animations_;
 	SceneParticles particles_;
@@ -599,7 +599,7 @@ class SceneSimulation {
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。
 	std::map<SceneObjectId, CameraPose> followPoses_;
 	std::map<SceneObjectId, FollowCameraOrbit> orbitStates_;
-	DirectX::XMFLOAT3 spawn_{};
+	std::map<SceneObjectId, DirectX::XMFLOAT3> spawns_;
 	std::uint64_t respawnCount_ = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;
 
