@@ -35,24 +35,7 @@ class ColliderPlacement {
 	                               DirectX::XMFLOAT3 &translation,
 	                               std::string &error);
 
-	/// <summary>
-	/// 全選択Colliderの最下端を水平な作業平面へ合わせる共通の上下移動量を求める
-	/// </summary>
-	/// <param name="scene">変更しない編集シーン。表示状態やモデルの有無には依存しない</param>
-	/// <param name="objectIds">Colliderを持つ、重複しない選択物体ID</param>
-	/// <param name="height">有限な作業平面のワールドY座標</param>
-	/// <param name="translation">成功時だけ設定する共通移動量。XとZは0</param>
-	/// <param name="error">失敗理由。成功時は空</param>
-	/// <returns>true:計算成功または配置済み false:対象・形状・高さ・座標精度が無効。失敗時は出力を保持する</returns>
-	/// <remarks>回転・拡縮を反映した軸平行ボックスを使用し、面に微小な余白を残す。上方向への移動も可能。選択外との衝突や移動経路は検証しない</remarks>
-	static bool GetPlaneTranslation(const Scene &scene,
-	                                std::span<const SceneObjectId> objectIds,
-	                                float height,
-	                                DirectX::XMFLOAT3 &translation,
-	                                std::string &error);
-
   private:
 	// 再生時の衝突移動と同じ微小な隙間を残し、接触面への丸め込みを避ける
 	static constexpr double kSurfaceClearance = 0.0001;
-	static constexpr double kFaceRoundoffFactor = 4.0;
 };

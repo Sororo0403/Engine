@@ -15,34 +15,6 @@
 
 namespace {
 /// <summary>
-/// 選択枝の全子孫から、衝突形状を持つ物体を重複なく列挙する
-/// </summary>
-/// <param name="scene">変更しないシーン</param>
-/// <param name="ids">選択ID</param>
-/// <param name="colliders">成功時だけ置き換えるCollider付きのID一覧</param>
-/// <returns>true:形状あり false:選択・親子関係が無効、または形状なし</returns>
-bool CollectBranchColliders(const Scene &scene,
-                            std::span<const SceneObjectId> ids,
-                            std::vector<SceneObjectId> &colliders) {
-	std::vector<SceneObjectId> expanded;
-
-	if (!SceneHierarchy::ExpandSelection(scene, ids, expanded)) {
-		return false;
-	}
-
-	std::erase_if(expanded, [&](SceneObjectId id) {
-		return !scene.FindObject(id)->collider;
-	});
-
-	if (expanded.empty()) {
-		return false;
-	}
-
-	colliders.swap(expanded);
-	return true;
-}
-
-/// <summary>
 /// 実際の履歴と同じワールド移動を、検証用のシーンへ適用する
 /// </summary>
 /// <param name="source">変更しない元シーン</param>
@@ -213,92 +185,5 @@ bool ColliderPlacement::GetDropTranslation(
 	}
 
 	translation = {0.0f, movedAny ? -drop : 0.0f, 0.0f};
-	return true;
-}
-
-bool ColliderPlacement::GetPlaneTranslation(
-    const Scene &scene, std::span<const SceneObjectId> objectIds, float height,
-    DirectX::XMFLOAT3 &translation, std::string &error) {
-	error.clear();
-
-	if (!std::isfinite(height) || !CanDrop(scene, objectIds)) {
-		error = "Select objects with Colliders and a finite work-plane height.";
-		return false;
-	}
-
-	std::vector<SceneObjectId> colliderIds;
-
-	if (!CollectBranchColliders(scene, objectIds, colliderIds)) {
-		error = "The selection or parent hierarchy is invalid.";
-		return false;
-	}
-
-	std::set<SceneObjectId> seen;
-	double bottom = (std::numeric_limits<double>::infinity)();
-
-	for (const auto id : colliderIds) {
-		const auto &object = *scene.FindObject(id);
-		AxisAlignedBox bounds;
-
-		if (!seen.insert(id).second ||
-		    !ColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                   bounds)) {
-			error = "The selection contains duplicate IDs or invalid Collider "
-			        "bounds.";
-			return false;
-		}
-
-		bottom = (std::min)(bottom, double(bounds.minimum.y));
-	}
-
-	const double tolerance =
-	    (std::max)(kSurfaceClearance * 2,
-	               kFaceRoundoffFactor * std::numeric_limits<float>::epsilon() *
-	                   (std::max)(1.0, std::abs(double(height))));
-
-	if (bottom >= height && bottom - height <= tolerance) {
-		translation = {};
-		return true;
-	}
-
-	const double distance = double(height) + kSurfaceClearance - bottom;
-
-	if (!std::isfinite(distance) ||
-	    std::abs(distance) > (std::numeric_limits<float>::max)()) {
-		error = "The work-plane move cannot be represented at this position.";
-		return false;
-	}
-
-	const float offset = static_cast<float>(distance);
-	double movedBottom = (std::numeric_limits<double>::infinity)();
-
-	Scene movedScene;
-
-	if (!MakeMovedScene(scene, objectIds, {0, offset, 0}, movedScene)) {
-		error = "The moved hierarchy cannot be represented.";
-		return false;
-	}
-
-	for (const auto id : colliderIds) {
-		const auto &object = *movedScene.FindObject(id);
-		AxisAlignedBox bounds;
-
-		if (!ColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
-		                                   bounds)) {
-			error =
-			    "The moved Collider cannot be represented at this transform.";
-			return false;
-		}
-
-		movedBottom = (std::min)(movedBottom, double(bounds.minimum.y));
-	}
-
-	if (movedBottom < height || movedBottom - height > tolerance) {
-		error = "Coordinate precision prevents placing the Colliders on the "
-		        "work plane.";
-		return false;
-	}
-
-	translation = {0.0f, offset, 0.0f};
 	return true;
 }

@@ -20,7 +20,6 @@ class ColliderInspector {
 		FIT_TO_MODEL,
 		SELECT_OVERLAPS,
 		FRAME,
-		SET_WORK_PLANE,
 		COPY,
 		PASTE
 	};

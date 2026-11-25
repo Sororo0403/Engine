@@ -190,7 +190,6 @@ class EditorScene final : public IScene {
 		SNAP_POSITIONS,
 		DROP_TO_GROUND,
 		DROP_TO_SURFACE,
-		PLACE_ON_WORK_PLANE,
 		ADD_COLLIDERS,
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
@@ -885,11 +884,6 @@ class EditorScene final : public IScene {
 	/// 選択した全Colliderを、配置関係を保って真下の別Collider上面へ下ろす。全変更を1操作として記録する
 	/// </summary>
 	void DropSelectionToSurface();
-
-	/// <summary>
-	/// 選択した全Colliderを、内部の位置関係を保って現在の作業平面へ配置する。1操作として記録する
-	/// </summary>
-	void PlaceSelectionOnWorkPlane();
 
 	/// <summary>
 	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く
