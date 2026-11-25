@@ -424,13 +424,18 @@ void ControlsPanel::Draw() {
 	        {"File > Assets Folder",
 	         "Choose a folder for browsing and new imports. Use a folder "
 	         "outside the Editor build output to retain authored assets "
-	         "when rebuilding or cleaning. Create Folder adds a new child "
-	         "immediately; Select Folder accepts the Folder field. Cancel "
+	         "when rebuilding or cleaning. Use New folder in the Windows "
+	         "dialog to create a folder. Cancel "
 	         "keeps the current asset source. Existing scene references and "
 	         "files are kept in place. New scenes initially save inside an "
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"Assets > Open in Explorer",
+	         "Open the current Assets folder in Windows Explorer. The Assets "
+	         "list refreshes when you return to Editor. Use Refresh to update "
+	         "the list after other external changes. For moves and renames "
+	         "that need to update existing references, use the Assets panel."},
 	        {"Assets > Game Settings",
 	         "Files named *.settings.json appear in Game Settings. Select a "
 	         "file and use Load Game Settings, double-click it or use its "
@@ -1915,13 +1920,10 @@ void ControlsPanel::Draw() {
 	         "Latest Play Run shows messages from the most recent Play or "
 	         "Restart attempt onward. "
 	         "Clear Console resets recent messages while file output is kept."},
-	        {"File picker: Folder",
-	         "Open, Save and Save Copy use the absolute Folder field even "
-	         "without pressing Go. Go updates the visible file list. An "
-	         "invalid "
-	         "or missing folder prevents selection; an earlier folder is never "
-	         "used instead. Overwrite confirmation names the chosen "
-	         "destination."},
+	        {"Windows file picker",
+	         "Open, Save, Save Copy and folder selection use the Windows "
+	         "dialog. Use Search project scenes to filter the project scene "
+	         "list in Editor. Overwrite confirmation names the chosen destination."},
 	        {"File > Open Recent", "Reopen a recently used scene, with a save "
 	                               "prompt for unsaved changes."},
 	        {"File > Open Previous Scene (Ctrl+Shift+O)",

@@ -441,9 +441,35 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 		return false;
 	};
-	if (ui.Button("Refresh")) {
+	const auto trackExplorer = [&] {
+		refreshAfterExplorer_ = true;
+		explorerTookFocus_ = false;
+	};
+	const bool refreshClicked = ui.Button("Refresh");
+	if (refreshAfterExplorer_) {
+		DWORD foregroundProcess = 0;
+		GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
+		if (foregroundProcess != 0 && foregroundProcess != GetCurrentProcessId()) {
+			explorerTookFocus_ = true;
+		} else if (foregroundProcess == GetCurrentProcessId() && explorerTookFocus_) {
+			refreshAfterExplorer_ = false;
+		}
+	}
+	const bool returnedFromExplorer =
+	    !refreshAfterExplorer_ && std::exchange(explorerTookFocus_, false);
+	if (refreshClicked || returnedFromExplorer) {
 		refresh();
 	}
+	ui.SameLine();
+	ui.BeginDisabled(assets.GetRootDirectory().empty());
+	if (ui.Button("Open in Explorer")) {
+		unavailableRevealPath_.clear();
+		if (ShellUtils::OpenDirectory(assets.GetRootDirectory() / currentDirectory_, revealMessage_)) {
+			trackExplorer();
+		}
+	}
+	ui.EndDisabled();
+	ImGui::SetItemTooltip("Open the current Assets folder in Windows Explorer.");
 	if (canReturnToExport) {
 		ui.SameLine();
 		if (ui.Button("Return to Export Check")) {
@@ -922,7 +948,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto drawLocationMenu = [&](const std::filesystem::path &path) {
 		if (ui.MenuItem("Show in Explorer")) {
 			unavailableRevealPath_.clear();
-			ShellUtils::RevealInExplorer(path, revealMessage_);
+			if (ShellUtils::RevealInExplorer(path, revealMessage_)) {
+				trackExplorer();
+			}
 		}
 		if (ui.MenuItem("Copy Full Path")) {
 			try {

@@ -35,7 +35,9 @@ namespace {
 /// </summary>
 class ComScope {
   public:
-	ComScope() : result_(CoInitializeEx(nullptr, COINIT_MULTITHREADED)) {
+	explicit ComScope(bool singleThreaded)
+	    : result_(CoInitializeEx(nullptr, singleThreaded ? COINIT_APARTMENTTHREADED
+	                                                   : COINIT_MULTITHREADED)) {
 	}
 
 	~ComScope() {
@@ -363,7 +365,7 @@ int Engine::Run(const EngineConfig &config, SceneFactory sceneFactory) {
 	int exitCode = -1;
 
 	{
-		ComScope com;
+		ComScope com(config.useSingleThreadedCom);
 
 		if (FAILED(com.GetResult())) {
 			Logger::Error(

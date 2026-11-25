@@ -373,6 +373,8 @@ class AssetsPanel {
 	void ClearNavigationRequests();
 
 	std::filesystem::path currentDirectory_;
+	bool refreshAfterExplorer_ = false;
+	bool explorerTookFocus_ = false;
 	std::string filter_;
 	bool searchAllTypes_ = false;
 	bool searchCurrentFolderOnly_ = false;

@@ -22,6 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	config.windowTitle = L"Editor";
 	config.windowWidth = 1600;
 	config.windowHeight = 900;
+	config.useSingleThreadedCom = true;
 
 	return Engine::Run(config, CreateInitialScene);
 }

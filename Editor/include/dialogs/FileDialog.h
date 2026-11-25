@@ -149,7 +149,7 @@ class FileDialog {
 	/// <summary>
 	/// 現在のフォルダの一覧を読み直す
 	/// </summary>
-	void Refresh();
+	void Refresh(bool clearError = true);
 
 	/// <summary>
 	/// 表示するフォルダを変更する
@@ -162,6 +162,7 @@ class FileDialog {
 	/// </summary>
 	/// <returns>true:確定 false:入力エラー、または上書き確認が必要</returns>
 	bool AcceptSelection();
+	FileDialogResult BrowseWindows(const char *title);
 
 	/// <summary>
 	/// 入力したファイル名とフォルダからパスを組み立てる。ファイルの存在は確認しない
@@ -208,6 +209,7 @@ class FileDialog {
 	std::filesystem::path projectRoot_;
 
 	bool openRequested_ = false;
+	bool windowsBrowseRequested_ = false;
 	bool destinationExists_ = false;
 	bool requireNewFile_ = false;
 	bool overwriteConfirmed_ = false;

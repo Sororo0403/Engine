@@ -12,11 +12,59 @@
 #include <format>
 #include <imgui.h>
 #include <imgui_stdlib.h>
+#include <memory>
+#include <shobjidl.h>
 #include <stdexcept>
 #include <system_error>
 #include <utility>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 
 namespace {
+constexpr DWORD editorPickerControl = 101;
+constexpr HRESULT openEditorPicker = HRESULT_FROM_WIN32(ERROR_RETRY);
+
+class EditorPickerEvents final
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IFileDialogEvents, IFileDialogControlEvents> {
+  public:
+	explicit EditorPickerEvents(IFileDialog &dialog) : dialog_(dialog) {}
+
+	HRESULT STDMETHODCALLTYPE OnFileOk(IFileDialog *) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog *, IShellItem *) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog *) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnSelectionChange(IFileDialog *) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnShareViolation(IFileDialog *, IShellItem *,
+	                                           FDE_SHAREVIOLATION_RESPONSE *response) override {
+		*response = FDESVR_DEFAULT;
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE OnTypeChange(IFileDialog *) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnOverwrite(IFileDialog *, IShellItem *,
+	                                      FDE_OVERWRITE_RESPONSE *response) override {
+		*response = FDEOR_DEFAULT;
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE OnItemSelected(IFileDialogCustomize *, DWORD, DWORD) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnButtonClicked(IFileDialogCustomize *, DWORD control) override {
+		return control == editorPickerControl ? dialog_.Close(openEditorPicker) : S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE OnCheckButtonToggled(IFileDialogCustomize *, DWORD, BOOL) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE OnControlActivating(IFileDialogCustomize *, DWORD) override { return S_OK; }
+
+  private:
+	IFileDialog &dialog_;
+};
+
+void CheckDialogResult(HRESULT result) {
+	if (FAILED(result)) {
+		throw std::runtime_error(std::format(
+		    "Windows file dialog failed (HRESULT 0x{:08X}).",
+		    static_cast<unsigned long>(result)));
+	}
+}
+
 /// <summary>
 /// 保存先と同じフォルダで、ファイル種別を保った空き名を探す
 /// </summary>
@@ -72,6 +120,7 @@ void FileDialog::Show(FileDialogMode mode,
 	requireNewFile_ = false;
 	overwriteConfirmed_ = false;
 	openRequested_ = true;
+	windowsBrowseRequested_ = true;
 
 	try {
 		directory_ = PathUtils::GetExecutableDirectory();
@@ -98,7 +147,6 @@ void FileDialog::Show(FileDialogMode mode,
 		}
 
 		directoryText_ = PathUtils::ToUtf8(directory_);
-		Refresh();
 	} catch (const std::exception &error) {
 		error_ = error.what();
 	}
@@ -135,12 +183,124 @@ void FileDialog::RetrySelection(std::string error,
 		                                                 : selectedPath_.filename());
 	}
 	selectedPath_.clear();
-	error_ = std::move(error);
+	Refresh();
+	if (!error.empty()) {
+		error_ = std::move(error);
+	}
 	failedProject_ = std::move(failedLocation);
 	failedProjectLocationError_.clear();
 	destinationExists_ = false;
 	overwriteConfirmed_ = false;
 	openRequested_ = true;
+}
+
+FileDialogResult FileDialog::BrowseWindows(const char *title) {
+	using Microsoft::WRL::ComPtr;
+	const bool pickFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
+	const bool save = mode_ == FileDialogMode::SAVE || mode_ == FileDialogMode::SAVE_COPY;
+	constexpr DWORD restoreSessionControl = 100;
+
+	try {
+		ComPtr<IFileDialog> dialog;
+		CheckDialogResult(CoCreateInstance(save ? __uuidof(FileSaveDialog) : __uuidof(FileOpenDialog),
+		                                   nullptr, CLSCTX_INPROC_SERVER,
+		                                   IID_PPV_ARGS(dialog.GetAddressOf())));
+		FILEOPENDIALOGOPTIONS options{};
+		CheckDialogResult(dialog->GetOptions(&options));
+		options |= FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST | FOS_NOCHANGEDIR;
+		if (pickFolder) {
+			options |= FOS_PICKFOLDERS;
+		} else if (save) {
+			// 保存名の補完後に、Editor 側で既存ファイルと上書き可否を確認する。
+			options &= ~FOS_OVERWRITEPROMPT;
+		} else {
+			options |= FOS_FILEMUSTEXIST;
+		}
+		CheckDialogResult(dialog->SetOptions(options));
+		const std::string_view caption(title);
+		CheckDialogResult(dialog->SetTitle(
+		    PathUtils::FromUtf8(std::string(caption.substr(0, caption.find("###")))).c_str()));
+
+		if (!pickFolder) {
+			const COMDLG_FILTERSPEC type =
+			    filter_ == FileDialogFilter::MODEL ? COMDLG_FILTERSPEC{L"3D models", L"*.glb;*.gltf;*.obj"}
+			    : filter_ == FileDialogFilter::IMAGE ? COMDLG_FILTERSPEC{L"Images", L"*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.gif"}
+			    : filter_ == FileDialogFilter::AUDIO ? COMDLG_FILTERSPEC{L"WAV audio", L"*.wav"}
+			                                         : COMDLG_FILTERSPEC{L"JSON files", L"*.json"};
+			CheckDialogResult(dialog->SetFileTypes(1, &type));
+			if (!fileName_.empty()) {
+				const auto name = PathUtils::FromPathInput(fileName_).filename();
+				CheckDialogResult(dialog->SetFileName(name.c_str()));
+			}
+		}
+
+		ComPtr<IShellItem> folder;
+		if (!directory_.empty() && SUCCEEDED(SHCreateItemFromParsingName(
+		        directory_.c_str(), nullptr, IID_PPV_ARGS(folder.GetAddressOf())))) {
+			CheckDialogResult(dialog->SetFolder(folder.Get()));
+		}
+
+		ComPtr<IFileDialogCustomize> controls;
+		const bool hasEditorOptions = !projectRoot_.empty() || filter_ == FileDialogFilter::PROJECT ||
+		                              filter_ == FileDialogFilter::GAME_EXPORT;
+		if (hasEditorOptions || offerPreviousProjectSession_) {
+			CheckDialogResult(dialog.As(&controls));
+		}
+		if (offerPreviousProjectSession_) {
+			CheckDialogResult(controls->AddCheckButton(
+			    restoreSessionControl, L"Restore the previous scene and Assets folder",
+			    restorePreviousProjectSession_));
+		}
+
+		DWORD eventCookie = 0;
+		if (hasEditorOptions) {
+			CheckDialogResult(controls->AddPushButton(
+			    editorPickerControl, projectRoot_.empty() ? L"Editor options..." : L"Search project scenes..."));
+			const auto events = Microsoft::WRL::Make<EditorPickerEvents>(*dialog.Get());
+			if (!events) {
+				throw std::bad_alloc();
+			}
+			CheckDialogResult(dialog->Advise(events.Get(), &eventCookie));
+		}
+		const auto shown = dialog->Show(GetActiveWindow());
+		if (hasEditorOptions) {
+			CheckDialogResult(dialog->Unadvise(eventCookie));
+		}
+		if (shown == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+			return FileDialogResult::CANCELLED;
+		}
+		if (shown != openEditorPicker) {
+			CheckDialogResult(shown);
+		}
+		if (offerPreviousProjectSession_) {
+			BOOL restore = FALSE;
+			CheckDialogResult(controls->GetCheckButtonState(restoreSessionControl, &restore));
+			restorePreviousProjectSession_ = restore != FALSE;
+		}
+		if (shown == openEditorPicker) {
+			if (!projectRoot_.empty()) {
+				searchProjectScenes_ = true;
+				fileName_.clear();
+			}
+			return FileDialogResult::NONE;
+		}
+
+		ComPtr<IShellItem> item;
+		CheckDialogResult(dialog->GetResult(item.GetAddressOf()));
+		PWSTR rawPath = nullptr;
+		CheckDialogResult(item->GetDisplayName(SIGDN_FILESYSPATH, &rawPath));
+		const std::unique_ptr<wchar_t, decltype(&CoTaskMemFree)> path(rawPath, CoTaskMemFree);
+		const std::filesystem::path selected(path.get());
+		directory_ = pickFolder ? selected : selected.parent_path();
+		directoryText_ = PathUtils::ToUtf8(directory_);
+		if (!pickFolder) {
+			fileName_ = PathUtils::ToUtf8(selected.filename());
+		}
+		return AcceptSelection() ? FileDialogResult::ACCEPTED : FileDialogResult::NONE;
+	} catch (const std::exception &error) {
+		error_ = error.what();
+		return FileDialogResult::NONE;
+	}
 }
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
@@ -159,6 +319,14 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	                                         : "Save Scene###FileDialog";
 
 	if (openRequested_) {
+		if (std::exchange(windowsBrowseRequested_, false)) {
+			const auto result = BrowseWindows(title);
+			if (result != FileDialogResult::NONE) {
+				openRequested_ = false;
+				return result;
+			}
+			Refresh(false);
+		}
 		ui.OpenPopup(title);
 		openRequested_ = false;
 	}
@@ -227,6 +395,15 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			}
 		}
 
+		ui.SameLine();
+
+		if (ui.Button("Browse in Windows...")) {
+			result = BrowseWindows(title);
+			if (result != FileDialogResult::ACCEPTED) {
+				result = FileDialogResult::NONE;
+				Refresh(false);
+			}
+		}
 		ui.SameLine();
 
 		if (ui.Button("Refresh")) {
@@ -517,9 +694,11 @@ std::string_view FileDialog::GameExportOpenProblem(const std::filesystem::path &
 	return {};
 }
 
-void FileDialog::Refresh() {
+void FileDialog::Refresh(bool clearError) {
 	entries_.clear();
-	error_.clear();
+	if (clearError) {
+		error_.clear();
+	}
 
 	try {
 		std::error_code error;
