@@ -17,7 +17,6 @@
 #include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
-#include "gameplay/CharacterController.h"
 #include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SceneScripts.h"
@@ -33,7 +32,6 @@
 #include "math/TransformUtils.h"
 #include "physics/ColliderPlacement.h"
 #include "physics/ColliderUtils.h"
-#include "physics/CollisionWorld.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
@@ -7374,43 +7372,6 @@ void EditorScene::ApplyInspectorRequest(
 			    respawn ? FrameRequest::RESPAWN : FrameRequest::COLLIDER;
 			// ドックの別タブにある場合も、次のフレームでSceneの描画サイズを取得する。
 			ShowSceneView();
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::SELECT_GROUND_COLLIDER) {
-			CollisionWorld world;
-			CharacterController controller;
-			SceneObjectId ground = 0;
-			SceneWorldTransform transform;
-			std::vector<SceneObjectId> ignored;
-
-			if (!object->character || !object->collider ||
-			    !SceneHierarchy::GetWorldTransform(
-			        document_.GetScene(), request.objectId, transform) ||
-			    !SceneHierarchy::GetSubtree(document_.GetScene(),
-			                                request.objectId, ignored) ||
-			    !world.Rebuild(document_.GetScene(),
-			                   std::span<const SceneObjectId>{ignored}) ||
-			    !controller.Initialize(transform.matrix, *object->collider,
-			                           *object->character, world) ||
-			    !controller.FindGroundObject(world, ground)) {
-				ShowError(
-				    "Could not inspect the ground Collider. Check the "
-				    "Character, Collider, Transform and obstacle settings.",
-				    request.objectId);
-				return;
-			}
-
-			if (ground == 0) {
-				ShowError(
-				    "No supporting Collider was found below this character.",
-				    request.objectId);
-				return;
-			}
-
-			selection_.SelectOnly(ground);
-			hierarchyPanel_.RequestReveal(ground);
 			return;
 		}
 

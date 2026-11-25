@@ -110,15 +110,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		field("Step Height", &CharacterSettings::stepHeight,
 		      CharacterSettings::kMaximumStepHeight, 0.0f, 0.005f, "%.3f");
 
-		ui.BeginDisabled(!object.collider || !object.character->IsValid());
-
-		if (ui.Button("Select Ground Collider")) {
-			characterRequest_ = {CharacterAction::SELECT_GROUND, id};
-		}
-
-		ui.EndDisabled();
-
-
 		ui.BeginDisabled(!object.character->IsValid());
 
 		if (ui.Button("Copy Character Settings")) {

@@ -1515,16 +1515,6 @@ void ControlsPanel::Draw() {
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
 
-	        {"Inspector > Character Controller > Select Ground Collider",
-	         "Select the Collider immediately below the inspected character "
-	         "using the same short downward probe as ground detection. This "
-	         "does not search all the way down from an airborne character. "
-	         "Hidden and model-free Colliders are included; side and ceiling "
-	         "contact are excluded. Equal-distance contacts choose the lowest "
-	         "object ID. Hierarchy reveals the result. A locked Inspector uses "
-	         "its displayed character and keeps its lock. Invalid settings or "
-	         "no ground keep the current selection. Scene data, camera and "
-	         "history stay unchanged. Available while editing only."},
 
 
 	        {"Inspector > Character Controller > Step Height",
