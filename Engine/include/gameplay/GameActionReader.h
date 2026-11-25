@@ -26,7 +26,8 @@ class GameActionReader {
 	std::span<const GameActionState>
 	Read(std::span<const GameActionBinding> bindings, const Keyboard &keyboard,
 	     const Mouse *mouse, const Gamepad *gamepad, bool enabled = true,
-	     bool pointerEnabled = true);
+	     bool pointerEnabled = true, float pressThreshold = .6f,
+	     float releaseThreshold = .4f);
 
 	/// <summary>
 	/// 操作の履歴を解放し、次の取得を開始直後として扱う

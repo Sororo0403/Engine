@@ -86,7 +86,8 @@ void FileDialog::Show(FileDialogMode mode,
                       FileDialogFilter filter, std::string title) {
 	if (((filter == FileDialogFilter::IMAGE ||
 	      filter == FileDialogFilter::MODEL ||
-	      filter == FileDialogFilter::AUDIO) &&
+	      filter == FileDialogFilter::AUDIO ||
+	      filter == FileDialogFilter::FONT) &&
 	     mode != FileDialogMode::OPEN) ||
 	    (filter == FileDialogFilter::GAME_CONFIG &&
 	     mode == FileDialogMode::SELECT_DIRECTORY) ||
@@ -226,6 +227,7 @@ FileDialogResult FileDialog::BrowseWindows(const char *title) {
 			    filter_ == FileDialogFilter::MODEL ? COMDLG_FILTERSPEC{L"3D models", L"*.glb;*.gltf;*.obj"}
 			    : filter_ == FileDialogFilter::IMAGE ? COMDLG_FILTERSPEC{L"Images", L"*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.gif"}
 			    : filter_ == FileDialogFilter::AUDIO ? COMDLG_FILTERSPEC{L"WAV audio", L"*.wav"}
+			    : filter_ == FileDialogFilter::FONT ? COMDLG_FILTERSPEC{L"Fonts", L"*.ttf;*.otf"}
 			                                         : COMDLG_FILTERSPEC{L"JSON files", L"*.json"};
 			CheckDialogResult(dialog->SetFileTypes(1, &type));
 			if (!fileName_.empty()) {
@@ -314,6 +316,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	    : filter_ == FileDialogFilter::MODEL ? "Open Model###FileDialog"
 	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
 	    : filter_ == FileDialogFilter::AUDIO ? "Open Audio###FileDialog"
+	    : filter_ == FileDialogFilter::FONT ? "Open Font###FileDialog"
 	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
 	    : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy###FileDialog"
 	                                         : "Save Scene###FileDialog";
@@ -728,6 +731,8 @@ void FileDialog::Refresh(bool clearError) {
 				                ? PathUtils::IsImageFile(entry.path())
 				            : filter_ == FileDialogFilter::AUDIO
 				                ? PathUtils::HasExtension(entry.path(), ".wav")
+				            : filter_ == FileDialogFilter::FONT
+				                ? PathUtils::IsFontFile(entry.path())
 				                : PathUtils::HasExtension(entry.path(),
 				                                          ".json"))) {
 					entries_.push_back({entry.path(), false});
@@ -840,11 +845,13 @@ std::filesystem::path FileDialog::ReadFilePath() const {
 	if (filter_ == FileDialogFilter::MODEL   ? !PathUtils::IsModelFile(name)
 	    : filter_ == FileDialogFilter::IMAGE ? !PathUtils::IsImageFile(name)
 	    : filter_ == FileDialogFilter::AUDIO ? !PathUtils::HasExtension(name, ".wav")
+	    : filter_ == FileDialogFilter::FONT ? !PathUtils::IsFontFile(name)
 	                                         : !PathUtils::HasExtension(name, ".json")) {
 		throw std::invalid_argument(
 		    filter_ == FileDialogFilter::MODEL   ? "Choose a GLB, glTF or OBJ model."
 		    : filter_ == FileDialogFilter::IMAGE ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
 		    : filter_ == FileDialogFilter::AUDIO ? "Choose a WAV audio file."
+		    : filter_ == FileDialogFilter::FONT ? "Choose a TTF or OTF font file."
 		                                         : "Use a .json file name.");
 	}
 

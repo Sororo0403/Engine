@@ -7,7 +7,56 @@
 #include <algorithm>
 #include <cmath>
 
+namespace {
+using DirectX::XMFLOAT3;
+
+XMFLOAT3 Scale(const XMFLOAT3 &v, float factor) {
+	return {v.x * factor, v.y * factor, v.z * factor};
+}
+
+XMFLOAT3 Add(const XMFLOAT3 &a, const XMFLOAT3 &b) {
+	return {a.x + b.x, a.y + b.y, a.z + b.z};
+}
+
+float Dot(const XMFLOAT3 &a, const XMFLOAT3 &b) {
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+void Translate(DirectX::XMFLOAT4X4 &matrix, const XMFLOAT3 &offset) {
+	matrix._41 += offset.x;
+	matrix._42 += offset.y;
+	matrix._43 += offset.z;
+}
+
+} // namespace
+
+std::array<DirectX::XMFLOAT3, 2> CharacterSettings::GetMovementAxes() const {
+	using namespace DirectX;
+	const auto up = GetUp();
+	const auto normal = XMLoadFloat3(&up);
+	const auto reference = std::abs(up.z) < .99f
+	                           ? XMVectorSet(0, 0, 1, 0) : XMVectorSet(0, -1, 0, 0);
+	const auto right = XMVector3Normalize(XMVector3Cross(normal, reference));
+	std::array<XMFLOAT3, 2> result;
+	XMStoreFloat3(&result[0], right);
+	XMStoreFloat3(&result[1], XMVector3Cross(right, normal));
+	return result;
+}
+
+DirectX::XMFLOAT3 CharacterSettings::GetUp() const {
+	const auto length = std::hypot(double(gravityDirection[0]),
+	                               double(gravityDirection[1]), double(gravityDirection[2]));
+	if (!std::isfinite(length) || length == 0)
+		return {0, 1, 0};
+	return {float(-gravityDirection[0] / length), float(-gravityDirection[1] / length),
+	        float(-gravityDirection[2] / length)};
+}
+
 bool CharacterSettings::IsValid() const {
+	const auto &d = gravityDirection;
+	if (!std::isfinite(d[0]) || !std::isfinite(d[1]) || !std::isfinite(d[2]) ||
+	    (d[0] == 0 && d[1] == 0 && d[2] == 0))
+		return false;
 	return std::isfinite(moveSpeed) && moveSpeed > 0.0f &&
 	       moveSpeed <= kMaximumSpeed && std::isfinite(jumpSpeed) &&
 	       jumpSpeed > 0.0f && jumpSpeed <= kMaximumSpeed &&
@@ -67,9 +116,10 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	coyoteRemaining_ = 0.0;
 	jumpBufferRemaining_ = 0.0;
 	initialized_ = true;
+	const auto up = settings_.GetUp();
 	CollisionMoveResult contact;
 	grounded_ = world.Move(collider_, worldMatrix_,
-	                       {0.0f, -kGroundProbeDistance, 0.0f}, contact) &&
+	                       Scale(up, -kGroundProbeDistance), contact, up) &&
 	            contact.grounded;
 	coyoteRemaining_ = grounded_ ? settings_.coyoteTime : 0.0;
 	return true;
@@ -123,59 +173,62 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 
 bool CharacterController::FindGroundObject(const CollisionWorld &world,
                                            SceneObjectId &objectId) const {
+	const auto up = settings_.GetUp();
 	CollisionSweepResult contact;
 
 	if (!initialized_ || !world.CanPlace(collider_, worldMatrix_) ||
 	    !world.Sweep(collider_, worldMatrix_,
-	                 {0.0f, -kGroundProbeDistance, 0.0f}, contact)) {
+	                 Scale(up, -kGroundProbeDistance), contact)) {
 		return false;
 	}
 
-	objectId = contact.objectId;
+	objectId = Dot(contact.normal, up) > .5f ? contact.objectId : 0;
 	return true;
 }
 
 bool CharacterController::TryStepUp(const CollisionWorld &world,
                                     const DirectX::XMFLOAT3 &horizontal,
                                     CollisionMoveResult &movement) const {
-	if (horizontal.x == 0 && horizontal.z == 0)
+	const auto up = settings_.GetUp();
+	if (Dot(horizontal, horizontal) == 0)
 		return false;
 
 	// 上限と同じ高さの段差でも、Sweepで接触面からわずかに離す。
 	const float lift = settings_.stepHeight + float(kGroundClearance);
 	auto raised = worldMatrix_;
 	CollisionSweepResult hit;
-	if (!world.Sweep(collider_, raised, {0, lift, 0}, hit) || hit.objectId)
+	if (!world.Sweep(collider_, raised, Scale(up, lift), hit) || hit.objectId)
 		return false;
-	raised._42 += lift;
+	Translate(raised, Scale(up, lift));
 	if (!world.Sweep(collider_, raised, horizontal, hit) || hit.objectId)
 		return false;
-	raised._41 += horizontal.x;
-	raised._43 += horizontal.z;
+	Translate(raised, horizontal);
 
 	const float down = lift + kGroundProbeDistance;
-	if (!world.Sweep(collider_, raised, {0, -down, 0}, hit) || !hit.objectId ||
-	    hit.normal.y <= .5f)
+	if (!world.Sweep(collider_, raised, Scale(up, -down), hit) || !hit.objectId ||
+	    Dot(hit.normal, up) <= .5f)
 		return false;
 	const auto rise = double(lift) - double(down) * hit.fraction;
 	if (rise <= kGroundClearance ||
 	    rise > settings_.stepHeight + kGroundClearance)
 		return false;
-	const float landed = worldMatrix_._42 + float(rise + kGroundClearance);
-	raised._42 = landed;
+	const auto displacement = Add(horizontal, Scale(up, float(rise + kGroundClearance)));
+	raised = worldMatrix_;
+	Translate(raised, displacement);
 	if (!world.CanPlace(collider_, raised))
 		return false;
 
-	movement = {{horizontal.x, landed - worldMatrix_._42, horizontal.z}, true};
+	movement = {displacement, true};
 	return true;
 }
 
 bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
+	const auto up = settings_.GetUp();
 	CollisionMoveResult ground;
 	grounded_ = verticalVelocity_ <= 0.0f &&
 	            world.Move(collider_, worldMatrix_,
-	                       {0.0f, -kGroundProbeDistance, 0.0f}, ground) &&
+	                       Scale(up, -kGroundProbeDistance), ground, up) &&
 	            ground.grounded;
 
 	if (grounded_) {
@@ -206,23 +259,20 @@ bool CharacterController::Step(const CharacterInput &input,
 	const double magnitude =
 	    (std::max)(1.0, std::hypot(static_cast<double>(input.moveX),
 	                               static_cast<double>(input.moveZ)));
-	const DirectX::XMFLOAT3 requested{
-	    static_cast<float>(
-	        (input.moveX / magnitude * settings_.moveSpeed) *
-	        step),
-	    verticalVelocity_ * step,
-	    static_cast<float>(
-	        (input.moveZ / magnitude * settings_.moveSpeed) *
-	        step)};
+	const float speed = settings_.moveSpeed * step;
+	const auto [right, forward] = settings_.GetMovementAxes();
+	const auto horizontal = Add(Scale(right, float(input.moveX / magnitude * speed)),
+	                            Scale(forward, float(input.moveZ / magnitude * speed)));
+	const auto requested = Add(horizontal, Scale(up, verticalVelocity_ * step));
 	CollisionMoveResult movement;
 
-	if (!world.Move(collider_, worldMatrix_, requested, movement)) {
+	if (!world.Move(collider_, worldMatrix_, requested, movement, up)) {
 		return false;
 	}
 
 	const bool stepped =
 	    grounded_ && settings_.stepHeight > 0 && movement.hitWall &&
-	    TryStepUp(world, {requested.x, 0, requested.z}, movement);
+	    TryStepUp(world, horizontal, movement);
 	auto transform = transform_;
 	transform.translation.x += movement.displacement.x;
 	transform.translation.y += movement.displacement.y;
@@ -238,17 +288,18 @@ bool CharacterController::Step(const CharacterInput &input,
 		const auto distance =
 		    (std::max)(settings_.groundSnapDistance, kGroundProbeDistance);
 		CollisionSweepResult floor;
-		if (!world.Sweep(collider_, matrix, {0, -distance, 0}, floor))
+		if (!world.Sweep(collider_, matrix, Scale(up, -distance), floor))
 			return false;
-		movement.grounded = floor.objectId != 0 && floor.normal.y > .5f;
+		movement.grounded = floor.objectId != 0 && Dot(floor.normal, up) > .5f;
 
 		if (movement.grounded) {
 			const auto drop =
 			    (std::min)(double(settings_.groundSnapDistance),
 			               (std::max)(0.0, distance * floor.fraction -
 			                                   kGroundClearance));
-			transform.translation.y -= static_cast<float>(drop);
-			matrix._42 = transform.translation.y;
+			const auto offset = Scale(up, -static_cast<float>(drop));
+			transform.translation = Add(transform.translation, offset);
+			Translate(matrix, offset);
 		}
 	}
 
@@ -296,10 +347,11 @@ bool CharacterController::SynchronizeWorldMatrix(
 }
 
 bool CharacterController::RefreshContacts(const CollisionWorld &world) {
+	const auto up = settings_.GetUp();
 	CollisionMoveResult ground;
 
 	if (!initialized_ || !world.Move(collider_, worldMatrix_,
-	                                 {0, -kGroundProbeDistance, 0}, ground)) {
+	                                 Scale(up, -kGroundProbeDistance), ground, up)) {
 		return false;
 	}
 

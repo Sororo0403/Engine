@@ -30,6 +30,8 @@ void ForEach(Object &object, const Apply &apply) {
 		apply(object.particleEmitter->texture, Kind::ASSET);
 	if (object.image)
 		apply(object.image->texture, Kind::ASSET);
+	if (object.text)
+		apply(object.text->fontAsset, Kind::ASSET);
 	if (object.mesh)
 		apply(object.mesh->modelPath, Kind::MODEL);
 	if (object.meshRenderer) {

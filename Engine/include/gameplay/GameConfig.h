@@ -4,6 +4,7 @@
 #include "gameplay/GameInputBindings.h"
 #include "graphics/lighting/LightingSettings.h"
 #include "graphics/camera/CameraPose.h"
+#include <array>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -16,7 +17,7 @@ struct GameConfig {
 	/// <summary>
 	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
 	/// </summary>
-	static constexpr int kCurrentVersion = 18;
+	static constexpr int kCurrentVersion = 19;
 
 	std::string title = "Game";
 	int width = 1280, height = 720;
@@ -31,6 +32,7 @@ struct GameConfig {
 	bool verticalSync = true;
 	// 0は従来設定。正の値は全シミュレーションへ渡す経過時間の上限（秒）。
 	float frameTimeLimit = 0.0f;
+	std::array<float, 3> rigidBodyGravity{0, -9.8f, 0};
 	static constexpr float kMinimumFrameTimeLimit = .001f;
 	static constexpr float kMaximumFrameTimeLimit = .1f;
 	static bool IsValidFrameTimeLimit(float limit);

@@ -2,6 +2,7 @@
 #include <Jolt/Jolt.h>
 
 #include "WorldColliderImpl.h"
+#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/CollisionEvents.h"
 #include "physics/RigidBodyWorld.h"
@@ -245,12 +246,13 @@ struct RigidBodyWorld::Impl {
 
 	explicit Impl(std::span<const RigidBodyDescription> source,
 	              std::shared_ptr<JoltRuntime::Registry> registration,
+	              JPH::Vec3Arg gravity,
 	              const JPH::Ref<JPH::GroupFilterTable> &filter = nullptr)
 	    : registry(std::move(registration)),
 	      descriptions(source.begin(), source.end()), group(filter) {
 		system.Init(static_cast<JPH::uint>(kMaximumBodies), 0, 8192, 8192,
 		            layers, broadFilter, layerFilter);
-		system.SetGravity({0, -9.8f, 0});
+		system.SetGravity(gravity);
 		system.SetContactListener(&contacts);
 
 		if (!group) {
@@ -326,7 +328,7 @@ struct RigidBodyWorld::Impl {
 		system.SaveState(saved);
 		if (saved.IsFailed())
 			throw std::runtime_error("Could not record rigid body state.");
-		auto copy = std::make_shared<Impl>(descriptions, registry, group);
+		auto copy = std::make_shared<Impl>(descriptions, registry, system.GetGravity(), group);
 		saved.Rewind();
 		if (!copy->system.RestoreState(saved) || saved.IsFailed())
 			throw std::runtime_error("Could not restore rigid body state.");
@@ -356,11 +358,14 @@ struct RigidBodyWorld::Impl {
 };
 
 bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
-                             std::string &error, SceneObjectId *invalidObject) {
+                             std::string &error, SceneObjectId *invalidObject,
+                             const DirectX::XMFLOAT3 &gravity) {
 	SceneObjectId current = 0;
 	if (invalidObject)
 		*invalidObject = 0;
 	try {
+		if (!MathUtils::IsFinite(gravity))
+			throw std::runtime_error("Rigid body gravity must be finite.");
 		if (bodies.size() > kMaximumBodies)
 			throw std::runtime_error(
 			    "A physics world supports at most 1024 bodies.");
@@ -396,7 +401,8 @@ bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
 		}
 
 		current = 0;
-		auto next = std::make_shared<Impl>(bodies, JoltRuntime::Initialize());
+		auto next = std::make_shared<Impl>(bodies, JoltRuntime::Initialize(),
+		                                   JPH::Vec3(gravity.x, gravity.y, gravity.z));
 		impl_ = std::move(next);
 		error.clear();
 		return true;

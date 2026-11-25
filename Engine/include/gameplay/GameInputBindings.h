@@ -21,6 +21,10 @@ struct GameInputBindings {
 	enum class MoveStick { NONE, LEFT, RIGHT };
 	MoveStick moveStick = MoveStick::LEFT;
 	bool dpadMovement = true;
+	float leftStickDeadZone = .15f;
+	float rightStickDeadZone = .15f;
+	float axisPressThreshold = .6f;
+	float axisReleaseThreshold = .4f;
 	std::optional<GamepadButton> gamepadJump = GamepadButton::SOUTH;
 	std::optional<GamepadButton> gamepadInteract = GamepadButton::WEST;
 
@@ -125,6 +129,11 @@ struct GameInputBindings {
 	/// </summary>
 	/// <returns>true:有効 false:未対応のキー、または重複あり</returns>
 	constexpr bool IsValid() const {
+		if (!(leftStickDeadZone >= 0 && leftStickDeadZone < 1 &&
+		      rightStickDeadZone >= 0 && rightStickDeadZone < 1 &&
+		      axisReleaseThreshold >= 0 && axisReleaseThreshold < axisPressThreshold &&
+		      axisPressThreshold <= 1))
+			return false;
 		const auto validStick = [](MoveStick stick) {
 			return stick == MoveStick::NONE || stick == MoveStick::LEFT || stick == MoveStick::RIGHT;
 		};

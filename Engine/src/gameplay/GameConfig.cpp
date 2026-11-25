@@ -155,7 +155,9 @@ bool GameConfig::IsValidWindowDimension(int value) {
 }
 
 bool GameConfig::HasValidStartupSettings() const {
-	if (!lighting.IsValid() || !input.IsValid() || !IsValidFrameTimeLimit(frameTimeLimit) ||
+	if (!std::ranges::all_of(rigidBodyGravity, [](float value) {
+		    return std::isfinite(value) && std::abs(value) <= 1000.f;
+	    }) || !lighting.IsValid() || !input.IsValid() || !IsValidFrameTimeLimit(frameTimeLimit) ||
 	    !GameActionBinding::IsValid(actions) || scenePath.empty() ||
 	    scenePath.has_root_path() ||
 	    scenePath.native().find(L'\0') != std::wstring::npos ||
@@ -206,6 +208,10 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		inputJson["moveStick"] = input.moveStick == GameInputBindings::MoveStick::LEFT ? "Left"
 		    : input.moveStick == GameInputBindings::MoveStick::RIGHT ? "Right" : "None";
 		inputJson["dpadMovement"] = input.dpadMovement;
+		inputJson["leftStickDeadZone"] = input.leftStickDeadZone;
+		inputJson["rightStickDeadZone"] = input.rightStickDeadZone;
+		inputJson["axisPressThreshold"] = input.axisPressThreshold;
+		inputJson["axisReleaseThreshold"] = input.axisReleaseThreshold;
 		inputJson["gamepadJump"] = gamepadButton(input.gamepadJump);
 		inputJson["gamepadInteract"] = gamepadButton(input.gamepadInteract);
 
@@ -270,6 +276,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		    {"fullscreen", fullscreen},
 		    {"verticalSync", verticalSync},
 		    {"frameTimeLimit", frameTimeLimit},
+		    {"rigidBodyGravity", rigidBodyGravity},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"actions", actionsJson},
@@ -371,6 +378,13 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		candidate.fullscreen = data.value("fullscreen", false);
 		candidate.verticalSync = data.value("verticalSync", true);
 		candidate.frameTimeLimit = data.value("frameTimeLimit", 0.0f);
+		if (data.contains("rigidBodyGravity")) {
+			const auto &gravity = data.at("rigidBodyGravity");
+			if (!gravity.is_array() || gravity.size() != 3 ||
+			    !std::ranges::all_of(gravity, [](const auto &value) { return value.is_number(); }))
+				throw std::runtime_error("Rigid body gravity needs three numbers.");
+			candidate.rigidBodyGravity = gravity.get<std::array<float, 3>>();
+		}
 		candidate.scenePath =
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
 		if (data.at("version") >= 2) {
@@ -396,6 +410,11 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 
 		if (data.at("version") >= 16) {
 			const auto &bindings = data.at("input");
+			auto &sensitivity = candidate.input;
+			sensitivity.leftStickDeadZone = bindings.value("leftStickDeadZone", sensitivity.leftStickDeadZone);
+			sensitivity.rightStickDeadZone = bindings.value("rightStickDeadZone", sensitivity.rightStickDeadZone);
+			sensitivity.axisPressThreshold = bindings.value("axisPressThreshold", sensitivity.axisPressThreshold);
+			sensitivity.axisReleaseThreshold = bindings.value("axisReleaseThreshold", sensitivity.axisReleaseThreshold);
 			const auto stick = bindings.at("moveStick").get<std::string>();
 			if (stick == "Left")
 				candidate.input.moveStick = GameInputBindings::MoveStick::LEFT;

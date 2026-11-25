@@ -190,6 +190,10 @@ std::filesystem::path PathUtils::DecodeRelativeUri(std::string_view uri) {
 	return path;
 }
 
+bool PathUtils::IsFontFile(const std::filesystem::path &path) {
+	return HasExtension(path, ".ttf") || HasExtension(path, ".otf");
+}
+
 bool PathUtils::IsImageFile(const std::filesystem::path &path) {
 	for (const auto extension :
 	     {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".gif"}) {

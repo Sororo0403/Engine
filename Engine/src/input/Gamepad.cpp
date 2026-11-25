@@ -12,8 +12,10 @@ void Gamepad::Update(const GamepadState &state) {
 	previousState_ = state_;
 	state_ = state;
 
-	state_.leftStick = ApplyDeadZone(state.leftStick);
-	state_.rightStick = ApplyDeadZone(state.rightStick);
+	rawLeft_ = state.leftStick;
+	rawRight_ = state.rightStick;
+	state_.leftStick = ApplyDeadZone(rawLeft_, kStickDeadZone);
+	state_.rightStick = ApplyDeadZone(rawRight_, kStickDeadZone);
 
 	state_.leftTrigger = std::isfinite(state.leftTrigger)
 	                         ? std::clamp(state.leftTrigger, 0.0f, 1.0f)
@@ -61,25 +63,38 @@ const GamepadState &Gamepad::GetState() const {
 	return state_;
 }
 
+Gamepad Gamepad::WithDeadZones(float left, float right) const {
+	auto result = *this;
+	if (state_.connected) {
+		result.state_.leftStick = ApplyDeadZone(rawLeft_, left);
+		result.state_.rightStick = ApplyDeadZone(rawRight_, right);
+	}
+	return result;
+}
+
 void Gamepad::Reset() {
 	state_ = {};
 	previousState_ = {};
+	rawLeft_ = {};
+	rawRight_ = {};
 }
 
-GamepadStick Gamepad::ApplyDeadZone(GamepadStick stick) {
+GamepadStick Gamepad::ApplyDeadZone(GamepadStick stick, float deadZone) {
 	if (!std::isfinite(stick.x) || !std::isfinite(stick.y)) {
 		return {};
 	}
 
 	const double magnitude = std::hypot(double(stick.x), double(stick.y));
+	if (!(deadZone >= 0 && deadZone < 1))
+		deadZone = kStickDeadZone;
 
-	if (magnitude <= kStickDeadZone) {
+	if (magnitude <= deadZone) {
 		return {};
 	}
 
 	// デッドゾーンの外側を0～1に変換する
 	const double strength =
-	    (std::min(magnitude, 1.0) - kStickDeadZone) / (1.0 - kStickDeadZone);
+	    (std::min(magnitude, 1.0) - deadZone) / (1.0 - deadZone);
 
 	// 倒した方向を保ちながら、入力の強さを適用する
 	return {float(stick.x / magnitude * strength),

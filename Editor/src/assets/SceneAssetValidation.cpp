@@ -10,6 +10,7 @@
 #include "audio/WaveReader.h"
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/TextRasterizer.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
 #include "scene/SceneSerializer.h"
@@ -29,7 +30,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		SceneObjectId destinationObjectId = 0;
 	};
 	std::map<std::filesystem::path, std::vector<AssetError>> models, textures, materials,
-	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs, clips;
+	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs, clips, fonts;
 	std::map<std::pair<std::filesystem::path, std::string>,
 	         std::vector<AssetError>>
 	    arrivals;
@@ -130,6 +131,13 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					        PathUtils::ResolveFromExecutable(path)};
 				    }));
 			}
+		if (object.text && !object.text->fontAsset.empty())
+			add("UI Text Font", inspect(object.text->fontAsset, fonts, [](const auto &path) {
+				const auto file = PathUtils::ResolveFromExecutable(path);
+				if (std::filesystem::is_regular_file(file))
+					TextRasterizer::ValidateFontAsset(file);
+				return std::array{file};
+			}));
 		if (object.image && !object.image->texture.empty())
 			add("UI Image",
 			    inspect(object.image->texture, uiTextures,

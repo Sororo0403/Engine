@@ -422,6 +422,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	}
 
 	session_.SetLegacyLighting(config.lighting);
+	session_.SetRigidBodyGravity(config.rigidBodyGravity);
 	if (!session_.Start(scene, error, fallbackPose, invalidObject,
 	                    cameraOverride, startPaused_, std::move(initialScriptData))) {
 		return false;
@@ -542,10 +543,14 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	    viewport_.windowFocused && viewport_.applicationFocused &&
 	    !viewport_.widgetActive && !ImGui::GetIO().AppFocusLost &&
 	    !ImGui::GetIO().WantTextInput;
+	const auto tunedGamepad = input.GetGamepad().WithDeadZones(
+	    inputBindings_.leftStickDeadZone, inputBindings_.rightStickDeadZone);
+	const auto *gamepad = gamepadEnabled_ ? &tunedGamepad : nullptr;
 	const auto actions = actionReader_.Read(
 	    actionBindings_, input.GetKeyboard(), &input.GetMouse(),
-	    gamepadEnabled_ ? &input.GetGamepad() : nullptr, actionsEnabled,
-	    viewport_.imageHovered);
+	    gamepad, actionsEnabled,
+	    viewport_.imageHovered, inputBindings_.axisPressThreshold,
+	    inputBindings_.axisReleaseThreshold);
 	const auto *movementCamera =
 	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =
@@ -553,8 +558,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	        ? CharacterInput{}
 	        : GameplayInput::Read(
 	              input.GetKeyboard(), viewport_, ImGui::GetIO().WantTextInput,
-	              inputBindings_, movementCamera,
-	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
+	              inputBindings_, movementCamera, gamepad,
+	              session_.GetInputCharacterSettings());
 
 	if (!inputBlocked && viewport_.windowFocused &&
 	    viewport_.applicationFocused && !viewport_.widgetActive &&
@@ -586,11 +591,11 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	        ? OrbitCameraInput{}
 	        : GameplayInput::ReadOrbit(
 	              input.GetMouse(), viewport_, ImGui::GetIO().WantTextInput,
-	              gamepadEnabled_ ? &input.GetGamepad() : nullptr, inputBindings_.camera);
+	              gamepad, inputBindings_.camera);
 	const auto revision = session_.GetSceneRevision();
 	auto uiInput = UIInputReader::Read(
 	    input.GetKeyboard(), nullptr,
-	    gamepadEnabled_ ? &input.GetGamepad() : nullptr,
+	    gamepad,
 	    texture_ ? texture_->GetWidth() : gameWidth_,
 	    texture_ ? texture_->GetHeight() : gameHeight_,
 	    !inputBlocked && visible_ && viewport_.applicationFocused &&

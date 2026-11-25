@@ -12,6 +12,9 @@ class Scene;
 /// </summary>
 class ScenePhysics {
   public:
+	explicit ScenePhysics(DirectX::XMFLOAT3 gravity = {0, -9.8f, 0})
+	    : gravity_(gravity) {}
+
 	/// <summary>
 	/// 剛体の形状・親子姿勢・組み合わせを、物理ワールドを作らずに確認する
 	/// </summary>
@@ -88,6 +91,7 @@ class ScenePhysics {
 	                std::string &error);
 
   private:
+	DirectX::XMFLOAT3 gravity_;
 	std::optional<RigidBodyWorld> world_;
 	std::map<SceneObjectId, RigidBodyDescription> definitions_;
 	std::set<SceneObjectId> driven_;

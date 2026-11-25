@@ -43,7 +43,8 @@ std::span<const GameActionState>
 GameActionReader::Read(std::span<const GameActionBinding> bindings,
                        const Keyboard &keyboard, const Mouse *mouse,
                        const Gamepad *gamepad, bool enabled,
-                       bool pointerEnabled) {
+                       bool pointerEnabled, float pressThreshold,
+                       float releaseThreshold) {
 	if (!GameActionBinding::IsValid(bindings)) {
 		Reset();
 		return {};
@@ -72,13 +73,11 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			    true, pointerEnabled && mouse && mouse->IsConnected(),
 			    padConnected, padConnected};
 			// 押下と解放で閾値を分け、復帰時も解放側の閾値まで戻るのを待つ。
-			constexpr float pressThreshold = .6f;
-			constexpr float releaseThreshold = .4f;
 			const auto strength =
 			    binding.gamepadAxis && padConnected
 			        ? AxisValue(*binding.gamepadAxis, gamepad->GetState())
 			        : 0.f;
-			const bool axisDown = h.held[axisIndex] || h.blocked[axisIndex]
+			const bool axisDown = (h.held[axisIndex] || h.blocked[axisIndex])
 			                          ? strength > releaseThreshold
 			                          : strength >= pressThreshold;
 			const std::array<bool, 4> raw{

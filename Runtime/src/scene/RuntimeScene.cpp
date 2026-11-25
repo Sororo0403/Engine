@@ -23,6 +23,7 @@ RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
 	simulation_.SetLegacyLighting(config_.lighting);
+	simulation_.SetRigidBodyGravity(config_.rigidBodyGravity);
 	simulation_.SetAnimatorModelLoading(
 	    [&models = context.models](const std::filesystem::path &path,
 	                               std::string &error) {
@@ -152,10 +153,14 @@ void RuntimeScene::SaveScriptSettings() {
 
 bool RuntimeScene::Update(float seconds) {
 	CharacterInput input;
+	const auto tunedGamepad = input_.GetGamepad().WithDeadZones(
+	    config_.input.leftStickDeadZone, config_.input.rightStickDeadZone);
+	const auto *gamepad = config_.gamepadEnabled ? &tunedGamepad : nullptr;
 	const auto actions = actionReader_.Read(
 	    config_.actions, input_.GetKeyboard(), &input_.GetMouse(),
-	    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr,
-	    input_.IsActive(), true);
+	    gamepad,
+	    input_.IsActive(), true, config_.input.axisPressThreshold,
+	    config_.input.axisReleaseThreshold);
 	const auto revision = simulation_.GetSceneRevision();
 	SceneObjectId invalidObject = 0;
 	const auto reportSceneError = [&](std::string_view reason) {
@@ -178,18 +183,18 @@ bool RuntimeScene::Update(float seconds) {
 		    keys, config_.input,
 		    config_.cameraRelativeMovement ? &simulation_.GetCameraPose()
 		                                   : nullptr,
-		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr);
+		    gamepad, simulation_.GetInputCharacterSettings());
 
 		const auto size = render_.GetWindowSize();
 		const auto uiInput = UIInputReader::Read(
 		    keys, &input_.GetMouse(),
-		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, size[0],
+		    gamepad, size[0],
 		    size[1], true, true, config_.input.ui);
 		if (!simulation_.Update(
 		        GameConfig::LimitFrameTime(seconds, config_.frameTimeLimit), input,
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
-		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, config_.input.camera),
+		            gamepad, config_.input.camera),
 		        uiInput, actions, &invalidObject,
 		        std::span<const GameActionBinding>{config_.actions})) {
 			if (const auto failed = simulation_.GetFailedSceneDestination()) {

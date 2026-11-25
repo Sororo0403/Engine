@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/CharacterInput.h"
+#include "gameplay/CharacterSettings.h"
 #include "gameplay/GameInputBindings.h"
 #include "graphics/camera/CameraPose.h"
 #include "input/Gamepad.h"
@@ -17,13 +18,15 @@ inline constexpr double kMinimumHeadingRatio = 0.000001;
 /// </summary>
 /// <param name="keyboard">呼び出し側でフォーカスを確認したキーボード</param>
 /// <param name="bindings">有効なキー設定。未指定はWASD移動とSpaceジャンプ</param>
-/// <param name="movementCamera">指定時は水平な注視方向に移動を合わせる。真上・真下に近い向きはワールド基準。nullptrは常にワールド基準</param>
+/// <param name="movementCamera">指定時は注視方向を重力に垂直な平面へ投影し、移動を合わせる</param>
 /// <param name="gamepad">指定時は設定された移動軸とボタン入力を加える。nullptrや未接続はキーボードだけを使う</param>
-/// <returns>ワールドX/Z方向の入力とジャンプ押下。キー設定やカメラ位置・注視点が無効な場合は全てゼロ</returns>
+/// <param name="character">操作対象の移動平面。未指定はワールドXZ平面</param>
+/// <returns>移動平面上の入力とジャンプ押下。キー設定やカメラ位置・注視点が無効な場合は全てゼロ</returns>
 inline CharacterInput Read(const Keyboard &keyboard,
                            const GameInputBindings &bindings = {},
                            const CameraPose *movementCamera = nullptr,
-                           const Gamepad *gamepad = nullptr) {
+                           const Gamepad *gamepad = nullptr,
+                           const CharacterSettings *character = nullptr) {
 	if (!bindings.IsValid()) {
 		return {};
 	}
@@ -79,7 +82,11 @@ inline CharacterInput Read(const Keyboard &keyboard,
 	const double z = static_cast<double>(movementCamera->target.z) -
 	                 movementCamera->position.z;
 	const double length = std::hypot(x, y, z);
-	const double horizontal = std::hypot(x, z);
+	const auto [right, forward] = character ? character->GetMovementAxes()
+	                                        : CharacterSettings{}.GetMovementAxes();
+	const double projectedX = x * right.x + y * right.y + z * right.z;
+	const double projectedZ = x * forward.x + y * forward.y + z * forward.z;
+	const double horizontal = std::hypot(projectedX, projectedZ);
 
 	if (length == 0.0) {
 		return {};
@@ -89,8 +96,8 @@ inline CharacterInput Read(const Keyboard &keyboard,
 		return input;
 	}
 
-	const double forwardX = x / horizontal;
-	const double forwardZ = z / horizontal;
+	const double forwardX = projectedX / horizontal;
+	const double forwardZ = projectedZ / horizontal;
 	return {
 	    static_cast<float>(input.moveX * forwardZ + input.moveZ * forwardX),
 	    static_cast<float>(-input.moveX * forwardX + input.moveZ * forwardZ),

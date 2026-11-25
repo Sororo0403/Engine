@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,6 +11,8 @@ struct TextComponent;
 /// </summary>
 class TextRasterizer {
   public:
+	static void ValidateFontAsset(const std::filesystem::path &path);
+
 	TextRasterizer();
 	~TextRasterizer();
 	TextRasterizer(const TextRasterizer &) = delete;

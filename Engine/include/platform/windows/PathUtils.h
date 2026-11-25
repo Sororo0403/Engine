@@ -87,6 +87,7 @@ bool HasExtension(const std::filesystem::path &path,
 /// <param name="path">確認するパス。ファイルの実在や画像データは確認しない</param>
 /// <returns>true:PNG・JPEG・BMP・TIFF・GIF false:その他</returns>
 bool IsImageFile(const std::filesystem::path &path);
+bool IsFontFile(const std::filesystem::path &path);
 
 /// <summary>
 /// Windowsの通常ファイルとして使用できる単独の名前か確認する。予約名・区切り・制御文字を拒否する

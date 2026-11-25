@@ -38,8 +38,13 @@ class SceneSimulation {
 
   public:
 	/// <summary>
-	/// 旧シーンの移行に使うプロジェクト照明を設定する
+	/// 次に再生するシーンの剛体に適用するワールド重力を設定する
 	/// </summary>
+	void SetRigidBodyGravity(const std::array<float, 3> &gravity) {
+		rigidBodyGravity_ = {gravity[0], gravity[1], gravity[2]};
+	}
+
+	/// <summary>旧シーンの移行に使うプロジェクト照明を設定する</summary>
 	void SetLegacyLighting(const LightingSettings &lighting) {
 		legacyLighting_ = lighting;
 	}
@@ -290,6 +295,11 @@ class SceneSimulation {
 	/// </summary>
 	/// <returns>再生中の主人公の値。停止中、または主人公なしの場合はnullopt</returns>
 	std::optional<CharacterRuntimeState> GetCharacterState() const;
+
+	const CharacterSettings *GetInputCharacterSettings() const {
+		const auto *object = scene_.FindObject(character_);
+		return object && object->character ? &*object->character : nullptr;
+	}
 
 	/// <summary>
 	/// 有効なRigid Bodyの現在のワールド姿勢・速度・休止状態を取得する
@@ -591,6 +601,7 @@ class SceneSimulation {
 	SceneAnimators animators_;
 	SceneAnimators::LoadModel loadAnimatorModel_;
 	LightingSettings legacyLighting_;
+	DirectX::XMFLOAT3 rigidBodyGravity_{0, -9.8f, 0};
 	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;

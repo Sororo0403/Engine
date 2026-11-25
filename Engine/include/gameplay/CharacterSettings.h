@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+#include <DirectXMath.h>
 
 /// <summary>
 /// 主人公の移動と重力の設定。距離はワールド座標、時間は秒を使用する
@@ -18,6 +20,9 @@ struct CharacterSettings {
 	// 移動・ジャンプ入力を使うか。無効でも重力と接触を更新する
 	bool inputEnabled = true;
 	bool preferredInputTarget = false;
+	std::array<float, 3> gravityDirection{0, -1, 0};
+	DirectX::XMFLOAT3 GetUp() const;
+	std::array<DirectX::XMFLOAT3, 2> GetMovementAxes() const;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;

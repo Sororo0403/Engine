@@ -214,6 +214,7 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		working.preparePrefabResources_ = preparePrefabResources_;
 		working.loadAnimatorModel_ = loadAnimatorModel_;
 		working.legacyLighting_ = legacyLighting_;
+		working.rigidBodyGravity_ = rigidBodyGravity_;
 		working.sharedScriptData_ =
 		    preserveSharedData ? std::string_view(sharedScriptData_)
 		                       : initialScriptData;
@@ -471,7 +472,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				camera = id;
 		}
 
-		auto physics = preserve ? physics_ : ScenePhysics{};
+		auto physics = preserve ? physics_ : ScenePhysics{rigidBodyGravity_};
 		if (!physics.Configure(working, preserve, error, invalidObject))
 			return false;
 		auto world = preserve ? world_ : CollisionWorld{};

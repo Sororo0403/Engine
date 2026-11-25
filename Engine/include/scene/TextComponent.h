@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <string>
 
 /// <summary>
@@ -18,6 +19,7 @@ struct TextComponent {
 	Alignment alignment = Alignment::LEFT;
 	VerticalAlignment verticalAlignment = VerticalAlignment::TOP;
 	std::array<float, 4> color{1, 1, 1, 1};
+	std::filesystem::path fontAsset;
 	static constexpr std::size_t kMaximumTextBytes = 4096;
 
 	/// <summary>

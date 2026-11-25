@@ -26,6 +26,7 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	fullscreen_ = config.fullscreen;
 	verticalSync_ = config.verticalSync;
 	frameTimeLimit_ = config.frameTimeLimit;
+	rigidBodyGravity_ = config.rigidBodyGravity;
 	lighting_ = config.lighting;
 	settingsId_ = config.settingsId;
 	persistentScriptKeys_ = config.persistentScriptKeys;
@@ -98,6 +99,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	ImGui::InputInt("Height", &height_);
 	ImGui::Checkbox("Borderless Fullscreen", &fullscreen_);
 	ImGui::Checkbox("Vertical Sync", &verticalSync_);
+	ImGui::DragFloat3("Rigid Body Gravity", rigidBodyGravity_.data(), .1f, -1000.f, 1000.f,
+	                  "%.2f", ImGuiSliderFlags_AlwaysClamp);
 	bool synchronizedTime = frameTimeLimit_ > 0.0f;
 	if (ImGui::Checkbox("Limit Simulation Frame Time", &synchronizedTime))
 		frameTimeLimit_ = synchronizedTime ? GameConfig::kMaximumFrameTimeLimit : 0.0f;
@@ -140,6 +143,12 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	if (ImGui::Combo("Gamepad Move Stick", &stick, "None\0Left Stick\0Right Stick\0"))
 		input_.moveStick = static_cast<GameInputBindings::MoveStick>(stick);
 	ImGui::Checkbox("Also Move with D-Pad", &input_.dpadMovement);
+	if (ui.CollapsingHeader("Gamepad Sensitivity")) {
+		ImGui::SliderFloat("Left Stick Dead Zone", &input_.leftStickDeadZone, 0, .99f);
+		ImGui::SliderFloat("Right Stick Dead Zone", &input_.rightStickDeadZone, 0, .99f);
+		ImGui::SliderFloat("Axis Press Threshold", &input_.axisPressThreshold, .01f, 1);
+		ImGui::SliderFloat("Axis Release Threshold", &input_.axisReleaseThreshold, 0, .99f);
+	}
 	const auto gamepadButton = [&](const char *label, std::optional<GamepadButton> &button) {
 		const auto &options = GameActionBinding::kGamepadOptions;
 		if (ImGui::BeginCombo(label, button ? options[static_cast<std::size_t>(*button)].name : "None")) {
@@ -455,6 +464,7 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	fullscreen_ = loaded.fullscreen;
 	verticalSync_ = loaded.verticalSync;
 	frameTimeLimit_ = loaded.frameTimeLimit;
+	rigidBodyGravity_ = loaded.rigidBodyGravity;
 	lighting_ = loaded.lighting;
 	settingsId_ = std::move(loaded.settingsId);
 	persistentScriptKeys_ = std::move(loaded.persistentScriptKeys);
@@ -473,6 +483,7 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.fullscreen = fullscreen_;
 	value.verticalSync = verticalSync_;
 	value.frameTimeLimit = frameTimeLimit_;
+	value.rigidBodyGravity = rigidBodyGravity_;
 	value.lighting = lighting_;
 	value.settingsId = settingsId_;
 	value.persistentScriptKeys = persistentScriptKeys_;

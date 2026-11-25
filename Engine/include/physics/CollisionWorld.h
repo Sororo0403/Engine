@@ -120,7 +120,8 @@ class CollisionWorld {
 	bool
 	Move(const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
 	     CollisionMoveResult &result,
-	     const std::optional<CollisionFilter> &filter = std::nullopt) const;
+	     const std::optional<CollisionFilter> &filter = std::nullopt,
+	     const DirectX::XMFLOAT3 &up = {0, 1, 0}) const;
 
 	/// <summary>
 	/// 箱は従来のAABB、球とカプセルは実形状で配置できるか調べる
@@ -160,7 +161,8 @@ class CollisionWorld {
 	/// <returns>true:成功 false:配置できないか、形状や入力が無効</returns>
 	bool Move(const Collider &collider, const DirectX::XMFLOAT4X4 &matrix,
 	          const DirectX::XMFLOAT3 &displacement,
-	          CollisionMoveResult &result) const;
+	          CollisionMoveResult &result,
+	          const DirectX::XMFLOAT3 &up = {0, 1, 0}) const;
 
 	/// <summary>
 	/// 指定姿勢の移動用形状と重なる有効な固体を、衝突マスクに従って列挙する
@@ -207,7 +209,8 @@ class CollisionWorld {
 	bool MoveAlongSurfaces(const Body &body,
 	                       const DirectX::XMFLOAT3 &displacement,
 	                       CollisionMoveResult &result,
-	                       const std::optional<CollisionFilter> &filter) const;
+	                       const std::optional<CollisionFilter> &filter,
+	                       const DirectX::XMFLOAT3 &up) const;
 	std::optional<RigidBodyWorld> rigidBodies_;
 	std::vector<SceneObjectId> ignoredBodies_;
 

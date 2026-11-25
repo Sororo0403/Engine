@@ -135,6 +135,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		    {"raycastTarget", t.raycastTarget},
 		    {"value", t.text},
 		    {"fontFamily", t.fontFamily},
+		    {"fontAsset", PathUtils::ToUtf8(t.fontAsset)},
 		    {"fontSize", t.fontSize},
 		    {"bold", t.bold},
 		    {"alignment", kHorizontal[static_cast<std::size_t>(t.alignment)]},
@@ -279,6 +280,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 			t.raycastTarget = v.at("raycastTarget").get<bool>();
 		t.text = v.at("value").get<std::string>();
 		t.fontFamily = v.at("fontFamily").get<std::string>();
+		t.fontAsset = PathUtils::FromUtf8(v.value("fontAsset", std::string{}));
 		t.fontSize = v.at("fontSize").get<float>();
 		t.bold = v.at("bold").get<bool>();
 		t.alignment = static_cast<TextComponent::Alignment>(

@@ -957,9 +957,10 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 			}
 
+			const bool hasGravity = settings.contains("rigidBodyGravity");
 			const bool hasGamepadBindings = settings.contains("input") &&
 			                                settings.at("input").contains("moveStick");
-			if (settings.contains("lighting") || settings.contains("actions") || hasGamepadBindings) {
+			if (settings.contains("lighting") || settings.contains("actions") || hasGamepadBindings || hasGravity) {
 				std::string text, error;
 
 				if (!loaded.gameExport.Serialize(text, error)) {
@@ -967,6 +968,8 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 
 				auto configuration = nlohmann::json::parse(text);
+				if (hasGravity)
+					configuration["rigidBodyGravity"] = settings.at("rigidBodyGravity");
 				if (hasGamepadBindings)
 					configuration["input"] = settings.at("input");
 
@@ -1241,6 +1244,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"fullscreen", gameExport.fullscreen},
 		      {"verticalSync", gameExport.verticalSync},
 		      {"frameTimeLimit", gameExport.frameTimeLimit},
+		      {"rigidBodyGravity", gameExport.rigidBodyGravity},
 		      {"cameraRelativeMovement", gameExport.cameraRelativeMovement}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
@@ -1331,6 +1335,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.fullscreen == other.gameExport.fullscreen &&
 	       gameExport.verticalSync == other.gameExport.verticalSync &&
 	       gameExport.frameTimeLimit == other.gameExport.frameTimeLimit &&
+	       gameExport.rigidBodyGravity == other.gameExport.rigidBodyGravity &&
 	       gameExport.cameraRelativeMovement ==
 	           other.gameExport.cameraRelativeMovement &&
 	       showGrid == other.showGrid &&

@@ -31,7 +31,8 @@ class RigidBodyWorld {
 	/// <param name="invalidObject">指定時は失敗したID。全体の失敗と成功時は0</param>
 	/// <returns>true:作成成功 false:設定や形状が無効。元の状態を保持する</returns>
 	bool Rebuild(std::span<const RigidBodyDescription> bodies,
-	             std::string &error, SceneObjectId *invalidObject = nullptr);
+	             std::string &error, SceneObjectId *invalidObject = nullptr,
+	             const DirectX::XMFLOAT3 &gravity = {0, -9.8f, 0});
 
 	/// <summary>
 	/// 1フレームの物理演算を、最大1/120秒の間隔へ分割して実行する

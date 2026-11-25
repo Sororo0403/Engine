@@ -31,7 +31,7 @@ enum class FileDialogResult {
 /// <summary>
 /// ファイル一覧と確定時に許可する種類
 /// </summary>
-enum class FileDialogFilter { SCENE, IMAGE, MODEL, GAME_CONFIG, AUDIO, PROJECT, GAME_EXPORT };
+enum class FileDialogFilter { SCENE, IMAGE, MODEL, GAME_CONFIG, AUDIO, PROJECT, GAME_EXPORT, FONT };
 
 /// <summary>
 /// シーンの保存・読み込みと、素材・ゲーム起動設定・フォルダの選択を行う

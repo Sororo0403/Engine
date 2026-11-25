@@ -88,6 +88,7 @@ class GameSettingsDialog {
 	bool fullscreen_ = false;
 	bool verticalSync_ = true;
 	float frameTimeLimit_ = 0.0f;
+	std::array<float, 3> rigidBodyGravity_{0, -9.8f, 0};
 	std::string title_, error_;
 	std::string locationError_;
 	std::string inputAction_;

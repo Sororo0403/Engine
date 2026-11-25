@@ -20,13 +20,14 @@ inline CharacterInput Read(const Keyboard &keys, const ViewportInput &viewport,
                            bool textEditing,
                            const GameInputBindings &bindings = {},
                            const CameraPose *movementCamera = nullptr,
-                           const Gamepad *gamepad = nullptr) {
+                           const Gamepad *gamepad = nullptr,
+                           const CharacterSettings *character = nullptr) {
 	if (!viewport.windowFocused || !viewport.applicationFocused ||
 	    viewport.widgetActive || textEditing) {
 		return {};
 	}
 
-	return CharacterInputReader::Read(keys, bindings, movementCamera, gamepad);
+	return CharacterInputReader::Read(keys, bindings, movementCamera, gamepad, character);
 }
 
 /// <summary>

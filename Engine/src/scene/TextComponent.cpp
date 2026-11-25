@@ -1,5 +1,6 @@
 ﻿#include "scene/TextComponent.h"
 #include "platform/windows/StringConversion.h"
+#include "platform/windows/PathUtils.h"
 #include <algorithm>
 #include <cmath>
 
@@ -7,9 +8,12 @@ bool TextComponent::IsValid() const {
 	return text.size() <= kMaximumTextBytes &&
 	       text.find('\0') == std::string::npos &&
 	       (text.empty() || !StringConversion::Utf8ToWide(text).empty()) &&
-	       !fontFamily.empty() && fontFamily.size() <= 256 &&
-	       fontFamily.find('\0') == std::string::npos &&
-	       !StringConversion::Utf8ToWide(fontFamily).empty() &&
+	       (fontAsset.empty()
+	            ? (!fontFamily.empty() && fontFamily.size() <= 256 &&
+	               fontFamily.find('\0') == std::string::npos &&
+	               !StringConversion::Utf8ToWide(fontFamily).empty())
+	            : (PathUtils::IsFontFile(fontAsset) &&
+	               fontAsset.native().find(L'\0') == std::wstring::npos)) &&
 	       std::isfinite(fontSize) && fontSize >= 1 && fontSize <= 512 &&
 	       alignment >= Alignment::LEFT && alignment <= Alignment::RIGHT &&
 	       verticalAlignment >= VerticalAlignment::TOP &&

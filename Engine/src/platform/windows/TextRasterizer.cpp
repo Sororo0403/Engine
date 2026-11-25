@@ -8,6 +8,8 @@
 #include <exception>
 #include <format>
 #include <stdexcept>
+#include <span>
+#include <array>
 #include <wincodec.h>
 #include <wrl/client.h>
 
@@ -22,7 +24,10 @@ struct TextRasterizer::Impl {
 	ComPtr<IWICImagingFactory> imaging;
 	ComPtr<IDWriteFontCollection1> bundledFonts;
 
+	void InitializeWriting();
 	void LoadBundledFonts();
+	ComPtr<IDWriteFontCollection1> LoadFonts(
+	    std::span<const std::filesystem::path> paths);
 };
 
 namespace {
@@ -39,30 +44,56 @@ void Require(HRESULT result, const char *operation) {
 }
 } // namespace
 
+void TextRasterizer::Impl::InitializeWriting() {
+	if (!writing)
+		Require(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+		                            reinterpret_cast<IUnknown **>(writing.GetAddressOf())),
+		        "DWriteCreateFactory");
+}
+
+void TextRasterizer::ValidateFontAsset(const std::filesystem::path &path) {
+	if (!PathUtils::IsFontFile(path))
+		throw std::runtime_error("Choose a TTF or OTF font file.");
+	Impl validation;
+	validation.InitializeWriting();
+	const std::array paths{PathUtils::ResolveFromExecutable(path)};
+	validation.LoadFonts(paths);
+}
+
 void TextRasterizer::Impl::LoadBundledFonts() {
 	if (bundledFonts) {
 		return;
 	}
 
+	const auto directory = PathUtils::ResolveFromExecutable(L"resources/engine/fonts");
+	const std::array paths{directory / L"MPLUS1p-Regular.ttf",
+	                       directory / L"MPLUS1p-Bold.ttf"};
+	bundledFonts = LoadFonts(paths);
+}
+
+ComPtr<IDWriteFontCollection1> TextRasterizer::Impl::LoadFonts(
+    std::span<const std::filesystem::path> paths) {
 	ComPtr<IDWriteFactory5> factory;
 	Require(writing.As(&factory), "Get DirectWrite font factory");
 	ComPtr<IDWriteFontSetBuilder1> fonts;
 	Require(factory->CreateFontSetBuilder(fonts.GetAddressOf()),
-	        "Create bundled font set builder");
+	        "Create font set builder");
 
-	const auto directory = PathUtils::ResolveFromExecutable(L"resources/engine/fonts");
-	for (const auto *name : {L"MPLUS1p-Regular.ttf", L"MPLUS1p-Bold.ttf"}) {
-		const auto path = directory / name;
+	for (const auto &path : paths) {
 		ComPtr<IDWriteFontFile> file;
 		Require(factory->CreateFontFileReference(path.c_str(), nullptr, file.GetAddressOf()),
-		        "Open bundled M PLUS 1p font");
-		Require(fonts->AddFontFile(file.Get()), "Add bundled M PLUS 1p font");
+		        "Open font file");
+		Require(fonts->AddFontFile(file.Get()), "Add font file");
 	}
 
 	ComPtr<IDWriteFontSet> set;
-	Require(fonts->CreateFontSet(set.GetAddressOf()), "Create bundled font set");
-	Require(factory->CreateFontCollectionFromFontSet(set.Get(), bundledFonts.GetAddressOf()),
-	        "Create bundled font collection");
+	Require(fonts->CreateFontSet(set.GetAddressOf()), "Create font set");
+	ComPtr<IDWriteFontCollection1> collection;
+	Require(factory->CreateFontCollectionFromFontSet(set.Get(), collection.GetAddressOf()),
+	        "Create font collection");
+	if (collection->GetFontFamilyCount() == 0)
+		throw std::runtime_error("The font file contains no supported font families.");
+	return collection;
 }
 
 TextRasterizer::TextRasterizer() : impl_(std::make_unique<Impl>()) {
@@ -83,12 +114,7 @@ bool TextRasterizer::Rasterize(const TextComponent &text, int width, int height,
 			Require(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
 			                          impl_->drawing.GetAddressOf()),
 			        "D2D1CreateFactory");
-		if (!impl_->writing)
-			Require(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-			                            __uuidof(IDWriteFactory),
-			                            reinterpret_cast<IUnknown **>(
-			                                impl_->writing.GetAddressOf())),
-			        "DWriteCreateFactory");
+		impl_->InitializeWriting();
 		if (!impl_->imaging)
 			Require(CoCreateInstance(
 			            CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
@@ -109,16 +135,29 @@ bool TextRasterizer::Rasterize(const TextComponent &text, int width, int height,
 		Require(impl_->drawing->CreateWicBitmapRenderTarget(
 		            bitmap.Get(), properties, target.GetAddressOf()),
 		        "Create text render target");
-		const auto family = StringConversion::Utf8ToWide(text.fontFamily);
-		const bool useBundledFont =
-		    CompareStringOrdinal(family.c_str(), -1, L"M PLUS 1p", -1, TRUE) == CSTR_EQUAL;
-		if (useBundledFont) {
+		auto family = StringConversion::Utf8ToWide(text.fontFamily);
+		ComPtr<IDWriteFontCollection1> collection;
+		if (!text.fontAsset.empty()) {
+			const std::array paths{PathUtils::ResolveFromExecutable(text.fontAsset)};
+			collection = impl_->LoadFonts(paths);
+			ComPtr<IDWriteFontFamily> assetFamily;
+			Require(static_cast<IDWriteFontCollection *>(collection.Get())->GetFontFamily(
+			            0, assetFamily.GetAddressOf()), "Read asset font family");
+			ComPtr<IDWriteLocalizedStrings> names;
+			Require(assetFamily->GetFamilyNames(names.GetAddressOf()), "Read font family names");
+			UINT32 length = 0;
+			Require(names->GetStringLength(0, &length), "Read font family name length");
+			family.resize(length + 1);
+			Require(names->GetString(0, family.data(), length + 1), "Read font family name");
+			family.resize(length);
+		} else if (CompareStringOrdinal(family.c_str(), -1, L"M PLUS 1p", -1, TRUE) == CSTR_EQUAL) {
 			impl_->LoadBundledFonts();
+			collection = impl_->bundledFonts;
 		}
 		ComPtr<IDWriteTextFormat> format;
 		Require(
 		    impl_->writing->CreateTextFormat(
-		        family.c_str(), useBundledFont ? impl_->bundledFonts.Get() : nullptr,
+		        family.c_str(), collection.Get(),
 		        text.bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL,
 		        DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
 		        text.fontSize * scale, L"", format.GetAddressOf()),

@@ -10,6 +10,7 @@
 #include "gameplay/SceneSimulation.h"
 #include "gameplay/SceneValidation.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/TextRasterizer.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/SceneAssetReferences.h"
 #include "scene/SceneLighting.h"
@@ -315,6 +316,15 @@ class Assets {
 
 	const auto &MaterialTexts() const { return materialTexts_; }
 
+	fs::path AddFont(const fs::path &input) {
+		const auto reference = AddFile(FindSource(input), input);
+		if (!fonts_.contains(reference)) {
+			TextRasterizer::ValidateFontAsset(input);
+			fonts_.insert(reference);
+		}
+		return reference;
+	}
+
 	fs::path AddAudio(const fs::path &input, bool spatial) {
 		AssetDependencies::AudioFiles(input);
 		const auto reference = AddFile(FindSource(input), input);
@@ -475,7 +485,7 @@ class Assets {
 	std::map<fs::path, std::exception_ptr, PathLess> failedModels_;
 	std::map<std::pair<std::size_t, fs::path::string_type>, fs::path> registeredFiles_;
 	std::map<fs::path, unsigned, PathLess> textures_;
-	std::set<fs::path, PathLess> scripts_;
+	std::set<fs::path, PathLess> scripts_, fonts_;
 	std::set<fs::path, PathLess> animationClips_;
 	std::map<fs::path, std::uint16_t, PathLess> audioChannels_;
 };
@@ -968,6 +978,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				    entry, inputIssue.objectId, {}, {}, inputIssue.inputAction);
 			}
 			SceneSimulation check;
+			check.SetRigidBodyGravity(options.config.rigidBodyGravity);
 			std::string issue;
 			SceneObjectId invalidObject = 0;
 			// 参照先が欠けている場合も、読めたシーンの入力設定と素材を検査する。
@@ -1081,6 +1092,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					return assets.AddTexture(path, 4096);
 				};
 
+				if (object.text && !object.text->fontAsset.empty())
+					includeAsset(object.text->fontAsset, "Text Font",
+					             [&](const auto &path) { return assets.AddFont(path); });
 				if (object.image && !object.image->texture.empty())
 					includeAsset(object.image->texture, "Image", addUITexture);
 				if (object.particleEmitter &&
@@ -1307,6 +1321,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &entry : graph)
 			for (const auto &[id, object] : entry.objects) {
+				if (object.text && !object.text->fontAsset.empty())
+					exportedAssets.AddFont(destination / object.text->fontAsset);
 				if (object.image && !object.image->texture.empty())
 					exportedAssets.AddTexture(
 					    destination / object.image->texture, 4096);

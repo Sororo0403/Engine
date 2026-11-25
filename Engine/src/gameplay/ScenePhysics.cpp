@@ -236,7 +236,7 @@ bool ScenePhysics::Configure(const Scene &scene, bool preserve,
 		std::vector<RigidBodyDescription> descriptions;
 		std::set<SceneObjectId> driven;
 		Collect(scene, descriptions, driven, invalid);
-		ScenePhysics next;
+		ScenePhysics next{gravity_};
 
 		if (descriptions.empty()) {
 			*this = std::move(next);
@@ -283,7 +283,7 @@ bool ScenePhysics::Configure(const Scene &scene, bool preserve,
 					}
 				}
 			next.world_.emplace();
-			if (!next.world_->Rebuild(descriptions, error, invalidObject))
+			if (!next.world_->Rebuild(descriptions, error, invalidObject, gravity_))
 				return false;
 		}
 

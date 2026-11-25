@@ -48,11 +48,13 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 	     {-1, -1, true}}};
 	Paths result;
 
+	const auto origin = transform.GetPosition();
+	const auto up = object->character->GetUp();
 	for (std::size_t i = 0; i < directions.size(); ++i) {
 		auto controller = initial;
 		auto input = directions[i];
 		auto &path = result[i];
-		path.points[path.count++] = transform.GetPosition();
+		path.points[path.count++] = origin;
 
 		for (std::size_t step = 1; step <= kMaximumSteps; ++step) {
 			if (!controller.Update(kStepSeconds, input, world)) {
@@ -62,12 +64,13 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 			input.jumpPressed = false;
 			const auto position = controller.GetTransform().translation;
 			path.durationSeconds = static_cast<double>(step) * kStepSeconds;
-			path.maximumHeight =
-			    (std::max)(path.maximumHeight, static_cast<double>(position.y) -
-			                                       transform.GetPosition().y);
-			path.horizontalDistance = std::hypot(
-			    static_cast<double>(position.x) - transform.GetPosition().x,
-			    static_cast<double>(position.z) - transform.GetPosition().z);
+			const double x = double(position.x) - origin.x;
+			const double y = double(position.y) - origin.y;
+			const double z = double(position.z) - origin.z;
+			const double height = x * up.x + y * up.y + z * up.z;
+			path.maximumHeight = (std::max)(path.maximumHeight, height);
+			path.horizontalDistance = std::hypot(x - height * up.x,
+			                                     y - height * up.y, z - height * up.z);
 			const bool fell =
 			    object->respawn && object->respawn->HasCrossed(position);
 			const bool landed = controller.IsGrounded();

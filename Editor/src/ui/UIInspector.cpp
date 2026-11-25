@@ -1,5 +1,6 @@
 ﻿#include "ui/UIInspector.h"
 #include "assets/AssetDragDrop.h"
+#include "dialogs/FileDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "platform/windows/PathUtils.h"
@@ -179,9 +180,27 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= Apply(history, id, object.text, t,
 		                 ImGui::InputTextMultiline("Text", &t.text, {0, 85}),
 		                 &EditorHistory::BeginText);
-		changed |= Apply(history, id, object.text, t,
-		                 ui.InputText("Font Family", t.fontFamily),
-		                 &EditorHistory::BeginText);
+		if (t.fontAsset.empty()) {
+			changed |= Apply(history, id, object.text, t,
+			                 ui.InputText("Font Family", t.fontFamily),
+			                 &EditorHistory::BeginText);
+		} else {
+			ui.Text(PathUtils::ToUtf8(t.fontAsset.filename()));
+		}
+		static FileDialog fontPicker;
+		if (ui.Button("Choose Font File"))
+			fontPicker.Show(FileDialogMode::OPEN, t.fontAsset, FileDialogFilter::FONT);
+		if (fontPicker.Draw(ui) == FileDialogResult::ACCEPTED) {
+			t.fontAsset = fontPicker.GetSelectedPath();
+			changed |= history.SetText(id, t);
+		}
+		if (!t.fontAsset.empty()) {
+			ui.SameLine();
+			if (ui.Button("Clear Font File")) {
+				t.fontAsset.clear();
+				changed |= history.SetText(id, t);
+			}
+		}
 		changed |= Apply(history, id, object.text, t,
 		                 ImGui::DragFloat("Font Size", &t.fontSize, .5f, 1, 512,
 		                                  "%.1f", ImGuiSliderFlags_AlwaysClamp),
@@ -307,8 +326,10 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 	if (object.text && ui.CollapsingHeader("UI Text")) {
 		ui.Text(object.text->enabled ? "Enabled" : "Disabled");
 		ImGui::TextWrapped("%s", object.text->text.c_str());
-		ui.Text(std::format("Font: {} / {:.1f}", object.text->fontFamily,
-		                    object.text->fontSize));
+		const auto &text = *object.text;
+		const auto font = text.fontAsset.empty() ? text.fontFamily
+		                                         : PathUtils::ToUtf8(text.fontAsset.filename());
+		ui.Text(std::format("Font: {} / {:.1f}", font, text.fontSize));
 	}
 
 	if (object.image && ui.CollapsingHeader("UI Image")) {

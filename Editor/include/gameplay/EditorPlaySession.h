@@ -18,6 +18,10 @@ class EditorPlaySession {
 	/// <summary>
 	/// 旧シーンの移行に使うプロジェクト照明を再生側へ渡す
 	/// </summary>
+	void SetRigidBodyGravity(const std::array<float, 3> &gravity) {
+		simulation_.SetRigidBodyGravity(gravity);
+	}
+
 	void SetLegacyLighting(const LightingSettings &lighting) {
 		simulation_.SetLegacyLighting(lighting);
 	}
@@ -241,6 +245,10 @@ class EditorPlaySession {
 	/// </summary>
 	/// <returns>再生中の主人公の値。停止中、または主人公なしの場合はnullopt</returns>
 	std::optional<CharacterRuntimeState> GetCharacterState() const;
+
+	const CharacterSettings *GetInputCharacterSettings() const {
+		return simulation_.GetInputCharacterSettings();
+	}
 
 	/// <summary>
 	/// 描画用の再生シーンを取得する。再実行してもシーン本体のアドレスは変わらない

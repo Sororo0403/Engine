@@ -45,6 +45,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	particles_ = source.particles_;
 	animators_ = source.animators_;
 	loadAnimatorModel_ = source.loadAnimatorModel_;
+	rigidBodyGravity_ = source.rigidBodyGravity_;
 	legacyLighting_ = source.legacyLighting_;
 	physics_ = source.physics_;
 	scripts_ = source.scripts_;
@@ -94,6 +95,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	animators_ = std::move(source.animators_);
 	loadAnimatorModel_ = std::move(source.loadAnimatorModel_);
 	legacyLighting_ = source.legacyLighting_;
+	rigidBodyGravity_ = source.rigidBodyGravity_;
 	physics_ = std::move(source.physics_);
 	scripts_ = std::move(source.scripts_);
 	ui_ = std::move(source.ui_);

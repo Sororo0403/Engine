@@ -765,7 +765,8 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"jumpBufferTime", v.jumpBufferTime},
 				    {"groundSnapDistance", v.groundSnapDistance},
 				    {"stepHeight", v.stepHeight},
-				    {"inputEnabled", v.inputEnabled}};
+				    {"inputEnabled", v.inputEnabled},
+				    {"gravityDirection", v.gravityDirection}};
 				if (v.preferredInputTarget)
 					objects.back()["character"]["preferredInputTarget"] = true;
 			}
@@ -1624,6 +1625,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 
 				if (version >= 79)
 					object.character->inputEnabled = v.at("inputEnabled").get<bool>();
+				if (v.contains("gravityDirection")) {
+					const auto direction = ReadFloat3(v.at("gravityDirection"));
+					object.character->gravityDirection = {direction.x, direction.y, direction.z};
+				}
 				object.character->preferredInputTarget = v.value("preferredInputTarget", false);
 			}
 

@@ -79,13 +79,13 @@ SceneObjectId DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::TableSetupColumn("Result");
 	ImGui::TableSetupColumn("Time (s)");
 	ImGui::TableSetupColumn("Height");
-	ImGui::TableSetupColumn("Distance XZ");
+	ImGui::TableSetupColumn("Planar Distance");
 	ImGui::TableSetupColumn("Landing Collider");
 	ImGui::TableHeadersRow();
 	SceneObjectId selectedLanding = 0;
 	const std::array<const char *, CharacterJumpPreview::kDirectionCount>
-	    labels{"In Place", "+X",      "-X",      "+Z",     "-Z",
-	           "+X / +Z",  "+X / -Z", "-X / +Z", "-X / -Z"};
+	    labels{"In Place", "Right", "Left", "Forward", "Back",
+	           "Right / Forward", "Right / Back", "Left / Forward", "Left / Back"};
 
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		const auto &path = paths[i];
@@ -176,6 +176,10 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumSpeed);
 		field("Gravity", &CharacterSettings::gravity,
 		      CharacterSettings::kMaximumGravity);
+		auto gravity = *object.character;
+		const bool directionEdited = ImGui::DragFloat3("Gravity Direction", gravity.gravityDirection.data(), .05f);
+		changed |= ApplyField(history, id, object.character, gravity, directionEdited,
+		                      &EditorHistory::BeginCharacter);
 		field("Terminal Speed", &CharacterSettings::terminalSpeed,
 		      CharacterSettings::kMaximumSpeed);
 		field("Coyote Time (s)", &CharacterSettings::coyoteTime,

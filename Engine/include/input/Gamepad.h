@@ -42,6 +42,8 @@ class Gamepad {
 	/// </summary>
 	/// <returns>このコントローラーが保持する入力状態への読み取り専用参照</returns>
 	const GamepadState &GetState() const;
+	/// <summary>生のスティック値に指定の不感帯を適用し、ボタン履歴を保持したコピーを返す</summary>
+	Gamepad WithDeadZones(float left, float right) const;
 
 	/// <summary>
 	/// 現在と前フレームの状態をクリアする
@@ -54,7 +56,8 @@ class Gamepad {
 	/// </summary>
 	/// <param name="stick">デッドゾーン適用前のスティック入力値</param>
 	/// <returns>方向を保ち、入力の強さを0～1に調整した値。デッドゾーン内は両成分が0</returns>
-	static GamepadStick ApplyDeadZone(GamepadStick stick);
+	static GamepadStick ApplyDeadZone(GamepadStick stick, float deadZone);
+	GamepadStick rawLeft_{}, rawRight_{};
 
 	static constexpr float kStickDeadZone = 0.15f;
 

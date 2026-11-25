@@ -568,11 +568,12 @@ bool CollisionWorld::Sweep(const WorldCollider &body,
 bool CollisionWorld::Move(const Collider &collider,
                           const DirectX::XMFLOAT4X4 &matrix,
                           const DirectX::XMFLOAT3 &displacement,
-                          CollisionMoveResult &result) const {
+                          CollisionMoveResult &result,
+                          const DirectX::XMFLOAT3 &up) const {
 	if (collider.shape == Collider::Shape::BOX) {
 		AxisAlignedBox body;
 		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
-		       Move(body, displacement, result, collider.filter);
+		       Move(body, displacement, result, collider.filter, up);
 	}
 
 	WorldCollider body;
@@ -580,7 +581,7 @@ bool CollisionWorld::Move(const Collider &collider,
 	return MathUtils::IsFinite(displacement) &&
 	       WorldCollider::Create(collider, matrix, body, error) &&
 	       CanPlace(body, collider.filter) &&
-	       MoveAlongSurfaces(body, displacement, result, collider.filter);
+	       MoveAlongSurfaces(body, displacement, result, collider.filter, up);
 }
 
 bool CollisionWorld::FindOverlaps(const Scene &scene, const Collider &collider,
@@ -601,17 +602,19 @@ bool CollisionWorld::FindOverlaps(const Scene &scene, const Collider &collider,
 bool CollisionWorld::Move(const AxisAlignedBox &body,
                           const DirectX::XMFLOAT3 &displacement,
                           CollisionMoveResult &result,
-                          const std::optional<CollisionFilter> &filter) const {
+                          const std::optional<CollisionFilter> &filter,
+                          const DirectX::XMFLOAT3 &up) const {
 	if (!CanPlace(body, filter) || !MathUtils::IsFinite(displacement))
 		return false;
-	return MoveAlongSurfaces(body, displacement, result, filter);
+	return MoveAlongSurfaces(body, displacement, result, filter, up);
 }
 
 template <class Body>
 bool CollisionWorld::MoveAlongSurfaces(
     const Body &body, const DirectX::XMFLOAT3 &displacement,
     CollisionMoveResult &result,
-    const std::optional<CollisionFilter> &filter) const {
+    const std::optional<CollisionFilter> &filter,
+    const DirectX::XMFLOAT3 &up) const {
 	DirectX::XMFLOAT3 moved{}, remaining = displacement;
 	CollisionMoveResult next;
 
@@ -636,9 +639,11 @@ bool CollisionWorld::MoveAlongSurfaces(
 		moved.z += remaining.z * fraction;
 		if (!hit.objectId)
 			break;
-		next.grounded |= hit.normal.y > .5f && remaining.y < 0;
-		next.hitCeiling |= hit.normal.y < -.5f && remaining.y > 0;
-		next.hitWall |= std::abs(hit.normal.y) <= .5f;
+		const auto normalUp = hit.normal.x * up.x + hit.normal.y * up.y + hit.normal.z * up.z;
+		const auto vertical = remaining.x * up.x + remaining.y * up.y + remaining.z * up.z;
+		next.grounded |= normalUp > .5f && vertical < 0;
+		next.hitCeiling |= normalUp < -.5f && vertical > 0;
+		next.hitWall |= std::abs(normalUp) <= .5f;
 		remaining.x *= 1 - fraction;
 		remaining.y *= 1 - fraction;
 		remaining.z *= 1 - fraction;
