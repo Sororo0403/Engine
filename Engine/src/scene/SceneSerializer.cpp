@@ -1,5 +1,5 @@
 #include "scene/SceneSerializer.h"
-#include "LegacyMaterial.h"
+#include "graphics/material/MaterialAsset.h"
 #include "SceneRigidBodySerializer.h"
 #include "SceneUISerializer.h"
 
@@ -178,7 +178,7 @@ DirectX::XMFLOAT4 ReadRotation(const Json &value) {
 /// <param name="bindings">スロット番号と参照パスの配列</param>
 /// <param name="version">シーン形式。10以前は旧材質JSONから画像だけを取得する</param>
 /// <returns>検証済みの画像割り当て。無効な場合は例外</returns>
-TextureBindings ReadBindings(const Json &bindings, int version) {
+TextureBindings ReadBindings(const Json &bindings, int version, bool materialAssets = false) {
 	if (!bindings.is_array()) {
 		throw std::runtime_error("画像の割り当て配列が無効です。");
 	}
@@ -205,10 +205,10 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 				throw std::runtime_error("旧材質の参照先が無効です。");
 			}
 
-			LegacyMaterial legacy;
+			MaterialAsset legacy;
 			std::string error;
 
-			if (!LegacyMaterialReader::Load(path, legacy, error)) {
+			if (!MaterialSerializer::Load(path, legacy, error)) {
 				throw std::runtime_error("旧材質の画像参照を移行できません: " +
 				                         error);
 			}
@@ -226,8 +226,8 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 
 	std::sort(result.slots.begin(), result.slots.end(),
 	          [](const auto &a, const auto &b) { return a.first < b.first; });
-	if (!result.IsValid()) {
-		throw std::runtime_error("画像テクスチャの参照先が無効です。");
+	if (!result.IsValid(materialAssets)) {
+		throw std::runtime_error("材質スロットの参照先が無効です。");
 	}
 
 	return result;
@@ -538,6 +538,10 @@ bool SerializeScene(const Scene &scene, std::string &text,
 
 			if (object.meshRenderer) {
 				auto bindings = Json::array();
+				auto materials = Json::array();
+				for (const auto &[slot, path] : object.meshRenderer->materials.slots) {
+					materials.push_back({{"slot", slot}, {"path", PathUtils::ToUtf8(path)}});
+				}
 
 				for (const auto &[slot, path] :
 				     object.meshRenderer->textures.slots) {
@@ -550,6 +554,9 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"textures", std::move(bindings)},
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
+				if (!materials.empty()) {
+					objects.back()["meshRenderer"]["materials"] = std::move(materials);
+				}
 				if (!object.meshRenderer->receiveFog) {
 					objects.back()["meshRenderer"]["receiveFog"] = false;
 				}
@@ -1129,6 +1136,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					                                           : "materials"),
 					                 version)};
 
+					if (version >= 84 && renderer.contains("materials")) {
+						object.meshRenderer->materials = ReadBindings(renderer.at("materials"), version, true);
+					}
 					if (version >= 13) {
 						object.meshRenderer->uvScale =
 						    ReadFloat2(renderer.at("uvScale"));

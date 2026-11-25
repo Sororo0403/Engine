@@ -260,6 +260,11 @@ void ControlsPanel::Draw() {
 	         "Undo/Redo operation. Manual Texture Slot input remains available "
 	         "for unused or not-yet-loaded slots. Slot numbers and existing "
 	         "assignments are never changed automatically."},
+	        {"Inspector > Mesh Renderer > Material Asset",
+	         "Assign a shared material to a model slot. New Material saves "
+	         "an asset in the Assets folder and assigns it to the slot. "
+	         "Save Shared Material updates every slot using the asset. "
+	         "Texture Override replaces the base color image for this slot."},
 	        {"Inspector > Mesh Renderer > Clear Unused Texture Assignments",
 	         "Explicitly remove image assignments whose slot is not used by "
 	         "any mesh in the currently loaded model, including old slot "

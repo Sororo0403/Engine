@@ -356,6 +356,7 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 		    select(assets.GetScripts(), AssetType::SCRIPT, aliases) ||
 		    select(assets.GetModels(), AssetType::MODEL, aliases) ||
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
+		    select(assets.GetMaterials(), AssetType::MATERIAL, aliases) ||
 		    select(assets.GetAudioClips(), AssetType::AUDIO, aliases) ||
 		    select(assets.GetScenes(), AssetType::SCENE, aliases) ||
 		    select(assets.GetPrefabs(), AssetType::PREFAB, aliases) ||
@@ -668,6 +669,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			return "Scenes";
 		case AssetType::PREFAB:
 			return "Prefabs";
+		case AssetType::MATERIAL:
+			return "Materials";
 		case AssetType::GAME_SETTINGS:
 			return "Game Settings";
 		}
@@ -679,7 +682,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		for (const auto type :
 		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
 		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS,
-		      AssetType::SCRIPT, AssetType::ANIMATION_CLIP}) {
+		      AssetType::SCRIPT, AssetType::ANIMATION_CLIP, AssetType::MATERIAL}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -766,6 +769,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const std::array filesByType{
 	    std::pair{AssetType::MODEL, &assets.GetModels()},
 	    std::pair{AssetType::TEXTURE, &assets.GetTextures()},
+	    std::pair{AssetType::MATERIAL, &assets.GetMaterials()},
 	    std::pair{AssetType::AUDIO, &assets.GetAudioClips()},
 	    std::pair{AssetType::SCENE, &assets.GetScenes()},
 	    std::pair{AssetType::PREFAB, &assets.GetPrefabs()},

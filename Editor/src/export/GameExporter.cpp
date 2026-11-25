@@ -5,6 +5,7 @@
 #include "assets/SceneDependencyGraph.h"
 #include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
+#include "graphics/material/MaterialAsset.h"
 #include "gameplay/SceneScripts.h"
 #include "gameplay/SceneSimulation.h"
 #include "gameplay/SceneValidation.h"
@@ -292,6 +293,28 @@ class Assets {
 		return reference;
 	}
 
+	fs::path AddMaterial(const fs::path &input) {
+		const auto reference = AddFile(FindSource(input), input);
+		if (materialTexts_.contains(reference))
+			return reference;
+		MaterialAsset material;
+		std::string error;
+		const auto &file = files_.at(reference);
+		if (!MaterialSerializer::Load(file, material, error))
+			throw std::runtime_error(error);
+		if (!material.baseColorTexture.empty()) {
+			const auto texture = AddTexture((file.parent_path() / material.baseColorTexture).lexically_normal());
+			material.baseColorTexture = texture.lexically_relative(reference.parent_path());
+		}
+		std::string text;
+		if (!MaterialSerializer::Serialize(material, text, error))
+			throw std::runtime_error(error);
+		materialTexts_.emplace(reference, std::move(text));
+		return reference;
+	}
+
+	const auto &MaterialTexts() const { return materialTexts_; }
+
 	fs::path AddAudio(const fs::path &input, bool spatial) {
 		AssetDependencies::AudioFiles(input);
 		const auto reference = AddFile(FindSource(input), input);
@@ -448,6 +471,7 @@ class Assets {
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
+	std::map<fs::path, std::string, PathLess> materialTexts_;
 	std::map<fs::path, std::exception_ptr, PathLess> failedModels_;
 	std::map<std::pair<std::size_t, fs::path::string_type>, fs::path> registeredFiles_;
 	std::map<fs::path, unsigned, PathLess> textures_;
@@ -1086,12 +1110,17 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						                 path, object.audioSource->spatial);
 					             });
 
-				if (object.meshRenderer)
+				if (object.meshRenderer) {
+					for (auto &[slot, path] : object.meshRenderer->materials.slots)
+						includeAsset(path, "Material asset",
+						             [&](const auto &input) { return assets.AddMaterial(input); });
 					for (auto &[slot, path] : object.meshRenderer->textures.slots)
 						includeAsset(path, "Material texture",
 						             [&](const auto &input) {
 							             return assets.AddTexture(input);
 						             });
+
+				}
 
 				if (object.HasMesh())
 					includeAsset(object.mesh->modelPath, "Mesh",
@@ -1129,7 +1158,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		plan.Tree(runtimeRoot / L"licenses", L"licenses");
 
 		for (const auto &[relative, file] : assets.Files()) {
-			plan.File(file, relative);
+			if (assets.MaterialTexts().contains(relative))
+				plan.Reserve(relative);
+			else
+				plan.File(file, relative);
 		}
 
 		for (const auto &source : assets.Sources()) {
@@ -1202,6 +1234,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		GameExporter::CheckSummary result;
 		result.contentBytes = configText.size();
+		for (const auto &[relative, text] : assets.MaterialTexts())
+			result.contentBytes += text.size();
 		for (const auto &text : sceneTexts) {
 			result.contentBytes += text.size();
 		}
@@ -1271,6 +1305,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			}
 		}
 
+		for (const auto &[relative, text] : assets.MaterialTexts())
+			output.Text(relative, text);
+
 		Assets exportedAssets(fs::canonical(destination / L"resources"));
 
 		for (const auto &entry : graph)
@@ -1292,6 +1329,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					                            object.audioSource->clipPath,
 					                        object.audioSource->spatial);
 				if (object.meshRenderer) {
+					for (const auto &[slot, path] : object.meshRenderer->materials.slots)
+						exportedAssets.AddMaterial(destination / path);
 					for (const auto &[slot, path] :
 					     object.meshRenderer->textures.slots) {
 						exportedAssets.AddTexture(destination / path);

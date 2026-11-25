@@ -1,4 +1,7 @@
 #pragma once
+
+#include "graphics/material/MaterialAsset.h"
+#include <optional>
 #include "animation/AnimatorDrawPose.h"
 #include "particles/ParticleDrawBatch.h"
 #include "ui/UIButtonVisual.h"
@@ -274,5 +277,11 @@ class SceneRenderer {
 
 	// シーン上の物体IDと、対応する描画物体の情報
 	std::map<SceneObjectId, Object> objects_;
+	struct MaterialFile {
+		std::filesystem::file_time_type modified;
+		std::uintmax_t size = 0;
+		std::optional<MaterialAsset> asset;
+	};
+	std::map<std::filesystem::path, MaterialFile> materialFiles_;
 	std::uint64_t modelRevision_ = 0;
 };

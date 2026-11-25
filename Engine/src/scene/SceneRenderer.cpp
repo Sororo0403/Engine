@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "core/Logger.h"
+#include "platform/windows/PathUtils.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
@@ -104,7 +105,16 @@ bool SceneRenderer::PreparePrefabResources(
 				(void)id;
 				if (o.HasMesh() && !models_.Load(o.mesh->modelPath))
 					throw std::runtime_error("Could not prepare Prefab model.");
-				if (o.meshRenderer)
+				if (o.meshRenderer) {
+					for (const auto &[slot, path] : o.meshRenderer->materials.slots) {
+						(void)slot;
+						MaterialAsset asset;
+						if (!MaterialSerializer::Load(path, asset, error))
+							throw std::runtime_error(error);
+						if (!asset.baseColorTexture.empty() &&
+						    !render_.GetMaterials().LoadTexture(path.parent_path() / asset.baseColorTexture))
+							throw std::runtime_error("Could not prepare Prefab material texture.");
+					}
 					for (const auto &[slot, path] :
 					     o.meshRenderer->textures.slots) {
 						(void)slot;
@@ -112,6 +122,7 @@ bool SceneRenderer::PreparePrefabResources(
 							throw std::runtime_error(
 							    "Could not prepare Prefab material.");
 					}
+				}
 				if (o.audioSource && !o.audioSource->clipPath.empty()) {
 					const auto clip =
 					    clips.Load(o.audioSource->clipPath, error);
@@ -270,6 +281,40 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 		auto [entry, inserted] = materials.try_emplace(path);
 		if (inserted)
 			entry->second = render_.GetMaterials().LoadTexture(path);
+		return entry->second;
+	};
+
+	std::map<std::filesystem::path, const MaterialAsset *> sharedMaterials;
+	const auto loadShared = [&](const std::filesystem::path &path) -> const MaterialAsset * {
+		const auto file = PathUtils::ResolveFromExecutable(path).lexically_normal();
+		auto [entry, inserted] = sharedMaterials.try_emplace(file, nullptr);
+		if (!inserted)
+			return entry->second;
+		std::error_code error;
+		const auto modified = std::filesystem::last_write_time(file, error);
+		if (error) {
+			materialFiles_.erase(file);
+			return nullptr;
+		}
+		const auto size = std::filesystem::file_size(file, error);
+		if (error)
+			return nullptr;
+		auto [cached, fresh] = materialFiles_.try_emplace(file);
+		auto &record = cached->second;
+		if (fresh || record.modified != modified || record.size != size) {
+			MaterialAsset asset;
+			std::string problem;
+			if (MaterialSerializer::Load(file, asset, problem))
+				record.asset = std::move(asset);
+			else {
+				record.asset.reset();
+				Logger::Error("Could not load material " + PathUtils::ToUtf8(file) + ": " + problem);
+			}
+			record.modified = modified;
+			record.size = size;
+		}
+		if (record.asset)
+			entry->second = &*record.asset;
 		return entry->second;
 	};
 
@@ -440,10 +485,20 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 			    object.meshRenderer->textures.slots.begin(),
 			    object.meshRenderer->textures.slots.end(),
 			    [slot](const auto &binding) { return binding.first == slot; });
-			auto material =
-			    found == object.meshRenderer->textures.slots.end()
-			        ? MaterialHandle{}
-			        : loadMaterial(found->second);
+			const auto &bindings = object.meshRenderer->materials.slots;
+			const auto binding = std::ranges::find_if(
+			    bindings, [slot](const auto &entry) { return entry.first == slot; });
+			const auto *shared = binding == bindings.end() ? nullptr : loadShared(binding->second);
+			const bool hasTextureOverride = found != object.meshRenderer->textures.slots.end();
+			MaterialHandle material;
+			if (hasTextureOverride) {
+				material = loadMaterial(found->second);
+			} else if (shared) {
+				const auto texture = shared->baseColorTexture.empty()
+				    ? std::filesystem::path{}
+				    : (binding->second.parent_path() / shared->baseColorTexture).lexically_normal();
+				material = loadMaterial(texture);
+			}
 
 			// 上書きがない場合は、モデルの既定の材質へ戻す。
 			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
@@ -451,10 +506,19 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 			}
 
 			auto &data = world_->GetMaterial(renderObject.handle, slot);
-			data.uvScale = {object.meshRenderer->uvScale[0],
-			                object.meshRenderer->uvScale[1]};
-			data.uvOffset = {object.meshRenderer->uvOffset[0],
-			                 object.meshRenderer->uvOffset[1]};
+			if (shared && material) {
+				data.baseColor = shared->data.baseColor;
+				data.shadingMode = shared->data.shadingMode;
+			} else if (hasTextureOverride && material) {
+				data.baseColor = {1, 1, 1, 1};
+				data.shadingMode = MaterialData::ShadingMode::LIT;
+			}
+			const auto scale = shared ? shared->data.uvScale : DirectX::XMFLOAT2{1, 1};
+			const auto offset = shared ? shared->data.uvOffset : DirectX::XMFLOAT2{0, 0};
+			data.uvScale = {object.meshRenderer->uvScale[0] * scale.x,
+			                object.meshRenderer->uvScale[1] * scale.y};
+			data.uvOffset = {object.meshRenderer->uvOffset[0] * scale.x + offset.x,
+			                 object.meshRenderer->uvOffset[1] * scale.y + offset.y};
 			data.reveal = object.meshRenderer->reveal;
 			data.receiveFog = object.meshRenderer->receiveFog ? 1 : 0;
 			data.monochrome = isForeground(id) ? MonochromeEffect{} : monochrome;

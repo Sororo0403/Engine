@@ -13,6 +13,8 @@ struct MissingModelDependencies : std::runtime_error {
 	std::vector<std::filesystem::path> paths;
 };
 
+std::vector<std::filesystem::path> MaterialFiles(const std::filesystem::path &path);
+
 std::string DescribeMissingModelDependency(const std::filesystem::path &file);
 
 /// <summary>

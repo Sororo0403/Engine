@@ -1,4 +1,5 @@
 #include "assets/AssetDatabase.h"
+#include "graphics/material/MaterialAsset.h"
 #include "animation/AnimationClipAsset.h"
 #include "assets/PrefabAsset.h"
 
@@ -82,7 +83,7 @@ bool AssetDatabase::Refresh() {
 		}
 
 		std::vector<std::filesystem::path> models;
-		std::vector<std::filesystem::path> textures;
+		std::vector<std::filesystem::path> textures, materials;
 		std::vector<std::filesystem::path> audioClips;
 		std::vector<std::filesystem::path> scenes;
 		std::vector<std::filesystem::path> scripts, animationClips;
@@ -130,6 +131,9 @@ bool AssetDatabase::Refresh() {
 				if (PathUtils::HasExtension(path, ".wav"))
 					audioClips.push_back(reference(path));
 
+				if (MaterialSerializer::IsPath(path))
+					materials.push_back(reference(path));
+
 				if (PathUtils::IsImageFile(path)) {
 					textures.push_back(reference(path));
 				}
@@ -175,6 +179,7 @@ bool AssetDatabase::Refresh() {
 
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
+		std::sort(materials.begin(), materials.end());
 		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
 		std::sort(scripts.begin(), scripts.end());
@@ -186,6 +191,7 @@ bool AssetDatabase::Refresh() {
 		rootDirectory_.swap(selectedRoot);
 		models_.swap(models);
 		textures_.swap(textures);
+		materials_.swap(materials);
 		audioClips_.swap(audioClips);
 		scenes_.swap(scenes);
 		projectScenes_.swap(projectScenes);
@@ -227,6 +233,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		rootDirectory_.swap(candidate.rootDirectory_);
 		models_.swap(candidate.models_);
 		textures_.swap(candidate.textures_);
+		materials_.swap(candidate.materials_);
 		audioClips_.swap(candidate.audioClips_);
 		scenes_.swap(candidate.scenes_);
 		projectScenes_.swap(candidate.projectScenes_);
@@ -263,6 +270,7 @@ AssetDatabase::GetDirectories() const {
 void AssetDatabase::Clear() {
 	models_.clear();
 	textures_.clear();
+	materials_.clear();
 	audioClips_.clear();
 	scenes_.clear();
 	projectScenes_.clear();

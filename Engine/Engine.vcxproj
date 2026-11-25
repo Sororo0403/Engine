@@ -379,8 +379,8 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\material\MaterialData.cpp" />
-    <ClInclude Include="src\scene\LegacyMaterial.h" />
-    <ClCompile Include="src\scene\LegacyMaterial.cpp" />
+    <ClInclude Include="include\graphics\material\MaterialAsset.h" />
+    <ClCompile Include="src\graphics\material\MaterialAsset.cpp" />
     <ClInclude Include="include\graphics\material\TextureData.h" />
     <ClInclude Include="include\graphics\material\MaterialResource.h" />
     <ClCompile Include="src\graphics\material\MaterialResource.cpp" />

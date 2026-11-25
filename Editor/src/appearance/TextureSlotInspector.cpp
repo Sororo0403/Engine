@@ -7,15 +7,151 @@
 #include <algorithm>
 #include <format>
 #include <imgui.h>
+#include <imgui_stdlib.h>
+#include <stdexcept>
 #include <utility>
 #include <vector>
+
+bool TextureSlotInspector::DrawMaterialSlot(SceneObjectId id, std::uint32_t slot,
+                                            SceneObject &object, EditorHistory &history,
+                                            AssetDatabase &assets) {
+	const auto &slots = object.meshRenderer->materials.slots;
+	const auto found = std::ranges::lower_bound(slots, slot, {}, [](const auto &binding) { return binding.first; });
+	const auto assigned = found != slots.end() && found->first == slot
+	                          ? found->second : std::filesystem::path{};
+	const auto assign = [&](const std::filesystem::path &path) {
+		if (path == assigned)
+			return false;
+		auto edited = *object.meshRenderer;
+		auto &bindings = edited.materials.slots;
+		const auto index = std::ranges::lower_bound(
+		    bindings, slot, {}, [](const auto &binding) { return binding.first; });
+		if (index != bindings.end() && index->first == slot) {
+			if (path.empty())
+				bindings.erase(index);
+			else
+				index->second = path;
+		} else if (!path.empty()) {
+			bindings.insert(index, {slot, path});
+		}
+		return history.SetMeshRenderer(id, edited);
+	};
+
+	bool changed = false;
+	const auto label = assigned.empty() ? "Model Default" : PathUtils::ToUtf8(assigned);
+	if (ImGui::BeginCombo("Material Asset", label.c_str())) {
+		if (ImGui::Selectable("Model Default", assigned.empty()))
+			changed |= assign({});
+		for (const auto &path : assets.GetMaterials()) {
+			const auto name = PathUtils::ToUtf8(path);
+			if (ImGui::Selectable(name.c_str(), path == assigned))
+				changed |= assign(path);
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::BeginDisabled(assets.GetRootDirectory().empty());
+	if (ImGui::Button("New Material...")) {
+		editingMaterial_.clear();
+		materialName_ = "New Material";
+		materialDraft_ = {};
+		materialError_.clear();
+		ImGui::OpenPopup("Material");
+	}
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	ImGui::BeginDisabled(assigned.empty());
+	if (ImGui::Button("Edit Material...")) {
+		editingMaterial_ = assigned;
+		if (MaterialSerializer::Load(assigned, materialDraft_, materialError_))
+			ImGui::OpenPopup("Material");
+		else
+			ImGui::OpenPopup("Material Load Error");
+	}
+	ImGui::EndDisabled();
+	if (ImGui::BeginPopupModal("Material Load Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextWrapped("%s", materialError_.c_str());
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
+
+	if (!ImGui::BeginPopupModal("Material", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		return changed;
+
+	const bool creating = editingMaterial_.empty();
+	if (creating)
+		ImGui::InputText("Name", &materialName_);
+	else
+		ImGui::TextUnformatted(PathUtils::ToUtf8(editingMaterial_).c_str());
+	auto &data = materialDraft_.data;
+	float color[]{data.baseColor.x, data.baseColor.y, data.baseColor.z, data.baseColor.w};
+	if (ImGui::ColorEdit4("Base Color", color))
+		data.baseColor = {color[0], color[1], color[2], color[3]};
+	float scale[]{data.uvScale.x, data.uvScale.y};
+	if (ImGui::DragFloat2("Tiling", scale, .01f))
+		data.uvScale = {scale[0], scale[1]};
+	float offset[]{data.uvOffset.x, data.uvOffset.y};
+	if (ImGui::DragFloat2("Offset", offset, .01f))
+		data.uvOffset = {offset[0], offset[1]};
+	bool unlit = data.shadingMode == MaterialData::ShadingMode::UNLIT;
+	if (ImGui::Checkbox("Unlit", &unlit))
+		data.shadingMode = unlit ? MaterialData::ShadingMode::UNLIT : MaterialData::ShadingMode::LIT;
+
+	const auto materialDirectory = creating
+	    ? PathUtils::ResolveFromExecutable(assets.GetRootDirectory())
+	    : PathUtils::ResolveFromExecutable(editingMaterial_).parent_path();
+	const auto &texture = materialDraft_.baseColorTexture;
+	const auto textureLabel = texture.empty() ? "White" : PathUtils::ToUtf8(texture);
+	if (ImGui::BeginCombo("Base Color Texture", textureLabel.c_str())) {
+		if (ImGui::Selectable("White", texture.empty()))
+			materialDraft_.baseColorTexture.clear();
+		for (const auto &path : assets.GetTextures()) {
+			const auto relative = PathUtils::ResolveFromExecutable(path).lexically_relative(materialDirectory);
+			const auto name = PathUtils::ToUtf8(path);
+			if (ImGui::Selectable(name.c_str(), relative == texture, relative.empty() ? ImGuiSelectableFlags_Disabled : 0))
+				materialDraft_.baseColorTexture = relative;
+		}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::Button(creating ? "Create and Assign" : "Save Shared Material")) {
+		try {
+			auto path = editingMaterial_;
+			if (creating) {
+				auto name = PathUtils::FromUtf8(materialName_);
+				if (!MaterialSerializer::IsPath(name))
+					name += L".material.json";
+				if (materialName_.empty() || !PathUtils::IsValidFileName(name))
+					throw std::invalid_argument("Enter a valid material name.");
+				path = materialDirectory / name;
+			}
+			if (MaterialSerializer::Save(path, materialDraft_, materialError_, !creating)) {
+				if (creating) {
+					changed |= assign(path);
+					assets.Refresh();
+				}
+				ImGui::CloseCurrentPopup();
+			}
+		} catch (const std::exception &error) {
+			materialError_ = error.what();
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel"))
+		ImGui::CloseCurrentPopup();
+	if (!materialError_.empty())
+		ImGui::TextWrapped("%s", materialError_.c_str());
+	ImGui::EndPopup();
+	return changed;
+}
 
 bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                 SceneObject &object, EditorHistory &history,
                                 ModelManager &models,
-                                const AssetDatabase &assets, Request &request,
+                                AssetDatabase &assets, Request &request,
                                 bool canApplyUvToSelection,
-                                bool canPasteUv) const {
+                                bool canPasteUv) {
 	request = {};
 
 	if (!object.meshRenderer) {
@@ -126,19 +262,21 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			ui.Text(std::format("Material: {} | Meshes: {}{}",
 			                    materialName.empty() ? "Unnamed" : materialName,
 			                    meshes, meshes == 0 ? " [Unused]" : ""));
+			changed |= DrawMaterialSlot(id, static_cast<std::uint32_t>(slot),
+			                            object, history, assets);
 			const auto found = std::find_if(
 			    object.meshRenderer->textures.slots.begin(),
 			    object.meshRenderer->textures.slots.end(),
 			    [slot](const auto &binding) { return binding.first == slot; });
 			const auto preview =
 			    found == object.meshRenderer->textures.slots.end()
-			        ? std::string("Model Default")
+			        ? std::string("Inherit Texture")
 			        : PathUtils::ToUtf8(found->second);
-			const auto label = std::format("Slot {}", slot);
+			const char *label = "Texture Override";
 
-			if (ImGui::BeginCombo(label.c_str(), preview.c_str())) {
+			if (ImGui::BeginCombo(label, preview.c_str())) {
 				if (ui.Selectable(
-				        "Model Default",
+				        "Inherit Texture",
 				        found == object.meshRenderer->textures.slots.end())) {
 					changed |= history.SetTexturePath(
 					    id, static_cast<std::uint32_t>(slot), {});
@@ -182,6 +320,18 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		}
 
 		// モデルの差し替えで使用されなくなった割り当ても、勝手に破棄しない。
+		std::vector<std::uint32_t> unusedMaterials;
+		for (const auto &[slot, path] : object.meshRenderer->materials.slots) {
+			if (slot >= count)
+				unusedMaterials.push_back(slot);
+		}
+		for (const auto slot : unusedMaterials) {
+			ImGui::PushID(std::to_string(slot).c_str());
+			ui.Text(std::format("Unused Material Slot {}", slot));
+			changed |= DrawMaterialSlot(id, slot, object, history, assets);
+			ImGui::PopID();
+		}
+
 		std::vector<std::uint32_t> unused;
 
 		for (const auto &[slot, path] : object.meshRenderer->textures.slots) {

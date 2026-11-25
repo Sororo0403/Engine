@@ -28,7 +28,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		std::filesystem::path path;
 		SceneObjectId destinationObjectId = 0;
 	};
-	std::map<std::filesystem::path, std::vector<AssetError>> models, textures,
+	std::map<std::filesystem::path, std::vector<AssetError>> models, textures, materials,
 	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs, clips;
 	std::map<std::pair<std::filesystem::path, std::string>,
 	         std::vector<AssetError>>
@@ -242,6 +242,15 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		}
 
 		if (object.meshRenderer) {
+			for (const auto &[slot, path] : object.meshRenderer->materials.slots) {
+				add(std::format("Material Asset slot {}", slot),
+				    inspect(path, materials, [](const auto &material) {
+					    const auto files = AssetDependencies::MaterialFiles(material);
+					    if (files.size() > 1 && std::filesystem::is_regular_file(files[1]))
+						    ImageValidation::Read(files[1]);
+					    return files;
+				    }), path);
+			}
 			for (const auto &[slot, path] :
 			     object.meshRenderer->textures.slots) {
 				add(std::format("Mesh Renderer slot {}", slot),

@@ -198,7 +198,7 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 bool InspectorPanel::Draw(
     const ImGuiSystem &ui, Scene &scene, SceneObjectId selectedObjectId,
     EditorHistory &history, bool canPasteTransform, ModelManager *models,
-    const AssetDatabase *assets, bool canPasteCollider, bool canPasteCameraLens,
+    AssetDatabase *assets, bool canPasteCollider, bool canPasteCameraLens,
     bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
     std::span<const SceneObjectId> uvTargets, bool canPasteUv,
     std::span<const GameActionBinding> inputBindings) {
@@ -529,7 +529,7 @@ bool InspectorPanel::Draw(
 			                });
 
 			TextureSlotInspector::Request request;
-			changed |= TextureSlotInspector{}.Draw(
+			changed |= textureSlots_.Draw(
 			    ui, inspectedObjectId, *object, history, *models, *assets,
 			    request, canApplyUv, canPasteUv);
 			assetRevealPath_ = std::move(request.revealTexture);

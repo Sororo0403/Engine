@@ -1,5 +1,6 @@
 #include "assets/AssetUsage.h"
 #include "assets/AssetDependencies.h"
+#include "graphics/material/MaterialAsset.h"
 #include "files/OutputDirectory.h"
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
@@ -26,7 +27,7 @@
 
 namespace {
 namespace fs = std::filesystem;
-enum class Source { SCENE, PREFAB, MODEL };
+enum class Source { SCENE, PREFAB, MODEL, MATERIAL };
 using DocumentVisitor = std::function<void(
     const fs::path &, Source, Scene &, SceneObjectId, std::string,
     const fs::path &)>;
@@ -115,7 +116,7 @@ fs::path DuplicateDestination(const fs::path &source, bool folder,
 	auto suffix = folder ? fs::path{} : source.extension();
 
 	if (!folder && PathUtils::HasExtension(source, ".json")) {
-		for (const auto kind : {".scene", ".prefab", ".settings", ".clip"}) {
+		for (const auto kind : {".scene", ".prefab", ".settings", ".clip", ".material"}) {
 			if (PathUtils::HasExtension(stem, kind)) {
 				suffix = stem.extension().native() + suffix.native();
 				stem = stem.stem();
@@ -229,6 +230,8 @@ std::vector<AssetUsage::Reference> Scan(
 			}
 			break;
 		case Kind::ASSET:
+			if (MaterialSerializer::IsPath(path))
+				schedule(path, Source::MATERIAL);
 			break;
 		}
 	};
@@ -328,6 +331,8 @@ std::vector<AssetUsage::Reference> Scan(
 					schedule(path, Source::PREFAB);
 				} else if (PathUtils::IsModelFile(path)) {
 					schedule(path, Source::MODEL);
+				} else if (MaterialSerializer::IsPath(path)) {
+					schedule(path, Source::MATERIAL);
 				} else if (PathUtils::HasExtension(path, ".json") &&
 				           IsSceneFile(path)) {
 					schedule(path, Source::SCENE);
@@ -341,16 +346,19 @@ std::vector<AssetUsage::Reference> Scan(
 		const auto label = PathUtils::ToUtf8(path);
 
 		check(label, [&] {
-			if (source == Source::MODEL) {
+			if (source == Source::MODEL || source == Source::MATERIAL) {
 				if (visitModel) {
 					visitModel(path);
 					return;
 				}
 
-				for (const auto &file : AssetDependencies::ModelFiles(path)) {
+				const auto files = source == Source::MATERIAL
+				    ? AssetDependencies::MaterialFiles(path)
+				    : AssetDependencies::ModelFiles(path);
+				for (const auto &file : files) {
 					if (matches(file) && !PathUtils::IsSameFile(path, file) &&
 					    (!recordEdge || !recordEdge(path, file))) {
-						usages.push_back({"Model: " + label + " -> " +
+						usages.push_back({(source == Source::MATERIAL ? "Material: " : "Model: ") + label + " -> " +
 						                  PathUtils::ToUtf8(file), {}, 0, false,
 						                  false, path});
 					}
@@ -511,8 +519,10 @@ void CheckModelRelocation(const fs::path &model, const PathMapping &map,
 	    movedModel.empty() ? model.parent_path() : movedModel.parent_path();
 	std::vector<fs::path> absoluteReferences;
 
-	for (const auto &file :
-	     AssetDependencies::ModelFiles(model, &absoluteReferences)) {
+	const auto dependencies = MaterialSerializer::IsPath(model)
+	    ? AssetDependencies::MaterialFiles(model)
+	    : AssetDependencies::ModelFiles(model, &absoluteReferences);
+	for (const auto &file : dependencies) {
 		if (PathUtils::IsSameFile(model, file)) {
 			continue;
 		}
@@ -707,7 +717,7 @@ AssetUsage::Paths AssetUsage::CopyTo(std::span<const fs::path> sources,
 			          [&](const fs::path &file, const fs::path &relative,
 			              OutputDirectory &output) {
 				          const auto copiedFile = target.parent_path() / relative;
-				          if (PathUtils::IsModelFile(file)) {
+				          if (PathUtils::IsModelFile(file) || MaterialSerializer::IsPath(file)) {
 					          if (rebase) {
 						          CheckModelRelocation(file, map, true);
 					          }

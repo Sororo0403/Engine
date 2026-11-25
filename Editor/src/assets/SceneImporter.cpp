@@ -209,8 +209,12 @@ void ResolveReferences(Json &document, const fs::path &root,
 			}
 
 			if (object.contains("meshRenderer")) {
+				auto &renderer = object.at("meshRenderer");
+				if (version >= 84 && renderer.contains("materials"))
+					for (auto &binding : renderer.at("materials"))
+						resolve(binding.at("path"));
 				for (auto &binding :
-				     object.at("meshRenderer")
+				     renderer
 				         .at(version >= 11 ? "textures" : "materials")) {
 					resolve(binding.at("path"));
 				}
@@ -411,6 +415,17 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 				}
 
 				if (object.meshRenderer) {
+					for (auto &[slot, path] : object.meshRenderer->materials.slots) {
+						(void)slot;
+						const auto material = PackageFile(sourceRoot, path);
+						const auto dependencies = AssetDependencies::MaterialFiles(material);
+						if (dependencies.size() > 1) {
+							const auto image = addFile(dependencies[1]);
+							if (textures.insert(image).second)
+								ValidateTexture(files.at(image));
+						}
+						path = reference(material);
+					}
 					for (auto &[slot, path] :
 					     object.meshRenderer->textures.slots) {
 						AssetDependencies::TextureFiles(path);

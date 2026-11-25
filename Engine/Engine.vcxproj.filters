@@ -708,8 +708,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\material\MaterialData.cpp"><Filter>src\graphics\material</Filter></ClCompile>
-    <ClInclude Include="src\scene\LegacyMaterial.h"><Filter>src\scene</Filter></ClInclude>
-    <ClCompile Include="src\scene\LegacyMaterial.cpp"><Filter>src\scene</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\MaterialAsset.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\MaterialAsset.cpp"><Filter>src\graphics\material</Filter></ClCompile>
     <ClInclude Include="include\graphics\material\TextureData.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClInclude Include="include\graphics\material\MaterialResource.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClCompile Include="src\graphics\material\MaterialResource.cpp"><Filter>src\graphics\material</Filter></ClCompile>

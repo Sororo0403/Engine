@@ -57,6 +57,7 @@ class AssetDatabase {
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定のPNG・JPEG・BMP・TIFF・GIFファイル一覧</returns>
 	const std::vector<std::filesystem::path> &GetTextures() const;
+	const std::vector<std::filesystem::path> &GetMaterials() const { return materials_; }
 
 	/// <summary>
 	/// 音源で選択するWAVファイルの候補一覧を取得する。内容は割り当て時と再生時に検証する
@@ -115,7 +116,7 @@ class AssetDatabase {
 	std::filesystem::path rootDirectory_;
 	std::filesystem::path sceneDirectory_;
 	std::vector<std::filesystem::path> models_;
-	std::vector<std::filesystem::path> textures_;
+	std::vector<std::filesystem::path> textures_, materials_;
 	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
 	std::vector<std::filesystem::path> projectScenes_;

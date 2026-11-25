@@ -304,7 +304,8 @@ class AssetsPanel {
 		GAME_SETTINGS,
 		PREFAB,
 		SCRIPT,
-		ANIMATION_CLIP
+		ANIMATION_CLIP,
+		MATERIAL
 	};
 
 	/// <summary>

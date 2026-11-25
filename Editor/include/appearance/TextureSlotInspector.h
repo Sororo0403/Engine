@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/SceneObjectId.h"
+#include "graphics/material/MaterialAsset.h"
 #include <filesystem>
 class ImGuiSystem;
 class EditorHistory;
@@ -39,7 +40,16 @@ class TextureSlotInspector {
 	/// <returns>true:UVまたは割り当て変更あり false:変更なし、または編集要求のみ</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
 	          EditorHistory &history, ModelManager &models,
-	          const AssetDatabase &assets, Request &request,
+	          AssetDatabase &assets, Request &request,
 	          bool canApplyUvToSelection = false,
-	          bool canPasteUv = false) const;
+	          bool canPasteUv = false);
+
+  private:
+	bool DrawMaterialSlot(SceneObjectId id, std::uint32_t slot, SceneObject &object,
+	                      EditorHistory &history, AssetDatabase &assets);
+
+	MaterialAsset materialDraft_;
+	std::filesystem::path editingMaterial_;
+	std::string materialName_;
+	std::string materialError_;
 };

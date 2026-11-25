@@ -32,11 +32,16 @@ void ForEach(Object &object, const Apply &apply) {
 		apply(object.image->texture, Kind::ASSET);
 	if (object.mesh)
 		apply(object.mesh->modelPath, Kind::MODEL);
-	if (object.meshRenderer)
+	if (object.meshRenderer) {
+		for (auto &[slot, path] : object.meshRenderer->materials.slots) {
+			(void)slot;
+			apply(path, Kind::ASSET);
+		}
 		for (auto &[slot, path] : object.meshRenderer->textures.slots) {
 			(void)slot;
 			apply(path, Kind::ASSET);
 		}
+	}
 	if (object.audioSource)
 		apply(object.audioSource->clipPath, Kind::ASSET);
 }

@@ -1,11 +1,12 @@
-#include "LegacyMaterial.h"
+#include "graphics/material/MaterialAsset.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include <fstream>
 #include <json.hpp>
 #include <stdexcept>
 #include <vector>
 
-bool LegacyMaterial::IsValid() const {
+bool MaterialAsset::IsValid() const {
 	if (!data.IsValid() || baseColorTexture.has_root_path()) {
 		return false;
 	}
@@ -15,8 +16,44 @@ bool LegacyMaterial::IsValid() const {
 	       text.find(L':') == std::wstring::npos;
 }
 
-bool LegacyMaterialReader::Load(const std::filesystem::path &path,
-                                LegacyMaterial &asset, std::string &error) {
+bool MaterialSerializer::IsPath(const std::filesystem::path &path) {
+	return (!path.has_root_path() || path.is_absolute()) &&
+	       PathUtils::HasExtension(path, ".json") &&
+	       PathUtils::HasExtension(path.stem(), ".material");
+}
+
+bool MaterialSerializer::Serialize(const MaterialAsset &asset,
+                                   std::string &text, std::string &error) {
+	try {
+		if (!asset.IsValid()) {
+			throw std::runtime_error(
+			    "Invalid material parameters or texture path.");
+		}
+
+		const auto &v = asset.data;
+		nlohmann::json json{
+		    {"format", "EngineMaterial"},
+		    {"version", 2},
+		    {"shading", v.shadingMode == MaterialData::ShadingMode::UNLIT
+		                    ? "Unlit"
+		                    : "Lit"},
+		    {"baseColor",
+		     {v.baseColor.x, v.baseColor.y, v.baseColor.z, v.baseColor.w}},
+		    {"uvScale", {v.uvScale.x, v.uvScale.y}},
+		    {"uvOffset", {v.uvOffset.x, v.uvOffset.y}},
+		    {"baseColorTexture", PathUtils::ToUtf8(asset.baseColorTexture)}};
+		auto serialized = json.dump(2) + '\n';
+		text.swap(serialized);
+		error.clear();
+		return true;
+	} catch (const std::exception &e) {
+		error = e.what();
+		return false;
+	}
+}
+
+bool MaterialSerializer::Load(const std::filesystem::path &path,
+                              MaterialAsset &asset, std::string &error) {
 	try {
 		std::ifstream file(PathUtils::ResolveFromExecutable(path),
 		                   std::ios::binary);
@@ -51,7 +88,7 @@ bool LegacyMaterialReader::Load(const std::filesystem::path &path,
 		const auto color = values("baseColor", 4);
 		const auto scale = values("uvScale", 2);
 		const auto offset = values("uvOffset", 2);
-		LegacyMaterial loaded;
+		MaterialAsset loaded;
 
 		if (json.at("version") == 2) {
 			const auto shading = json.at("shading").get<std::string>();
@@ -83,4 +120,16 @@ bool LegacyMaterialReader::Load(const std::filesystem::path &path,
 		error = e.what();
 		return false;
 	}
+}
+
+bool MaterialSerializer::Save(const std::filesystem::path &path,
+                              const MaterialAsset &asset, std::string &error,
+                              bool overwrite) {
+	std::string text;
+
+	if (!Serialize(asset, text, error)) {
+		return false;
+	}
+
+	return FileUtils::WriteTextAtomically(path, text, error, overwrite);
 }

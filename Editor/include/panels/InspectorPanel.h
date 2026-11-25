@@ -1,5 +1,7 @@
 #pragma once
 
+#include "appearance/TextureSlotInspector.h"
+
 #include "gameplay/TriggerActionsInspector.h"
 
 #include "scene/DirectionalLightComponent.h"
@@ -195,7 +197,7 @@ class InspectorPanel {
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
-	          const AssetDatabase *assets = nullptr,
+	          AssetDatabase *assets = nullptr,
 	          bool canPasteCollider = false, bool canPasteCameraLens = false,
 	          bool canPasteCharacter = false, bool canPasteFollow = false,
 	          bool canPasteRespawn = false,
@@ -225,6 +227,7 @@ class InspectorPanel {
 	}
 
   private:
+	TextureSlotInspector textureSlots_;
 	DirectionalLightComponent directionalLightDraft_;
 	AnimationClipComponent animationClipDraft_;
 	float animationClipPlayhead_ = 0;

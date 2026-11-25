@@ -17,13 +17,14 @@ struct MeshRendererComponent {
 	std::array<float, 2> uvOffset{0.0f, 0.0f};
 	RadialReveal reveal;
 	bool receiveFog = true;
+	MaterialSlotBindings materials;
 
 	/// <summary>
 	/// 画像スロットとUVの設定を検証する。Meshが未設定でも保持できる
 	/// </summary>
 	/// <returns>true:有効 false:画像の参照またはUVが無効</returns>
 	bool IsValid() const {
-		return reveal.IsValid() && textures.IsValid() && std::isfinite(uvScale[0]) &&
+		return materials.IsValid(true) && reveal.IsValid() && textures.IsValid() && std::isfinite(uvScale[0]) &&
 		       std::isfinite(uvScale[1]) && std::isfinite(uvOffset[0]) &&
 		       std::isfinite(uvOffset[1]);
 	}
