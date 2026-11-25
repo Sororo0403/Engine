@@ -1419,16 +1419,6 @@ void ControlsPanel::Draw() {
 	         "not only inside the square. These guides check the recovery "
 	         "position, not every condition required for Play."},
 
-	        {"Inspector > Camera > Copy / Paste Lens Settings",
-	         "Copy Vertical FOV and Near/Far Clip, then paste onto the "
-	         "inspected Camera. A locked Inspector uses its displayed object. "
-	         "Primary, Transform, Follow Camera, other components and other "
-	         "cameras stay unchanged. Add Component > Paste Camera Lens adds "
-	         "a missing Camera with Primary off. Each paste is one Undo/Redo; "
-	         "identical settings add no history. The lens copy is independent "
-	         "of copied objects, transforms and colliders and survives "
-	         "New/Open. "
-	         "Pending edits finish first. Editing is unavailable during Play."},
 	        {"Edit / Hierarchy > Snap Positions to Grid",
 	         "Round each selected object's world position using Scene > Snap "
 	         "Settings > Move step (X/Y/Z), even when gizmo snapping is off. "
@@ -1441,15 +1431,7 @@ void ControlsPanel::Draw() {
 	         "aligned values add no history. Invalid targets cancel all "
 	         "changes. "
 	         "Pending edits finish first. Unavailable during Play."},
-	        {"Edit / Hierarchy > Paste Camera Lenses",
-	         "Copy a Camera lens in Inspector, then paste it onto every "
-	         "selected object with one Undo/Redo. Missing Cameras are added "
-	         "with Primary off; existing Primary flags, Transform, Follow "
-	         "Camera, other components, selection and Inspector locks are "
-	         "kept. Hidden objects and selected objects outside the Hierarchy "
-	         "filter are included. Identical values add no history. Invalid "
-	         "targets cancel the entire batch. Pending edits finish first. "
-	         "Unavailable during Play or without a copied lens and selection."},
+
 	        {"Inspector > Camera > Reset Lens Settings",
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "

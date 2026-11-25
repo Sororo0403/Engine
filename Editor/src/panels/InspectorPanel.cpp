@@ -198,7 +198,7 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 bool InspectorPanel::Draw(
     const ImGuiSystem &ui, Scene &scene, SceneObjectId selectedObjectId,
     EditorHistory &history, bool canPasteTransform, ModelManager *models,
-    AssetDatabase *assets, bool canPasteCollider, bool canPasteCameraLens,
+    AssetDatabase *assets, bool canPasteCollider,
     bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
     std::span<const SceneObjectId> uvTargets, bool canPasteUv,
     std::span<const GameActionBinding> inputBindings) {
@@ -797,7 +797,7 @@ bool InspectorPanel::Draw(
 
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                  cameraRequest, canPasteCameraLens);
+	                                  cameraRequest);
 
 	if (cameraRequest.action == CameraInspector::Action::PLAY_FROM_CAMERA) {
 		objectRequest_ = {ObjectAction::PLAY_FROM_CAMERA,
@@ -807,12 +807,6 @@ bool InspectorPanel::Draw(
 		                  cameraRequest.objectId};
 	} else if (cameraRequest.action == CameraInspector::Action::MAKE_PRIMARY) {
 		objectRequest_ = {ObjectAction::MAKE_PRIMARY_CAMERA,
-		                  cameraRequest.objectId};
-	} else if (cameraRequest.action == CameraInspector::Action::COPY_LENS) {
-		objectRequest_ = {ObjectAction::COPY_CAMERA_LENS,
-		                  cameraRequest.objectId};
-	} else if (cameraRequest.action == CameraInspector::Action::PASTE_LENS) {
-		objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
 		                  cameraRequest.objectId};
 	}
 
@@ -991,11 +985,6 @@ bool InspectorPanel::Draw(
 			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
 		}
 
-		if (componentItem("Paste Camera Lens",
-		                  canPasteCameraLens && !object->camera)) {
-			objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
-			                  inspectedObjectId};
-		}
 
 		if (componentItem("Follow Camera", !object->followCamera)) {
 			changed |= history.SetFollowCamera(inspectedObjectId,

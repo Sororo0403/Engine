@@ -52,7 +52,7 @@ void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
 HierarchyPanel::Result
 HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
                      EditorSelection &selection, bool editable,
-                     bool canPasteCollider, bool canPasteCameraLens,
+                     bool canPasteCollider,
                      bool canPasteRespawn) {
 	Result result;
 
@@ -500,12 +500,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				                canPasteCollider &&
 				                    selection.GetCount() != 0)) {
 					result.action = Action::PASTE_COLLIDERS;
-				}
-
-				if (ui.MenuItem("Paste Camera Lenses", nullptr,
-				                canPasteCameraLens &&
-				                    selection.GetCount() != 0)) {
-					result.action = Action::PASTE_CAMERA_LENSES;
 				}
 
 				if (ui.MenuItem("Paste Respawn Settings", nullptr,

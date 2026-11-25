@@ -101,19 +101,6 @@ class EditorClipboard {
 	const Collider *GetCollider() const;
 
 	/// <summary>
-	/// Cameraのレンズ設定をコピーする。Primary・姿勢・追従設定と、他のコピー内容は変更しない
-	/// </summary>
-	/// <param name="settings">有効な縦視野角とNear／Far Clip</param>
-	/// <returns>true:コピー成功 false:設定が無効。以前の内容は保持する</returns>
-	bool CopyCameraLens(const CameraSettings &settings);
-
-	/// <summary>
-	/// コピーしたCameraのレンズ設定を取得する
-	/// </summary>
-	/// <returns>次のCopyCameraLens成功またはClearまで有効な値。未設定はnullptr</returns>
-	const CameraSettings *GetCameraLens() const;
-
-	/// <summary>
 	/// Character Controllerの設定をコピーする。他のコピー内容は変更しない
 	/// </summary>
 	/// <param name="settings">移動速度・ジャンプ速度・重力・終端速度・ジャンプ猶予の有効な設定</param>
@@ -188,7 +175,6 @@ class EditorClipboard {
 	std::optional<Transform> transform_;
 	std::optional<DirectX::XMFLOAT3> worldPosition_;
 	std::optional<Collider> collider_;
-	std::optional<CameraSettings> cameraLens_;
 	std::optional<CharacterSettings> characterSettings_;
 	std::optional<FollowCameraSettings> followSettings_;
 	std::optional<RespawnSettings> respawnSettings_;

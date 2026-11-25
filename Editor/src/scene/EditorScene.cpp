@@ -618,7 +618,6 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(
 	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetCameraLens() != nullptr,
 	    clipboard_.GetRespawnSettings() != nullptr);
 
 	if (hierarchyRequest.selectionChanged) {
@@ -632,7 +631,6 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, scene, selection_.GetActiveId(), history,
 	    clipboard_.GetTransform() != nullptr, &models_, &assets_,
 	    clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetCameraLens() != nullptr,
 	    clipboard_.GetCharacterSettings() != nullptr,
 	    clipboard_.GetFollowSettings() != nullptr,
 	    clipboard_.GetRespawnSettings() != nullptr, selection_.GetIds(),
@@ -1113,9 +1111,6 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::SNAP_POSITIONS:
 					SnapSelectedPositions();
-					break;
-				case HierarchyPanel::Action::PASTE_CAMERA_LENSES:
-					PasteCameraLensesToSelection();
 					break;
 				case HierarchyPanel::Action::PASTE_RESPAWN_SETTINGS:
 					PasteRespawnSettingsToSelection();
@@ -2188,12 +2183,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_SURFACE;
 		}
 
-		if (ui_.MenuItem("Paste Camera Lenses", nullptr,
-		                 objectEnabled &&
-		                     clipboard_.GetCameraLens() != nullptr)) {
-			action = EditorAction::PASTE_CAMERA_LENSES;
-		}
-
 		if (ui_.MenuItem("Paste Respawn Settings", nullptr,
 		                 objectEnabled &&
 		                     clipboard_.GetRespawnSettings() != nullptr)) {
@@ -3132,10 +3121,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::SNAP_POSITIONS:
 		SnapSelectedPositions();
-		return;
-
-	case EditorAction::PASTE_CAMERA_LENSES:
-		PasteCameraLensesToSelection();
 		return;
 
 	case EditorAction::PASTE_RESPAWN_SETTINGS:
@@ -7202,27 +7187,6 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::COPY_CAMERA_LENS) {
-			if (!object->camera ||
-			    !clipboard_.CopyCameraLens(object->camera->settings)) {
-				ShowError("Could not copy invalid Camera lens settings.");
-			}
-
-			return;
-		}
-
-		if (request.action == InspectorPanel::ObjectAction::PASTE_CAMERA_LENS) {
-			const auto *copied = clipboard_.GetCameraLens();
-
-			if (!copied || !document_.GetHistory().SetCameraLens(
-			                   request.objectId, *copied)) {
-				ShowError("Could not paste Camera lens settings. Copy a valid "
-				          "lens and check the target Camera settings.");
-			}
-
-			return;
-		}
-
 		if (request.action == InspectorPanel::ObjectAction::COPY_COLLIDER) {
 			if (!object->collider ||
 			    !clipboard_.CopyCollider(*object->collider)) {
@@ -8464,29 +8428,6 @@ void EditorScene::PasteCollidersToSelection() {
 		Logger::Error(std::format("EditorScene::PasteCollidersToSelection: {}",
 		                          error.what()));
 		ShowError("Could not paste the Colliders. See the log for details.");
-	}
-}
-
-void EditorScene::PasteCameraLensesToSelection() {
-	const auto *settings = clipboard_.GetCameraLens();
-
-	if (!HasSelection() || !settings) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!document_.GetHistory().SetCameraLenses(selection_.GetIds(),
-		                                            *settings)) {
-			ShowError("Could not paste all Camera lenses. Check the selected "
-			          "objects and Camera settings. No cameras were changed.");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "EditorScene::PasteCameraLensesToSelection: {}", error.what()));
-		ShowError(
-		    "Could not paste the Camera lenses. See the log for details.");
 	}
 }
 

@@ -147,19 +147,6 @@ const Collider *EditorClipboard::GetCollider() const {
 	return collider_ ? &*collider_ : nullptr;
 }
 
-bool EditorClipboard::CopyCameraLens(const CameraSettings &settings) {
-	if (!settings.IsValid()) {
-		return false;
-	}
-
-	cameraLens_ = settings;
-	return true;
-}
-
-const CameraSettings *EditorClipboard::GetCameraLens() const {
-	return cameraLens_ ? &*cameraLens_ : nullptr;
-}
-
 bool EditorClipboard::CopyCharacterSettings(const CharacterSettings &settings) {
 	if (!settings.IsValid()) {
 		return false;
@@ -227,7 +214,6 @@ void EditorClipboard::Clear() {
 	transform_.reset();
 	worldPosition_.reset();
 	collider_.reset();
-	cameraLens_.reset();
 	characterSettings_.reset();
 	followSettings_.reset();
 	respawnSettings_.reset();

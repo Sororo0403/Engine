@@ -64,8 +64,6 @@ class InspectorPanel {
 		ALIGN_CAMERA_VIEW,
 		ADD_CAMERA,
 		MAKE_PRIMARY_CAMERA,
-		COPY_CAMERA_LENS,
-		PASTE_CAMERA_LENS,
 		SELECT_OBJECT,
 		PASTE_RESPAWN_POSITION,
 		FRAME_RESPAWN,
@@ -178,7 +176,6 @@ class InspectorPanel {
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
 	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
-	/// <param name="canPasteCameraLens">貼り付けるCameraのレンズ設定を保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
 	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
@@ -190,7 +187,7 @@ class InspectorPanel {
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
 	          AssetDatabase *assets = nullptr,
-	          bool canPasteCollider = false, bool canPasteCameraLens = false,
+	          bool canPasteCollider = false,
 	          bool canPasteCharacter = false, bool canPasteFollow = false,
 	          bool canPasteRespawn = false,
 	          std::span<const SceneObjectId> uvTargets = {},

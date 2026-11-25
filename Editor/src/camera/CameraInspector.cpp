@@ -7,7 +7,7 @@
 
 bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                            SceneObject &object, EditorHistory &history,
-                           Request &request, bool canPasteLens) const {
+                           Request &request) const {
 	if (!object.camera) {
 		return false;
 	}
@@ -54,22 +54,6 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		      179);
 		field("Near Clip", &CameraSettings::nearClip, 0.001f, 0.001f, 100000);
 		field("Far Clip", &CameraSettings::farClip, 0.1f, 0.002f, 100000);
-
-		ui.BeginDisabled(!object.camera->settings.IsValid());
-
-		if (ui.Button("Copy Lens Settings")) {
-			request = {Action::COPY_LENS, id};
-		}
-
-		ui.EndDisabled();
-		ui.SameLine();
-		ui.BeginDisabled(!canPasteLens);
-
-		if (ui.Button("Paste Lens Settings")) {
-			request = {Action::PASTE_LENS, id};
-		}
-
-		ui.EndDisabled();
 
 		if (ui.Button("Reset Lens Settings")) {
 			const auto before = object.camera;

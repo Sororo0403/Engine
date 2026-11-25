@@ -306,24 +306,6 @@ class EditorHistory {
 	               std::optional<CameraComponent> value);
 
 	/// <summary>
-	/// レンズ設定だけを変更する。Cameraがない場合はPrimaryを無効にして追加する
-	/// </summary>
-	/// <param name="objectId">対象物体。既存CameraのPrimary・姿勢・追従設定は保持する</param>
-	/// <param name="settings">有効な縦視野角とNear／Far Clip</param>
-	/// <returns>true:成功または同値 false:対象または変更前後のレンズ設定が無効</returns>
-	bool SetCameraLens(SceneObjectId objectId, const CameraSettings &settings);
-
-	/// <summary>
-	/// レンズ設定を全対象へ適用し、1操作として記録する。Cameraがない物体にはPrimary無効で追加する
-	/// </summary>
-	/// <param name="ids">重複のない物体ID。既存CameraのPrimary・姿勢・追従設定は保持する</param>
-	/// <param name="settings">コピーした有効な縦視野角とNear／Far Clip</param>
-	/// <returns>true:全件成功または同値 false:対象・変更前後の設定が無効。失敗時は全対象を保持する</returns>
-	/// <remarks>編集中の値は先に確定する。成功時は物体参照を取得し直す</remarks>
-	bool SetCameraLenses(std::span<const SceneObjectId> ids,
-	                     const CameraSettings &settings);
-
-	/// <summary>
 	/// 復帰設定を全対象へ適用し、1操作として記録する。Respawnがない物体には追加する
 	/// </summary>
 	/// <param name="ids">重複のない物体ID。Transformと他のコンポーネントは保持する</param>
