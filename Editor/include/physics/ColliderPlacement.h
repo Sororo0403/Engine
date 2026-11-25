@@ -51,28 +51,6 @@ class ColliderPlacement {
 	                                DirectX::XMFLOAT3 &translation,
 	                                std::string &error);
 
-	/// <summary>
-	/// 基準物体に対して配置するワールド座標の方向
-	/// </summary>
-	enum class Face { RIGHT, LEFT, ABOVE, BELOW, FRONT, BACK };
-
-	/// <summary>
-	/// 基準以外の選択物体を1群として扱い、指定方向の面へ合わせる共通の移動量を求める。
-	/// 回転・拡縮を反映した軸平行のColliderを使用し、面の丸め誤差を避ける微小な余白を残す
-	/// </summary>
-	/// <param name="scene">変更しない編集シーン。表示状態には依存しない</param>
-	/// <param name="objectIds">基準を含む、重複しない2件以上のCollider付き物体ID</param>
-	/// <param name="referenceId">位置を変更しない基準物体ID。一覧に含まれていること</param>
-	/// <param name="face">基準の右・左・上・下・前・後。前はワールド＋Z</param>
-	/// <param name="translation">成功時に設定する、基準以外の全対象に共通の移動量</param>
-	/// <param name="error">失敗理由。成功時は空</param>
-	/// <returns>true:取得成功または配置済み false:対象・形状・方向が無効、または移動を表現できない。失敗時は移動量を保持する</returns>
-	static bool GetAdjacentTranslation(const Scene &scene,
-	                                   std::span<const SceneObjectId> objectIds,
-	                                   SceneObjectId referenceId, Face face,
-	                                   DirectX::XMFLOAT3 &translation,
-	                                   std::string &error);
-
   private:
 	// 再生時の衝突移動と同じ微小な隙間を残し、接触面への丸め込みを避ける
 	static constexpr double kSurfaceClearance = 0.0001;

@@ -2267,41 +2267,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::REMOVE_COLLIDERS;
 			}
 
-			ui_.Separator();
-			ui_.BeginDisabled(!objectEnabled || selection_.GetCount() < 2 ||
-			                  !ColliderPlacement::CanDrop(document_.GetScene(),
-			                                              selection_.GetIds()));
-
-			if (ui_.BeginMenu("Place Next to Active")) {
-				if (ui_.MenuItem("Right (+X)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_RIGHT;
-				}
-
-				if (ui_.MenuItem("Left (-X)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_LEFT;
-				}
-
-				if (ui_.MenuItem("Above (+Y)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_ABOVE;
-				}
-
-				if (ui_.MenuItem("Below (-Y)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_BELOW;
-				}
-
-				if (ui_.MenuItem("Front (+Z)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_FRONT;
-				}
-
-				if (ui_.MenuItem("Behind (-Z)", nullptr, true)) {
-					action = EditorAction::PLACE_COLLIDERS_BACK;
-				}
-
-				ui_.EndMenu();
-			}
-
-			ui_.EndDisabled();
-
 			ui_.EndMenu();
 		}
 
@@ -2991,25 +2956,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::REMOVE_COLLIDERS:
 		ConfigureSelectedColliders(ColliderOperation::REMOVE_ALL);
 		return;
-	case EditorAction::PLACE_COLLIDERS_RIGHT:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::RIGHT);
-		return;
-	case EditorAction::PLACE_COLLIDERS_LEFT:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::LEFT);
-		return;
-	case EditorAction::PLACE_COLLIDERS_ABOVE:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::ABOVE);
-		return;
-	case EditorAction::PLACE_COLLIDERS_BELOW:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::BELOW);
-		return;
-	case EditorAction::PLACE_COLLIDERS_FRONT:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::FRONT);
-		return;
-	case EditorAction::PLACE_COLLIDERS_BACK:
-		PlaceSelectionNextToActive(ColliderPlacement::Face::BACK);
-		return;
-
 	case EditorAction::PLACE_ON_WORK_PLANE:
 		PlaceSelectionOnWorkPlane();
 		return;
@@ -8695,45 +8641,6 @@ void EditorScene::DropSelectionToSurface() {
 		                          error.what()));
 		ShowError("Could not drop the selection to a collider surface. See the "
 		          "log for details.");
-	}
-}
-
-void EditorScene::PlaceSelectionNextToActive(ColliderPlacement::Face face) {
-	if (!HasSelection() || selection_.GetCount() < 2) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-		DirectX::XMFLOAT3 translation;
-		std::string error;
-		const auto reference = selection_.GetActiveId();
-
-		if (!ColliderPlacement::GetAdjacentTranslation(
-		        document_.GetScene(), selection_.GetIds(), reference, face,
-		        translation, error)) {
-			ShowError(std::move(error));
-			return;
-		}
-
-		std::vector<SceneObjectId> moving;
-		moving.reserve(selection_.GetCount() - 1);
-
-		for (const auto id : selection_.GetIds()) {
-			if (id != reference) {
-				moving.push_back(id);
-			}
-		}
-
-		if (!document_.GetHistory().TranslateObjects(moving, translation)) {
-			ShowError("Could not place selected colliders next to the active "
-			          "object.");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::PlaceSelectionNextToActive: {}",
-		                          error.what()));
-		ShowError(
-		    "Could not place selected colliders. See the log for details.");
 	}
 }
 
