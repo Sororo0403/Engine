@@ -435,9 +435,6 @@ exit /b 0</Command>
     <ClCompile Include="src\files\OutputDirectory.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\scene\BoxCreationSettings.h"></ClInclude>
-    <ClInclude Include="include\dialogs\BoxCreationDialog.h"></ClInclude>
-    <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

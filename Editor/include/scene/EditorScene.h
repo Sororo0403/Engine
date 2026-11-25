@@ -8,7 +8,6 @@
 #include "dialogs/AssetFolderDialog.h"
 #include "dialogs/AudioImportDialog.h"
 #include "dialogs/BatchRenameDialog.h"
-#include "dialogs/BoxCreationDialog.h"
 #include "dialogs/FileDialog.h"
 #include "dialogs/GameExportDialog.h"
 #include "dialogs/GameExportResultDialog.h"
@@ -169,7 +168,6 @@ class EditorScene final : public IScene {
 		REDO,
 		CREATE_EMPTY,
 		CREATE_BOX,
-		CREATE_SIZED_BOX,
 		CREATE_CAMERA,
 		CREATE_CANVAS,
 		CREATE_UI_TEXT,
@@ -311,7 +309,6 @@ class EditorScene final : public IScene {
 		CONFIRM_CONFLICT_RELOAD,
 		BATCH_RENAME,
 		OBJECT_ARRAY,
-		BOX_CREATION,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -1092,7 +1089,6 @@ class EditorScene final : public IScene {
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
 	ObjectArrayDialog objectArrayDialog_;
-	BoxCreationDialog boxCreationDialog_;
 	FileDialog fileDialog_;
 	FileDialog openSceneDialog_;
 	FileDialog projectDialog_;

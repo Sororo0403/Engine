@@ -159,21 +159,7 @@ void ControlsPanel::Draw() {
 	         "Choose creation order or name A-Z / Z-A. Range selection, Select "
 	         "All and arrow keys follow the displayed order; changing sort "
 	         "keeps the selection."},
-	        {"Create > Box with Size...",
-	         "Create a Box with a name, world-space center and full X/Y/Z "
-	         "dimensions. A cyan Scene outline previews the current Collider "
-	         "bounds before creation, including Place Bottom on Work Plane. "
-	         "Invalid drafts hide the outline. The preview creates no scene "
-	         "objects or selectable models and disappears on Create or Cancel. "
-	         "Mesh and Collider use the same measured model "
-	         "bounds. Dimensions must be finite and positive, and "
-	         "representable "
-	         "at the chosen center. Create adds and selects one object with "
-	         "one "
-	         "Undo/Redo operation. Cancel or Escape leaves the scene "
-	         "unchanged. "
-	         "The normal Box command still creates a two-unit box "
-	         "immediately."},
+
 	        {"Inspector > Collider > Shape",
 	         "Choose Box, Sphere or Capsule. Radius and cylinder height are "
 	         "local dimensions. "
@@ -1888,7 +1874,7 @@ void ControlsPanel::Draw() {
 	         "and do not change Camera components, Game rendering, game "
 	         "output, "
 	         "scene data or Undo history."},
-	        {"Box with Size / Duplicate with Offset > Frame Preview",
+	        {"Duplicate with Offset > Frame Preview",
 	         "Fit the entire draft Collider outline into Scene without "
 	         "closing the dialog or creating objects. Array framing includes "
 	         "every copied group's Collider bounds, excluding originals and "
@@ -1898,14 +1884,7 @@ void ControlsPanel::Draw() {
 	         "Colliders cannot be framed. If the current camera clipping "
 	         "range cannot contain the draft, the view stays unchanged. "
 	         "Cancel keeps the explicitly chosen camera view."},
-	        {"Create > Box with Size > Place Bottom on Work Plane",
-	         "Set the draft Center Y to Grid Settings Height plus half of "
-	         "Size Y. X/Z, name and dimensions stay unchanged. The plane "
-	         "height is captured when the dialog opens. This only adjusts "
-	         "the draft: Create Box accepts it as one Undo/Redo operation, "
-	         "and Cancel leaves the scene untouched. Adjusting Size later "
-	         "does not automatically move Center; press the button again "
-	         "to align the new dimensions."},
+
 	        {"Inspector > Camera > Preview in Game",
 	         "Pin the stopped Game view to the inspected Camera without "
 	         "changing Primary or running physics. Follow Camera uses its "

@@ -1689,25 +1689,6 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	AxisAlignedBox boxDraft;
-
-	if (stage_ == DialogStage::BOX_CREATION &&
-	    boxCreationDialog_.GetPreviewBounds(boxDraft)) {
-		ColliderBounds::Lines lines;
-
-		if (!colliderBounds_.BuildLines(boxDraft, lines)) {
-			return false;
-		}
-
-		for (auto &line : lines) {
-			line.color = {0.2f, 0.85f, 1.0f, 1.0f};
-
-			if (!renderer_.AddDebugLine(line)) {
-				return false;
-			}
-		}
-	}
-
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
 	if (!renderer_.UpdateDebugLines()) {
 		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
@@ -2475,10 +2456,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::CREATE_BOX;
 		}
 
-		if (ui_.MenuItem("Box with Size...", nullptr, enabled)) {
-			action = EditorAction::CREATE_SIZED_BOX;
-		}
-
 		if (ui_.BeginMenu("UI")) {
 			if (ui_.MenuItem("Canvas", nullptr, enabled))
 				action = EditorAction::CREATE_CANVAS;
@@ -2900,12 +2877,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	if (action == EditorAction::SAVE_SELECTION &&
 	    (playMode_.IsPlaying() || IsBusy() || !HasSelection() ||
 	     gizmo_.IsUsing() || gizmoEditActive_ ||
-	     sceneViewPanel_.IsSelecting())) {
-		return;
-	}
-
-	if (action == EditorAction::CREATE_SIZED_BOX &&
-	    (playMode_.IsPlaying() || gizmo_.IsUsing() || gizmoEditActive_ ||
 	     sceneViewPanel_.IsSelecting())) {
 		return;
 	}
@@ -3377,25 +3348,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::CREATE_BOX:
 		CreateObject(PrimitiveObjects::CreateBox());
 		return;
-	case EditorAction::CREATE_SIZED_BOX: {
-		try {
-			Collider bounds;
-
-			if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
-				ShowError(
-				    "Could not load the built-in Box. No object was created.");
-				return;
-			}
-
-			boxCreationDialog_.Show(bounds, sceneGrid_.GetSettings().height);
-			stage_ = DialogStage::BOX_CREATION;
-			ShowSceneView();
-		} catch (const std::exception &error) {
-			ShowError(error.what());
-		}
-
-		return;
-	}
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
 		return;
@@ -5787,48 +5739,6 @@ void EditorScene::UpdateDialogs() {
 			assetsPanel_.RequestReveal(audioImportDialog_.GetImportedPath());
 		} else if (result == AudioImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
-		}
-
-		return;
-	}
-
-	case DialogStage::BOX_CREATION: {
-		const auto result = boxCreationDialog_.Draw(ui_);
-
-		if (result == BoxCreationResult::FRAME_PREVIEW) {
-			frameRequest_ = FrameRequest::DRAFT;
-			return;
-		}
-
-		if (result == BoxCreationResult::NONE) {
-			return;
-		}
-
-		if (frameRequest_ == FrameRequest::DRAFT) {
-			frameRequest_ = FrameRequest::NONE;
-		}
-
-		stage_ = DialogStage::IDLE;
-
-		if (result == BoxCreationResult::ACCEPTED) {
-			try {
-				Collider bounds;
-				SceneObject object;
-				std::string error;
-
-				if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
-					ShowError("Could not load the built-in Box. No object was "
-					          "created.");
-				} else if (!PrimitiveObjects::TryCreateBox(
-				               boxCreationDialog_.GetSettings(), bounds, object,
-				               error)) {
-					ShowError(error);
-				} else {
-					CreateObject(std::move(object));
-				}
-			} catch (const std::exception &error) {
-				ShowError(error.what());
-			}
 		}
 
 		return;
@@ -8253,15 +8163,7 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 	try {
 		std::vector<AxisAlignedBox> bounds;
 
-		if (stage_ == DialogStage::BOX_CREATION) {
-			AxisAlignedBox box;
-
-			if (!boxCreationDialog_.GetPreviewBounds(box)) {
-				return false;
-			}
-
-			bounds.push_back(box);
-		} else if (stage_ == DialogStage::OBJECT_ARRAY &&
+		if (stage_ == DialogStage::OBJECT_ARRAY &&
 		           objectArrayDialog_.CanPreview()) {
 			if (!ColliderArrayPreview{}.BuildBounds(
 			        document_.GetScene(), objectArrayDialog_.GetSourceIds(),
