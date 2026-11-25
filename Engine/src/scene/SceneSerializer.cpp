@@ -560,11 +560,7 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				if (!object.meshRenderer->receiveFog) {
 					objects.back()["meshRenderer"]["receiveFog"] = false;
 				}
-				const auto &reveal = object.meshRenderer->reveal;
-				if (reveal.feather > 0)
-					objects.back()["meshRenderer"]["radialReveal"] = {
-					    {"originRadius", reveal.originRadius},
-					    {"feather", reveal.feather}};
+
 			}
 
 			if (object.prefabLink) {
@@ -768,8 +764,6 @@ bool SerializeScene(const Scene &scene, std::string &text,
 				    {"jumpBufferTime", v.jumpBufferTime},
 				    {"groundSnapDistance", v.groundSnapDistance},
 				    {"stepHeight", v.stepHeight},
-				    {"airFloatDelay", v.airFloatDelay},
-				    {"airFloatDuration", v.airFloatDuration},
 				    {"inputEnabled", v.inputEnabled}};
 			}
 
@@ -1146,16 +1140,6 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 						    ReadFloat2(renderer.at("uvOffset"));
 					}
 					object.meshRenderer->receiveFog = renderer.value("receiveFog", true);
-					if (version >= 78 && renderer.contains("radialReveal")) {
-						const auto &reveal = renderer.at("radialReveal");
-						const auto &originRadius = reveal.at("originRadius");
-						if (!originRadius.is_array() || originRadius.size() != 4 ||
-						    !reveal.at("feather").is_number())
-							throw std::runtime_error("Invalid radial reveal fields.");
-						object.meshRenderer->reveal = {
-						    originRadius.get<std::array<float, 4>>(),
-						    reveal.at("feather").get<float>()};
-					}
 				}
 			} else {
 				const auto path =
@@ -1633,15 +1617,6 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					    v.at("stepHeight").get<float>();
 				}
 
-				if (version >= 74) {
-					if (!v.at("airFloatDelay").is_number() ||
-					    !v.at("airFloatDuration").is_number())
-						throw std::runtime_error(
-						    "Character air float settings require numbers.");
-					object.character->airFloatDelay = v.at("airFloatDelay").get<float>();
-					object.character->airFloatDuration =
-					    v.at("airFloatDuration").get<float>();
-				}
 				if (version >= 79)
 					object.character->inputEnabled = v.at("inputEnabled").get<bool>();
 			}

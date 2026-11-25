@@ -166,7 +166,7 @@ bool RuntimeScene::Update(float seconds) {
 	const auto actions = actionReader_.Read(
 	    config_.actions, input_.GetKeyboard(), &input_.GetMouse(),
 	    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr,
-	    input_.IsActive(), true, &input_.GetWiiRemote());
+	    input_.IsActive(), true);
 	const auto revision = simulation_.GetSceneRevision();
 	SceneObjectId invalidObject = 0;
 	const auto reportSceneError = [&](std::string_view reason) {

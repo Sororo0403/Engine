@@ -595,7 +595,6 @@ class SceneSimulation {
 	SceneScripts scripts_;
 	SceneUI ui_;
 	SceneObjectId character_ = 0, camera_ = 0;
-	std::array<float, 3> characterAirflow_{};
 	std::vector<SceneObjectId> updateOrder_;
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。
 	std::map<SceneObjectId, CameraPose> followPoses_;

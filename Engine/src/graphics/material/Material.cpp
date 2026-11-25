@@ -14,16 +14,12 @@ bool Material::Initialize(ConstantBufferPool &pool,
 		return false;
 	}
 
-	static_assert(sizeof(MaterialData) == 112);
+	static_assert(sizeof(MaterialData) == 48);
 	static_assert(offsetof(MaterialData, baseColor) == 0);
 	static_assert(offsetof(MaterialData, uvScale) == 16);
 	static_assert(offsetof(MaterialData, uvOffset) == 24);
 	static_assert(offsetof(MaterialData, shadingMode) == 32);
 	static_assert(offsetof(MaterialData, receiveFog) == 36);
-	static_assert(offsetof(MaterialData, reveal) == 48);
-	static_assert(offsetof(RadialReveal, feather) == 16);
-	static_assert(offsetof(MaterialData, monochrome) == 80);
-	static_assert(offsetof(MonochromeEffect, softness) == 16);
 
 	if (!constantBuffer_.Initialize(pool)) {
 		return false;

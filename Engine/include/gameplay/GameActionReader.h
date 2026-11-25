@@ -7,7 +7,6 @@
 class Keyboard;
 class Mouse;
 class Gamepad;
-struct WiiRemoteState;
 
 /// <summary>
 /// Editorと出力ゲームで共通の名前付き操作を取得し、機器を合成した押下・解放を保持する
@@ -23,12 +22,11 @@ class GameActionReader {
 	/// <param name="gamepad">今回のゲームパッド状態。nullは無効</param>
 	/// <param name="enabled">ゲーム操作を許可する。falseでは全状態を解除する</param>
 	/// <param name="pointerEnabled">マウス操作を許可する。Game画像の外ではfalseを渡す</param>
-	/// <param name="wiiRemote">1台目のWiiリモコン。nullは無効</param>
 	/// <returns>次のRead・Resetまで有効な一覧。無効な設定は空。入力禁止中も操作名は保持する</returns>
 	std::span<const GameActionState>
 	Read(std::span<const GameActionBinding> bindings, const Keyboard &keyboard,
 	     const Mouse *mouse, const Gamepad *gamepad, bool enabled = true,
-	     bool pointerEnabled = true, const WiiRemoteState *wiiRemote = nullptr);
+	     bool pointerEnabled = true);
 
 	/// <summary>
 	/// 操作の履歴を解放し、次の取得を開始直後として扱う
@@ -38,8 +36,8 @@ class GameActionReader {
   private:
 	struct History {
 		GameActionBinding binding;
-		std::array<bool, 5> blocked{true, true, true, true, true};
-		std::array<bool, 5> held{};
+		std::array<bool, 4> blocked{true, true, true, true};
+		std::array<bool, 4> held{};
 		bool down = false;
 	};
 

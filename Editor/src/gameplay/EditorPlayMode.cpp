@@ -550,7 +550,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	const auto actions = actionReader_.Read(
 	    actionBindings_, input.GetKeyboard(), &input.GetMouse(),
 	    gamepadEnabled_ ? &input.GetGamepad() : nullptr, actionsEnabled,
-	    viewport_.imageHovered, &input.GetWiiRemote());
+	    viewport_.imageHovered);
 	const auto *movementCamera =
 	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =

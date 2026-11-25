@@ -34,7 +34,6 @@ enum class Op {
 	SET_CHARACTER_SPEEDS,
 	CHARACTER_INPUT_ENABLED,
 	SET_CHARACTER_INPUT_ENABLED,
-	SET_CHARACTER_AIRFLOW,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -45,8 +44,6 @@ enum class Op {
 	SET_MESH_TINT,
 	MESH_UV_OFFSET,
 	SET_MESH_UV_OFFSET,
-	SET_MESH_RADIAL_REVEAL,
-	SET_BACKGROUND_MONOCHROME,
 	POSITION,
 	SET_POSITION,
 	LOCAL_POSITION,
@@ -109,11 +106,11 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
-		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_AIRFLOW ||
+		    op == Op::SET_CHARACTER_SPEEDS ||
 		    op == Op::SET_CHARACTER_INPUT_ENABLED ||
 		    op == Op::SET_MESH_VISIBLE || op == Op::SET_MESH_TINT ||
-		    op == Op::SET_MESH_UV_OFFSET || op == Op::SET_MESH_RADIAL_REVEAL ||
-		    op == Op::SET_BACKGROUND_MONOCHROME || op == Op::SET_CAMERA ||
+		    op == Op::SET_MESH_UV_OFFSET ||
+		    op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
@@ -285,19 +282,6 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 
 			break;
 		}
-		case Op::SET_CHARACTER_AIRFLOW:
-			if (!call.characterAirflow || !call.character ||
-			    call.character->objectId != id)
-				throw std::runtime_error(
-				    "Airflow requires the active Character Controller.");
-			for (int i = 0; i < 3; ++i) {
-				if (!std::isfinite(numbers[i]) ||
-				    std::abs(numbers[i]) > CharacterSettings::kMaximumSpeed)
-					throw std::runtime_error(
-					    "Character airflow exceeds the supported speed.");
-			}
-			*call.characterAirflow = {numbers[0], numbers[1], numbers[2]};
-			break;
 		case Op::REFERENCE:
 			if (object->script)
 				for (const auto &[name, target] : object->script->references) {
@@ -350,23 +334,6 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[1] = object->meshRenderer->uvOffset[1];
 			}
 			break;
-		case Op::SET_MESH_RADIAL_REVEAL: {
-			if (!object->meshRenderer)
-				throw std::runtime_error("This object requires a Mesh Renderer.");
-			const RadialReveal reveal{
-			    {numbers[0], numbers[1], numbers[2], numbers[3]}, numbers[4]};
-			if (!reveal.IsValid())
-				throw std::runtime_error("Mesh radial reveal values are out of range.");
-			object->meshRenderer->reveal = reveal;
-			break;
-		}
-		case Op::SET_BACKGROUND_MONOCHROME: {
-			const MonochromeEffect effect{
-			    numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]};
-			if (!call.scene->SetMonochrome(effect, id, flag))
-				throw std::runtime_error("Background monochrome values are out of range.");
-			break;
-		}
 		case Op::CAMERA_LENS:
 		case Op::SET_CAMERA_LENS:
 		case Op::SET_CAMERA_FOV: {
@@ -619,9 +586,7 @@ int Dispatch(lua_State *state) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
-		const int count = (op == Op::WORLD_TO_VIEWPORT ||
-		                   op == Op::SET_MESH_RADIAL_REVEAL ||
-		                   op == Op::SET_BACKGROUND_MONOCHROME) ? 5
+		const int count = op == Op::WORLD_TO_VIEWPORT ? 5
 		                  : (op == Op::SET_ROTATION || op == Op::VIEWPORT_RAY)
 		                      ? 4
 		                  : (op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_MESH_UV_OFFSET) ? 2
@@ -637,11 +602,6 @@ int Dispatch(lua_State *state) {
 			numbers[i] = static_cast<float>(value);
 		}
 	}
-	if (op == Op::SET_BACKGROUND_MONOCHROME && !lua_isnoneornil(state, 7)) {
-		luaL_checktype(state, 7, LUA_TBOOLEAN);
-		flag = lua_toboolean(state, 7) != 0;
-	}
-
 	Result result;
 
 	if (!Perform(call, op, id, text, length, numbers, flag, parent, result)) {
@@ -932,7 +892,6 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_checkpoint", Op::SET_CHECKPOINT);
 	Method(state, "get_character_speeds", Op::CHARACTER_SPEEDS);
 	Method(state, "set_character_speeds", Op::SET_CHARACTER_SPEEDS);
-	Method(state, "set_character_airflow", Op::SET_CHARACTER_AIRFLOW);
 	Method(state, "is_character_input_enabled", Op::CHARACTER_INPUT_ENABLED);
 	Method(state, "set_character_input_enabled", Op::SET_CHARACTER_INPUT_ENABLED);
 	Method(state, "find_child", Op::FIND_CHILD);
@@ -952,8 +911,6 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_mesh_tint", Op::SET_MESH_TINT);
 	Method(state, "get_mesh_uv_offset", Op::MESH_UV_OFFSET);
 	Method(state, "set_mesh_uv_offset", Op::SET_MESH_UV_OFFSET);
-	Method(state, "set_mesh_radial_reveal", Op::SET_MESH_RADIAL_REVEAL);
-	Method(state, "set_background_monochrome", Op::SET_BACKGROUND_MONOCHROME);
 	Method(state, "get_position", Op::POSITION);
 	Method(state, "set_position", Op::SET_POSITION);
 	Method(state, "get_local_position", Op::LOCAL_POSITION);

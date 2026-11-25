@@ -70,7 +70,6 @@ struct Call {
 	const CharacterInput *input = nullptr;
 	const UIInput *viewport = nullptr;
 	const CharacterRuntimeState *character = nullptr;
-	std::array<float, 3> *characterAirflow = nullptr;
 	const CameraTransitionView *transitionView = nullptr;
 	std::span<const GameActionState> actions;
 	SceneAnimations *animations = nullptr;

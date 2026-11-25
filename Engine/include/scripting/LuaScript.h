@@ -158,7 +158,6 @@ class LuaScript {
 	/// <param name="clipPauses">指定時はAnimation Playerの一時停止・再開要求を受け取る</param>
 	/// <param name="character">指定時はLuaのupdateへ主人公の更新済み状態を渡す</param>
 	/// <param name="remainingAnimatorOperations">指定時はフレーム全体で共有する残りAnimator操作回数</param>
-	/// <param name="characterAirflow">指定時は主人公への風速要求を受け取る。呼び出し元が更新ごとにゼロ初期化する</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -189,6 +188,5 @@ class LuaScript {
 	       const UIInput *viewport = nullptr,
 	       const CharacterRuntimeState *character = nullptr,
 	       const CameraTransitionView *transitionView = nullptr,
-	       std::map<SceneObjectId, bool> *clipPauses = nullptr,
-	       std::array<float, 3> *characterAirflow = nullptr);
+	       std::map<SceneObjectId, bool> *clipPauses = nullptr);
 };

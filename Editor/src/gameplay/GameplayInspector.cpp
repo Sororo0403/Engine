@@ -186,10 +186,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      "%.3f");
 		field("Step Height", &CharacterSettings::stepHeight,
 		      CharacterSettings::kMaximumStepHeight, 0.0f, 0.005f, "%.3f");
-		field("Air Float Delay (s)", &CharacterSettings::airFloatDelay,
-		      CharacterSettings::kMaximumAirFloatSeconds, 0.0f, 0.005f, "%.3f");
-		field("Air Float Duration (s)", &CharacterSettings::airFloatDuration,
-		      CharacterSettings::kMaximumAirFloatSeconds, 0.0f, 0.005f, "%.3f");
 
 		ui.BeginDisabled(!object.collider || !object.character->IsValid());
 

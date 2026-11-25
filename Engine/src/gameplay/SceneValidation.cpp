@@ -499,7 +499,7 @@ SceneValidation::InspectInputs(const Scene &scene,
 			    std::ranges::find(bindings, name, &GameActionBinding::name);
 			if (binding != bindings.end() &&
 			    (binding->keyboard || binding->mouse || binding->gamepad ||
-			     binding->gamepadAxis || binding->wiiRemote))
+			     binding->gamepadAxis))
 				continue;
 			const char *problem =
 			    binding == bindings.end()

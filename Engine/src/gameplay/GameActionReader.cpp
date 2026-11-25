@@ -2,7 +2,6 @@
 #include "input/Gamepad.h"
 #include "input/Keyboard.h"
 #include "input/Mouse.h"
-#include "input/WiiRemoteState.h"
 #include <algorithm>
 
 namespace {
@@ -44,7 +43,7 @@ std::span<const GameActionState>
 GameActionReader::Read(std::span<const GameActionBinding> bindings,
                        const Keyboard &keyboard, const Mouse *mouse,
                        const Gamepad *gamepad, bool enabled,
-                       bool pointerEnabled, const WiiRemoteState *wiiRemote) {
+                       bool pointerEnabled) {
 	if (!GameActionBinding::IsValid(bindings)) {
 		Reset();
 		return {};
@@ -68,12 +67,10 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			states_.push_back({binding.name});
 		} else {
 			const bool padConnected = gamepad && gamepad->IsConnected();
-			using WiiInput = GameActionBinding::WiiRemoteInput;
 			constexpr std::size_t axisIndex = 3;
-			const bool remoteConnected = wiiRemote && wiiRemote->connected;
-			const std::array<bool, 5> allowed{
+			const std::array<bool, 4> allowed{
 			    true, pointerEnabled && mouse && mouse->IsConnected(),
-			    padConnected, padConnected, remoteConnected};
+			    padConnected, padConnected};
 			// 押下と解放で閾値を分け、復帰時も解放側の閾値まで戻るのを待つ。
 			constexpr float pressThreshold = .6f;
 			constexpr float releaseThreshold = .4f;
@@ -84,14 +81,11 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			const bool axisDown = h.held[axisIndex] || h.blocked[axisIndex]
 			                          ? strength > releaseThreshold
 			                          : strength >= pressThreshold;
-			const std::array<bool, 5> raw{
+			const std::array<bool, 4> raw{
 			    binding.keyboard && keyboard.IsDown(*binding.keyboard),
 			    binding.mouse && mouse && mouse->IsDown(*binding.mouse),
 			    binding.gamepad && gamepad && gamepad->IsDown(*binding.gamepad),
-			    axisDown,
-			    remoteConnected &&
-			        ((binding.wiiRemote == WiiInput::A && wiiRemote->aDown) ||
-			         (binding.wiiRemote == WiiInput::SHAKE && wiiRemote->shake))};
+			    axisDown};
 			bool down = false;
 			bool cancelled = false;
 			float value = 0.f;

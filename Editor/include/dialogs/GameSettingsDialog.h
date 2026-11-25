@@ -2,7 +2,6 @@
 
 #include "dialogs/FileDialog.h"
 #include "gameplay/GameConfig.h"
-#include <future>
 #include <string>
 
 class ImGuiSystem;
@@ -86,8 +85,6 @@ class GameSettingsDialog {
 	std::vector<std::string> persistentScriptKeys_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;
-	std::future<std::string> wiiRemotePairing_;
-	std::string wiiRemotePairingStatus_;
 	std::string title_, error_;
 	std::string locationError_;
 	std::string inputAction_;

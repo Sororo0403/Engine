@@ -53,11 +53,9 @@ class CharacterController {
 	/// <param name="deltaTime">有限で0以上の経過時間（秒）</param>
 	/// <param name="input">移動入力とジャンプの押下状態。斜め方向の入力は長さ1までに制限する</param>
 	/// <param name="world">静的な衝突ワールド</param>
-	/// <param name="airflow">ワールド座標の風速。空中では水平に流され、上昇気流は鉛直速度へ作用する</param>
-	/// <returns>true:成功 false:未初期化、無効な入力・風速、または移動不能な状態。失敗時は現在の状態を保持する</returns>
+	/// <returns>true:成功 false:未初期化、無効な入力、または移動不能な状態。失敗時は現在の状態を保持する</returns>
 	bool Update(float deltaTime, const CharacterInput &input,
-	            const CollisionWorld &world,
-	            const DirectX::XMFLOAT3 &airflow = {});
+	            const CollisionWorld &world);
 
 	/// <summary>
 	/// 移動速度と入力の蓄積をリセットし、指定位置へ移動する
@@ -130,8 +128,7 @@ class CharacterController {
 	/// <param name="input">この更新で使用する移動入力</param>
 	/// <param name="world">静的な衝突ワールド</param>
 	/// <returns>true:成功 false:移動不能な状態</returns>
-	bool Step(const CharacterInput &input, const CollisionWorld &world,
-	          const DirectX::XMFLOAT3 &airflow);
+	bool Step(const CharacterInput &input, const CollisionWorld &world);
 
 	Transform transform_{};
 	DirectX::XMFLOAT4X4 worldMatrix_{1, 0, 0, 0, 0, 1, 0, 0,
@@ -139,12 +136,9 @@ class CharacterController {
 	Collider collider_{};
 	CharacterSettings settings_{};
 	float verticalVelocity_ = 0.0f;
-	DirectX::XMFLOAT3 windVelocity_{};
 	double accumulatedTime_ = 0.0;
 	double coyoteRemaining_ = 0.0;
 	double jumpBufferRemaining_ = 0.0;
-	double airborneSeconds_ = 0.0;
-	double airFloatUsedSeconds_ = 0.0;
 	bool initialized_ = false;
 	bool grounded_ = false;
 	bool jumpPending_ = false;

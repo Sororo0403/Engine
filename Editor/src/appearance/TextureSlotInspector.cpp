@@ -191,29 +191,13 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		}
 	};
 
-	if (ImGui::TreeNode("UV and Effects")) {
+	if (ImGui::TreeNode("UV")) {
 		editRenderer([](auto &renderer) {
 			return ImGui::DragFloat2("UV Tiling", renderer.uvScale.data(), .01f);
 		});
 		editRenderer([](auto &renderer) {
 			return ImGui::DragFloat2("UV Offset", renderer.uvOffset.data(), .01f);
 		});
-		if (ImGui::TreeNode("Radial Reveal")) {
-			editRenderer([](auto &renderer) {
-				return ImGui::DragFloat3("World Origin",
-				                        renderer.reveal.originRadius.data(), .1f);
-			});
-			editRenderer([](auto &renderer) {
-				return ImGui::DragFloat("Radius", &renderer.reveal.originRadius[3], .1f);
-			});
-			editRenderer([](auto &renderer) {
-				return ImGui::DragFloat("Edge Width (0 = Off)", &renderer.reveal.feather,
-				                       .01f, 0.f, 100000.f, "%.2f",
-				                       ImGuiSliderFlags_AlwaysClamp);
-			});
-			ImGui::TreePop();
-		}
-
 		if (ui.Button("UV Actions"))
 			ImGui::OpenPopup("UVActions");
 		if (ImGui::BeginPopup("UVActions")) {

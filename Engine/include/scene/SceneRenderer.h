@@ -30,7 +30,6 @@ class ModelManager;
 class RenderSystem;
 class RenderWorld;
 class Scene;
-struct SceneBackgroundFreeze;
 class RenderTexture;
 class CanvasRenderer;
 class ParticleRenderer;
@@ -253,7 +252,7 @@ class SceneRenderer {
 	/// 描画物体の追加・削除・モデル変更・変形情報を反映する
 	/// </summary>
 	/// <returns>true:成功 false:モデル読み込み、または物体作成失敗</returns>
-	bool SynchronizeObjects(bool keepBackground);
+	bool SynchronizeObjects();
 
 	// 参照先はSceneRendererより長く保持する
 	const Scene &scene_;
@@ -266,9 +265,6 @@ class SceneRenderer {
 	std::unique_ptr<CanvasRenderer> canvas_;
 	std::unique_ptr<ParticleRenderer> particles_;
 	std::vector<ParticleDrawBatch> particleBatches_;
-	std::vector<ParticleDrawBatch> frozenParticles_;
-	std::shared_ptr<const SceneBackgroundFreeze> backgroundFreeze_;
-	std::vector<SceneObjectId> frozenForeground_;
 	std::map<SceneObjectId, AnimatorDrawPose> animatorPoses_;
 	std::vector<std::shared_ptr<const Scene>> preparedPrefabs_;
 	bool screenUIEnabled_ = true;
