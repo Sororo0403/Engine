@@ -88,10 +88,6 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 
 		ui.BeginDisabled(!object.camera->IsValid());
 
-		if (ui.Button("Preview in Game")) {
-			request = {Action::PREVIEW_IN_GAME, id};
-		}
-
 		if (ui.Button("Play From This Camera")) {
 			request = {Action::PLAY_FROM_CAMERA, id};
 		}

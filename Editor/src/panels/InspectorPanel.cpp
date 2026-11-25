@@ -799,10 +799,7 @@ bool InspectorPanel::Draw(
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
 	                                  cameraRequest, canPasteCameraLens);
 
-	if (cameraRequest.action == CameraInspector::Action::PREVIEW_IN_GAME) {
-		objectRequest_ = {ObjectAction::PREVIEW_CAMERA, cameraRequest.objectId};
-	} else if (cameraRequest.action ==
-	           CameraInspector::Action::PLAY_FROM_CAMERA) {
+	if (cameraRequest.action == CameraInspector::Action::PLAY_FROM_CAMERA) {
 		objectRequest_ = {ObjectAction::PLAY_FROM_CAMERA,
 		                  cameraRequest.objectId};
 	} else if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {

@@ -9,8 +9,7 @@
 #include <utility>
 #include <vector>
 
-bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
-                                SceneObjectId cameraOverride) {
+bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback) {
 	try {
 		Scene resolved;
 		std::string error;
@@ -47,29 +46,6 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 
 			pose = SceneCameraUtils::FromWorldTransform(transform);
 			settings = object.camera->settings;
-		}
-
-		if (cameraOverride != 0) {
-			const auto found = objects.find(cameraOverride);
-
-			if (found == objects.end() ||
-			    !SceneActivity::IsActive(resolved, cameraOverride) ||
-			    !found->second.camera || !found->second.camera->IsValid() ||
-			    !TransformUtils::IsValid(found->second.transform)) {
-				Reset();
-				return false;
-			}
-
-			SceneWorldTransform transform;
-
-			if (!SceneHierarchy::GetWorldTransform(resolved, cameraOverride,
-			                                       transform)) {
-				Reset();
-				return false;
-			}
-
-			pose = SceneCameraUtils::FromWorldTransform(transform);
-			settings = found->second.camera->settings;
 		}
 
 		Camera validator;

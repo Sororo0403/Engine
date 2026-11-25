@@ -1763,19 +1763,6 @@ void ControlsPanel::Draw() {
 	         "scene data or Undo history."},
 
 
-	        {"Inspector > Camera > Preview in Game",
-	         "Pin the stopped Game view to the inspected Camera without "
-	         "changing Primary or running physics. Follow Camera uses its "
-	         "initial resolved pose, and edits to its Transform or lens update "
-	         "the preview. A locked Inspector uses its displayed Camera. "
-	         "Preview Primary Camera in Game restores the normal view. "
-	         "Ordinary Play and game output still use the authored Primary; "
-	         "Stop returns to the pinned preview. New/Open and deleting the "
-	         "pinned Camera clear the pin. Invalid camera settings leave a "
-	         "blank preview as usual; scene validation rules are unchanged. "
-	         "The pin is a workspace choice with no Undo entry or scene-file "
-	         "change."},
-
 
 	        {"View > Grid Settings",
 	         "Adjust grid spacing, extent, major-line interval and work-plane "

@@ -81,7 +81,6 @@ class InspectorPanel {
 		CLEAR_UNUSED_TEXTURES,
 		PASTE_UV_TO_SELECTION,
 		PLAY_FROM_CAMERA,
-		PREVIEW_CAMERA,
 	};
 
 	/// <summary>

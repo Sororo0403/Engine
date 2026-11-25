@@ -165,7 +165,6 @@ bool EditorScene::Initialize() {
 
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
-	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
 	audioPreviewPanel_.Clear();
@@ -258,7 +257,6 @@ bool EditorScene::Update(float deltaTime) {
 	                                   !IsBusy() && playUsesEditingScene_ &&
 	                                       playSelectionActive_ &&
 	                                       playSelection_.GetCount() != 0,
-	                                   &document_.GetScene(),
 	                                   document_.GetFilePath(),
 	                                   project_.GetStartupScene(), sourceToOpen,
 	                                   canRevealPlayObject, lastPlayScenePath_,
@@ -1724,7 +1722,6 @@ void EditorScene::Finalize() {
 
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
-	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 
 	stage_ = DialogStage::IDLE;
@@ -3619,7 +3616,6 @@ void EditorScene::ExecutePendingAction() {
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
 			pendingPlayCamera_ = 0;
-			playMode_.SetPreviewCamera(0);
 			inspectorPanel_.Clear();
 		} catch (const std::exception &error) {
 			Logger::Error(error.what());
@@ -4429,7 +4425,6 @@ void EditorScene::RestoreRecovery() {
 		gizmoEditActive_ = false;
 		RestoreSceneViewAndSelection(*recoverySourceFile_, &snapshot);
 		pendingPlayCamera_ = 0;
-		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
 		assetsPanel_.Clear();
 		assetsPanel_.RestoreDirectory(previousAssetFolder, assets_);
@@ -5447,7 +5442,6 @@ void EditorScene::UpdateDialogs() {
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
 			pendingPlayCamera_ = 0;
-			playMode_.SetPreviewCamera(0);
 			inspectorPanel_.Clear();
 			stage_ = DialogStage::IDLE;
 
@@ -6893,7 +6887,6 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		RestoreSceneViewAndSelection(usePreviousLocation ? previousLocation : openedPath);
 	}
 	pendingPlayCamera_ = 0;
-	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 	recentScenes_.Add(document_.GetFilePath());
 	stage_ = DialogStage::IDLE;
@@ -7059,17 +7052,6 @@ void EditorScene::ApplyInspectorRequest(
 				    "Could not apply UV settings. Every selected object must "
 				    "have "
 				    "a valid Mesh Renderer. No selected object was changed.");
-			}
-
-			return;
-		}
-
-		if (request.action == InspectorPanel::ObjectAction::PREVIEW_CAMERA) {
-			if (!object->camera || !object->camera->IsValid() ||
-			    !playMode_.SetPreviewCamera(request.objectId)) {
-				ShowError("Choose a valid Camera while Play is stopped to "
-				          "preview it in Game.",
-				          request.objectId);
 			}
 
 			return;

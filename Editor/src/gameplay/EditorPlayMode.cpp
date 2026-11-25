@@ -56,7 +56,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
                                               const GameConfig &config,
                                               bool canUseSelection,
-                                              const Scene *editingScene,
                                               const std::filesystem::path &editingScenePath,
                                               const std::filesystem::path &startupScenePath,
                                               const std::filesystem::path &playSourcePath,
@@ -227,14 +226,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ImGui::EndPopup();
 		}
 	} else {
-		if (previewCamera_ != 0 && editingScene) {
-			const auto *object = editingScene->FindObject(previewCamera_);
-
-			if (!object || !object->camera) {
-				SetPreviewCamera(0);
-			}
-		}
-
 		ui.BeginDisabled(!canStart);
 
 		if (ui.Button("Play")) {
@@ -248,20 +239,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		if (ui.Button("Options"))
 			ImGui::OpenPopup("GameOptions");
 		if (ImGui::BeginPopup("GameOptions")) {
-			if (previewCamera_ != 0) {
-				const auto *object = editingScene
-				                         ? editingScene->FindObject(previewCamera_)
-				                         : nullptr;
-				ui.Text(std::format("Preview Camera: {} (ID {})",
-				                    object && !object->name.empty() ? object->name
-				                                                    : "Camera",
-				                    previewCamera_));
-
-				if (ui.MenuItem("Preview Primary Camera", nullptr, true)) {
-					SetPreviewCamera(0);
-				}
-			}
-
 			ui.Checkbox("Maximize on Play", maximizeOnPlay_);
 			ui.Checkbox("Start Paused", startPaused_);
 			ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
@@ -665,16 +642,6 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	return true;
 }
 
-bool EditorPlayMode::SetPreviewCamera(SceneObjectId objectId) {
-	if (IsPlaying()) {
-		return false;
-	}
-
-	previewCamera_ = objectId;
-	focusRequested_ = objectId != 0;
-	return true;
-}
-
 bool EditorPlayMode::ReloadCanvasImage(const std::filesystem::path &path,
                                        std::string &error) {
 	return previewRenderer_.ReloadCanvasImage(path, error) &&
@@ -683,20 +650,12 @@ bool EditorPlayMode::ReloadCanvasImage(const std::filesystem::path &path,
 
 bool EditorPlayMode::UpdatePreview(const Scene &scene,
                                    const CameraPose &fallback) {
-	if (!IsPlaying() && previewCamera_ != 0) {
-		const auto *object = scene.FindObject(previewCamera_);
-
-		if (!object || !object->camera) {
-			SetPreviewCamera(0);
-		}
-	}
-
 	if (IsPlaying() || !visible_ || !texture_) {
 		return true;
 	}
 
 	// 無効なカメラでは過去のシーンを捨て、空のワールドを描画して古い画像を残さない。
-	preview_.Prepare(scene, fallback, previewCamera_);
+	preview_.Prepare(scene, fallback);
 
 	if (!previewRenderer_.SetLighting(lighting_) ||
 	    !previewRenderer_.SetCameraPose(preview_.GetPose()) ||
@@ -730,6 +689,5 @@ void EditorPlayMode::Finalize() {
 	renderer_.Finalize();
 	previewRenderer_.Finalize();
 	preview_.Reset();
-	previewCamera_ = 0;
 	previewFrame_ = false;
 }
