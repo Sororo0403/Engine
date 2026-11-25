@@ -94,7 +94,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	config.fullscreen = game.fullscreen;
 	config.verticalSync = game.verticalSync;
 	config.enableUI = false;
-	config.preferLowPowerGpu = arguments == "--low-power-gpu";
 	const auto result = Engine::Run(config, CreateScene);
 
 	if (result != 0 && !launchedFromEditor) {

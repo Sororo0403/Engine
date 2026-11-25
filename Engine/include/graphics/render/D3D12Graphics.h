@@ -21,10 +21,9 @@ class D3D12Graphics {
 	/// <param name="hwnd">描画先のウィンドウハンドル</param>
 	/// <param name="width">描画領域の幅(ピクセル)</param>
 	/// <param name="height">描画領域の高さ(ピクセル)</param>
-	/// <param name="preferLowPowerGpu">消費電力の少ないGPUを優先するか</param>
 	/// <returns>true:初期化成功 false:初期化失敗</returns>
 	bool Initialize(HWND hwnd, int width, int height,
-	                bool preferLowPowerGpu = false, bool verticalSync = true);
+	                bool verticalSync = true);
 
 	/// <summary>
 	/// フレームの記録を開始し、指定した色で画面をクリアする
@@ -117,7 +116,7 @@ class D3D12Graphics {
 	/// GPUを選択し、D3D12デバイスを作成する
 	/// </summary>
 	/// <returns>true:成功 false:失敗</returns>
-	bool CreateDevice(bool preferLowPowerGpu);
+	bool CreateDevice();
 
 	/// <summary>
 	/// 描画用コマンドキューを作成する

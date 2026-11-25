@@ -152,8 +152,7 @@ struct Engine::Impl {
 		}
 
 		if (!graphics_.Initialize(app_.GetHwnd(), app_.GetWidth(),
-		                          app_.GetHeight(), config.preferLowPowerGpu,
-		                          config.verticalSync)) {
+		                          app_.GetHeight(), config.verticalSync)) {
 			return false;
 		}
 

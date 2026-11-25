@@ -7,7 +7,7 @@
 #include <format>
 
 bool D3D12Graphics::Initialize(HWND hwnd, int width, int height,
-                               bool preferLowPowerGpu, bool verticalSync) {
+                               bool verticalSync) {
 	if (!hwnd || width <= 0 || height <= 0 || factory_ || device_ ||
 	    commandQueue_ || swapChain_) {
 		Logger::Error(
@@ -20,8 +20,7 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height,
 	verticalSync_ = verticalSync;
 	EnableDebugLayer();
 
-	if (!CreateFactory() || !CreateDevice(preferLowPowerGpu) ||
-	    !CreateCommandQueue() ||
+	if (!CreateFactory() || !CreateDevice() || !CreateCommandQueue() ||
 	    !CreateSwapChain(hwnd, width, height) || !CreateRenderTargets() ||
 	    !CreateDepthBuffer(width, height) || !CreateCommandObjects() ||
 	    !CreateSynchronizationObjects()) {
@@ -256,17 +255,13 @@ bool D3D12Graphics::CreateFactory() {
 	return true;
 }
 
-bool D3D12Graphics::CreateDevice(bool preferLowPowerGpu) {
-	const auto preference = preferLowPowerGpu
-	                            ? DXGI_GPU_PREFERENCE_MINIMUM_POWER
-	                            : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE;
-
+bool D3D12Graphics::CreateDevice() {
 	for (UINT index = 0;; ++index) {
 		Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
 
-		// 起動時に指定された優先順でGPUを取得する
+		// 高性能GPUを優先して候補を取得する
 		HRESULT hr = factory_->EnumAdapterByGpuPreference(
-		    index, preference,
+		    index, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
 		    IID_PPV_ARGS(adapter.GetAddressOf()));
 
 		if (hr == DXGI_ERROR_NOT_FOUND) {
