@@ -154,9 +154,6 @@
     <ClInclude Include="include\scene\SceneObjects.h" />
     <ClInclude Include="include\scene\ProjectDocument.h" />
     <ClInclude Include="include\scene\SceneDocument.h" />
-    <ClInclude Include="include\scene\StageDecorationLayout.h" />
-    <ClInclude Include="include\scene\StageDecorationGenerator.h" />
-    <ClInclude Include="include\scene\StageDecorationSource.h" />
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
     <ClInclude Include="include\history\TransformCommand.h" />
     <ClInclude Include="include\history\ParentCommand.h" />
@@ -201,9 +198,6 @@
     <ClCompile Include="src\scene\SceneObjects.cpp" />
     <ClCompile Include="src\scene\ProjectDocument.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />
-    <ClCompile Include="src\scene\StageDecorationLayout.cpp" />
-    <ClCompile Include="src\scene\StageDecorationGenerator.cpp" />
-    <ClCompile Include="src\scene\StageDecorationSource.cpp" />
     <ClCompile Include="src\dialogs\SaveChangesDialog.cpp" />
     <ClCompile Include="src\dialogs\BatchRenameDialog.cpp" />
     <ClCompile Include="src\dialogs\FileDialog.cpp" />
@@ -310,18 +304,6 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\EditorPlaySession.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\SampleStage.h" />
-    <ClCompile Include="src\gameplay\SampleStage.cpp" />
-    <ClInclude Include="include\gameplay\StagePlan.h" />
-    <ClCompile Include="src\gameplay\StagePlan.cpp" />
-    <ClInclude Include="include\gameplay\StageFlowGraph.h" />
-    <ClCompile Include="src\gameplay\StageFlowGraph.cpp" />
-    <ClInclude Include="include\gameplay\StageFlowBuilder.h" />
-    <ClCompile Include="src\gameplay\StageFlowBuilder.cpp" />
-    <ClInclude Include="include\gameplay\StageFlowPrefab.h" />
-    <ClCompile Include="src\gameplay\StageFlowPrefab.cpp" />
-    <ClInclude Include="include\gameplay\StageFlowProject.h" />
-    <ClCompile Include="src\gameplay\StageFlowProject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h" />
@@ -460,10 +442,6 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\BoxCreationSettings.h"></ClInclude>
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"></ClCompile>
-    <ClInclude Include="include\dialogs\StagePlanDialog.h" />
-    <ClCompile Include="src\dialogs\StagePlanDialog.cpp" />
-    <ClInclude Include="include\dialogs\StageFlowDialog.h" />
-    <ClCompile Include="src\dialogs\StageFlowDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\EditorCameraBookmarks.h"></ClInclude>

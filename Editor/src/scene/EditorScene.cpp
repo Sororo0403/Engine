@@ -20,7 +20,6 @@
 #include "gameplay/CharacterController.h"
 #include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
-#include "gameplay/SampleStage.h"
 #include "gameplay/SceneScripts.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
@@ -40,7 +39,6 @@
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
 #include "scene/SceneObjects.h"
-#include "scene/StageDecorationGenerator.h"
 #include "selection/SelectionFrustum.h"
 #include "selection/SelectionMeasurement.h"
 
@@ -2024,10 +2022,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::NEW;
 		}
 
-		if (ui_.MenuItem("New Sample Stage...", nullptr, enabled)) {
-			action = EditorAction::NEW_SAMPLE;
-		}
-
 		if (ui_.MenuItem("Open...", "Ctrl+O", enabled)) {
 			action = EditorAction::OPEN;
 		}
@@ -2518,35 +2512,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Box with Size...", nullptr, enabled)) {
 			action = EditorAction::CREATE_SIZED_BOX;
-		}
-
-		if (ui_.MenuItem("Generate Decorations...", nullptr,
-		                 enabled && !project_.GetRoot().empty())) {
-			action = EditorAction::GENERATE_DECORATIONS;
-		}
-
-		if (ui_.MenuItem("Stage Plan...", nullptr, enabled && !project_.GetRoot().empty())) {
-			action = EditorAction::STAGE_PLAN;
-		}
-
-		if (ui_.MenuItem("Stage Flow...", nullptr, enabled && !project_.GetRoot().empty())) {
-			action = EditorAction::STAGE_FLOW;
-		}
-
-		if (ui_.BeginMenu("Stage Flow Port")) {
-			if (ui_.MenuItem("Walk Entry", nullptr, enabled)) {
-				action = EditorAction::STAGE_FLOW_WALK_ENTRY;
-			}
-			if (ui_.MenuItem("Walk Exit", nullptr, enabled)) {
-				action = EditorAction::STAGE_FLOW_WALK_EXIT;
-			}
-			if (ui_.MenuItem("Jump Entry", nullptr, enabled)) {
-				action = EditorAction::STAGE_FLOW_JUMP_ENTRY;
-			}
-			if (ui_.MenuItem("Jump Exit", nullptr, enabled)) {
-				action = EditorAction::STAGE_FLOW_JUMP_EXIT;
-			}
-			ui_.EndMenu();
 		}
 
 		if (ui_.BeginMenu("UI")) {
@@ -3462,7 +3427,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::OPEN_PROJECT_PATH:
 	case EditorAction::OPEN_RECOVERY_PROJECT:
 	case EditorAction::NEW:
-	case EditorAction::NEW_SAMPLE:
 	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
 	case EditorAction::EXIT:
@@ -3563,55 +3527,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
 		return;
-	case EditorAction::STAGE_PLAN:
-		if (!playMode_.IsPlaying() && !IsBusy() && !project_.GetRoot().empty()) {
-			stagePlanDialog_.Show(project_.GetRoot());
-			stage_ = DialogStage::STAGE_PLAN;
-		}
-		return;
-	case EditorAction::STAGE_FLOW:
-		if (!playMode_.IsPlaying() && !IsBusy() && !project_.GetRoot().empty()) {
-			stageFlowDialog_.Show(project_.GetRoot());
-			stage_ = DialogStage::STAGE_FLOW;
-		}
-		return;
-	case EditorAction::STAGE_FLOW_WALK_ENTRY:
-	case EditorAction::STAGE_FLOW_WALK_EXIT:
-	case EditorAction::STAGE_FLOW_JUMP_ENTRY:
-	case EditorAction::STAGE_FLOW_JUMP_EXIT: {
-		const bool entry = action == EditorAction::STAGE_FLOW_WALK_ENTRY ||
-		                   action == EditorAction::STAGE_FLOW_JUMP_ENTRY;
-		const bool jump = action == EditorAction::STAGE_FLOW_JUMP_ENTRY ||
-		                  action == EditorAction::STAGE_FLOW_JUMP_EXIT;
-		SceneObject marker;
-		marker.name = entry ? "in" : "out";
-		marker.tag = std::string(entry ? "stage-entry:" : "stage-exit:") +
-		             (jump ? "jump" : "walk");
-		marker.parentId = selection_.GetActiveId();
-		if (entry) {
-			marker.transform.rotation = {0, 1, 0, 0};
-		}
-		CreateObject(std::move(marker));
-		return;
-	}
-	case EditorAction::GENERATE_DECORATIONS: {
-		if (playMode_.IsPlaying() || IsBusy() || project_.GetRoot().empty()) {
-			return;
-		}
-		auto name = PathUtils::ToUtf8(document_.GetFilePath().filename());
-		if (name.ends_with(".scene.json")) {
-			name.resize(name.size() - std::string_view(".scene.json").size());
-		} else {
-			name = PathUtils::ToUtf8(document_.GetFilePath().stem());
-		}
-		stageDecorationName_ = name.empty() ? "Decorated Stage" : name + " Decorated";
-		stageDecorationError_.clear();
-		decoratedScenePath_.clear();
-		openingStageDecorations_ = true;
-		stage_ = DialogStage::STAGE_DECORATIONS;
-		return;
-	}
-
 	case EditorAction::SNAP_POSITIONS:
 		SnapSelectedPositions();
 		return;
@@ -4078,20 +3993,8 @@ void EditorScene::ExecutePendingAction() {
 		ShowGameExport();
 		return;
 
-	case EditorAction::NEW_SAMPLE:
 	case EditorAction::NEW: {
 		try {
-			auto objects = action == EditorAction::NEW_SAMPLE
-			                   ? SampleStage::Create()
-			                   : std::map<SceneObjectId, SceneObject>{};
-
-			if (action == EditorAction::NEW_SAMPLE &&
-			    !models_.Load(L"resources/editor/models/box.glb")) {
-				ShowError("Could not load the sample box model. See the log "
-				          "for details.");
-				return;
-			}
-
 			SaveEditorSession();
 			document_.New();
 			if (lastPlayScenePath_.empty()) {
@@ -4106,11 +4009,6 @@ void EditorScene::ExecutePendingAction() {
 			frameRequest_ = FrameRequest::NONE;
 			frameObject_ = 0;
 			clipboard_.DetachExternalReferences();
-
-			if (action == EditorAction::NEW_SAMPLE) {
-				document_.GetScene().ReplaceObjects(std::move(objects));
-				document_.MarkModified();
-			}
 
 			ClearRecovery();
 			gizmo_.Cancel();
@@ -6019,104 +5917,6 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		}
 
-		return;
-	}
-
-	case DialogStage::STAGE_FLOW: {
-		const auto result = stageFlowDialog_.Draw(ui_, document_, project_.GetScenesDirectory());
-		if (result == StageFlowDialog::Result::NONE) {
-			return;
-		}
-		stage_ = DialogStage::IDLE;
-		if (result == StageFlowDialog::Result::OPEN_SAVED_SCENE) {
-			pendingOpenPath_ = stageFlowDialog_.GetSavedPath();
-			pendingAction_ = EditorAction::OPEN_PATH;
-			ConfirmSceneChanges();
-		}
-		return;
-	}
-
-	case DialogStage::STAGE_PLAN: {
-		const auto result = stagePlanDialog_.Draw(ui_, document_, project_.GetScenesDirectory());
-		if (result == StagePlanDialog::Result::NONE) {
-			return;
-		}
-		stage_ = DialogStage::IDLE;
-		if (result == StagePlanDialog::Result::OPEN_SAVED_SCENE) {
-			pendingOpenPath_ = stagePlanDialog_.GetSavedPath();
-			pendingAction_ = EditorAction::OPEN_PATH;
-			ConfirmSceneChanges();
-		}
-		return;
-	}
-
-	case DialogStage::STAGE_DECORATIONS: {
-		constexpr const char *title = "Generate Decorations###StageDecorations";
-		if (std::exchange(openingStageDecorations_, false)) {
-			ui_.OpenPopup(title);
-		}
-		ImGui::SetNextWindowSize({475.0f, 0.0f}, ImGuiCond_Appearing);
-		if (!ui_.BeginPopupModal(title)) {
-			return;
-		}
-
-		const auto directory = project_.GetScenesDirectory();
-		ui_.Text(PathUtils::ToUtf8(directory));
-		ui_.InputText("Scene Name", stageDecorationName_);
-		ImGui::InputScalar("Seed", ImGuiDataType_U32, &stageDecorationSeed_);
-		if (ui_.Button("Generate and Save")) {
-			decoratedScenePath_.clear();
-			stageDecorationError_.clear();
-			try {
-				auto name = PathUtils::FromUtf8(stageDecorationName_);
-				if (!PathUtils::IsValidFileName(name)) {
-					throw std::runtime_error("Enter a single valid scene name.");
-				}
-				name += L".scene.json";
-				const auto destination = directory / name;
-				if (std::filesystem::exists(destination)) {
-					throw std::runtime_error("A scene with that name already exists.");
-				}
-				Scene generated;
-				const auto count = StageDecorationGenerator::Generate(
-				    document_.GetScene(), project_.GetRoot(), stageDecorationSeed_,
-				    models_, renderer_, generated, stageDecorationError_);
-				if (count != 0) {
-					if (document_.SaveCopy(destination, generated, false)) {
-						decoratedScenePath_ = destination;
-						Logger::Info(std::format("Saved {} decorations to {}.", count,
-						                         PathUtils::ToUtf8(destination)));
-					} else {
-						stageDecorationError_ = document_.GetError();
-					}
-				}
-			} catch (const std::exception &error) {
-				stageDecorationError_ = error.what();
-			}
-		}
-		ui_.SameLine();
-		const bool open = !decoratedScenePath_.empty() && ui_.Button("Open Saved Scene");
-		if (open) {
-			ui_.SameLine();
-		}
-		const bool close = ui_.Button("Close") ||
-		                   ImGui::IsKeyPressed(ImGuiKey_Escape, false);
-		if (!stageDecorationError_.empty()) {
-			ImGui::TextWrapped("%s", stageDecorationError_.c_str());
-		} else if (!decoratedScenePath_.empty()) {
-			ui_.Text("Saved " + PathUtils::ToUtf8(decoratedScenePath_.filename()));
-		}
-
-		if (open || close) {
-			ui_.CloseCurrentPopup();
-			stage_ = DialogStage::IDLE;
-		}
-		ui_.EndPopup();
-		if (open) {
-			pendingOpenPath_ = decoratedScenePath_;
-			pendingAction_ = EditorAction::OPEN_PATH;
-			ConfirmSceneChanges();
-		}
 		return;
 	}
 

@@ -119,15 +119,6 @@
     <ClCompile Include="src\scene\SceneDocument.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\scene\StageDecorationLayout.cpp">
-      <Filter>src\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scene\StageDecorationGenerator.cpp">
-      <Filter>src\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scene\StageDecorationSource.cpp">
-      <Filter>src\scene</Filter>
-    </ClCompile>
     <ClCompile Include="src\assets\AssetDragDrop.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
@@ -258,15 +249,6 @@
     </ClInclude>
     <ClInclude Include="include\scene\SceneDocument.h">
       <Filter>include\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scene\StageDecorationLayout.h">
-      <Filter>include\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scene\StageDecorationGenerator.h">
-      <Filter>include\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scene\StageDecorationSource.h">
-      <Filter>include\scene</Filter>
     </ClInclude>
     <ClInclude Include="include\assets\AssetDragDrop.h">
       <Filter>include\assets</Filter>
@@ -513,42 +495,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\SampleStage.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\SampleStage.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\StagePlan.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\StagePlan.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\StageFlowGraph.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\StageFlowGraph.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\StageFlowBuilder.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\StageFlowBuilder.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\StageFlowPrefab.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\StageFlowPrefab.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\StageFlowProject.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\StageFlowProject.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\GameplayInput.h">
@@ -816,10 +762,6 @@
     <ClInclude Include="include\scene\BoxCreationSettings.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
-    <ClInclude Include="include\dialogs\StagePlanDialog.h"><Filter>include\dialogs</Filter></ClInclude>
-    <ClCompile Include="src\dialogs\StagePlanDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
-    <ClInclude Include="include\dialogs\StageFlowDialog.h"><Filter>include\dialogs</Filter></ClInclude>
-    <ClCompile Include="src\dialogs\StageFlowDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\EditorCameraBookmarks.h"><Filter>include\camera</Filter></ClInclude>

@@ -20,8 +20,6 @@
 #include "dialogs/SceneImportDialog.h"
 #include "dialogs/SceneRecoveryDialog.h"
 #include "dialogs/SceneReloadDialog.h"
-#include "dialogs/StagePlanDialog.h"
-#include "dialogs/StageFlowDialog.h"
 #include "dialogs/ScriptEditorDialog.h"
 #include "animation/AnimationClipEditor.h"
 #include "dialogs/TextureImportDialog.h"
@@ -150,7 +148,6 @@ class EditorScene final : public IScene {
 		CLEAR_STARTUP_SCENE,
 		BROWSE_STARTUP_SCENE,
 		NEW,
-		NEW_SAMPLE,
 		OPEN,
 		SAVE,
 		SAVE_AS,
@@ -176,13 +173,6 @@ class EditorScene final : public IScene {
 		CREATE_EMPTY,
 		CREATE_BOX,
 		CREATE_SIZED_BOX,
-		GENERATE_DECORATIONS,
-		STAGE_PLAN,
-		STAGE_FLOW,
-		STAGE_FLOW_WALK_ENTRY,
-		STAGE_FLOW_WALK_EXIT,
-		STAGE_FLOW_JUMP_ENTRY,
-		STAGE_FLOW_JUMP_EXIT,
 		CREATE_CAMERA,
 		CREATE_CANVAS,
 		CREATE_UI_TEXT,
@@ -330,9 +320,6 @@ class EditorScene final : public IScene {
 		BATCH_RENAME,
 		OBJECT_ARRAY,
 		BOX_CREATION,
-		STAGE_DECORATIONS,
-		STAGE_PLAN,
-		STAGE_FLOW,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -1125,13 +1112,6 @@ class EditorScene final : public IScene {
 	BatchRenameDialog batchRenameDialog_;
 	ObjectArrayDialog objectArrayDialog_;
 	BoxCreationDialog boxCreationDialog_;
-	StagePlanDialog stagePlanDialog_;
-	StageFlowDialog stageFlowDialog_;
-	bool openingStageDecorations_ = false;
-	std::uint32_t stageDecorationSeed_ = 0;
-	std::string stageDecorationName_;
-	std::string stageDecorationError_;
-	std::filesystem::path decoratedScenePath_;
 	FileDialog fileDialog_;
 	FileDialog openSceneDialog_;
 	FileDialog projectDialog_;

@@ -1278,9 +1278,6 @@ void ControlsPanel::Draw() {
 	         "shapes even when their models are hidden. Selecting adds no "
 	         "history; pending edits finish first. Static obstacles may "
 	         "intentionally overlap each other."},
-	        {"File > New Sample Stage",
-	         "Create an editable floor, walls, player and follow camera. "
-	         "Unsaved work prompts before replacement."},
 	        {"Game while editing",
 	         "Preview the authored scene from the Primary Camera without "
 	         "running physics. Follow Cameras show their starting poses. "
