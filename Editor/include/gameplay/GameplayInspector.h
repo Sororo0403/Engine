@@ -60,7 +60,7 @@ class GameplayInspector {
 	/// <param name="id">表示対象ID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
-	/// <param name="targetSelectionRequest">追従先・ジャンプ着地先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
+	/// <param name="targetSelectionRequest">追従先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
 	/// <param name="canPasteTransform">復帰先へ貼り付けるTransformを保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
@@ -75,12 +75,6 @@ class GameplayInspector {
 	/// コンポーネント選択UIの検索状態を解除する
 	/// </summary>
 	void Clear() noexcept;
-
-	/// <summary>
-	/// このフレームでSceneカメラへジャンプ軌跡を収めることを要求した主人公を取得する
-	/// </summary>
-	/// <returns>Inspectorの表示対象ID。要求なしは0。計算とカメラ移動は描画後に行う</returns>
-	SceneObjectId GetJumpFrameRequest() const;
 
 	/// <summary>
 	/// このフレームでSceneカメラへ収めることを要求した復帰設定の物体を取得する
@@ -125,6 +119,5 @@ class GameplayInspector {
 	FollowTargetPicker targetPicker_;
 	SceneObjectId respawnPasteRequest_ = 0;
 	SceneObjectId respawnFrameRequest_ = 0;
-	SceneObjectId jumpFrameRequest_ = 0;
 	SceneObjectId respawnBlockersRequest_ = 0;
 };

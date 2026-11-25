@@ -29,13 +29,10 @@ class EditorPreferences {
 	bool showSelectionBounds = true;
 	bool showCameraGuides = true;
 	bool showRespawnGuides = true;
-	bool showJumpGuide = false;
-	bool showMotionTrail = false;
 	bool maximizeGameOnPlay = false;
 	bool startPlayPaused = false;
 	bool searchProjectScenes = false;
 	bool showObjectMarkers = true;
-	bool showMeasurements = false;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;

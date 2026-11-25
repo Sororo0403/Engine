@@ -40,7 +40,6 @@
 #include "scene/Scene.h"
 #include "scene/SceneObjects.h"
 #include "selection/SelectionFrustum.h"
-#include "selection/SelectionMeasurement.h"
 
 #include <algorithm>
 #include <array>
@@ -136,12 +135,9 @@ bool EditorScene::Initialize() {
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	showCameraGuides_ = preferences_.showCameraGuides;
 	showRespawnGuides_ = preferences_.showRespawnGuides;
-	showJumpGuide_ = preferences_.showJumpGuide;
-	showMotionTrail_ = preferences_.showMotionTrail;
 	playMode_.SetMaximizeOnPlay(preferences_.maximizeGameOnPlay);
 	playMode_.SetStartPaused(preferences_.startPlayPaused);
 	showObjectMarkers_ = preferences_.showObjectMarkers;
-	showMeasurements_ = preferences_.showMeasurements;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
@@ -409,12 +405,6 @@ bool EditorScene::Update(float deltaTime) {
 
 		SynchronizePlayScene();
 
-		if (showMotionTrail_) {
-			motionTrail_.Record(playMode_.GetSession());
-		} else {
-			motionTrail_.Clear();
-		}
-
 		UpdateDialogs();
 
 		if (!playMode_.IsPlaying()) {
@@ -489,12 +479,6 @@ bool EditorScene::Update(float deltaTime) {
 
 		SynchronizePlayScene();
 
-		if (showMotionTrail_) {
-			motionTrail_.Record(playMode_.GetSession());
-		} else {
-			motionTrail_.Clear();
-		}
-
 		if (playMode_.IsPlaying() &&
 		    !UpdatePlaySceneView(deltaTime, action, hierarchy.windowFocused)) {
 			playMode_.Stop();
@@ -538,8 +522,6 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
-		measurementsPanel_.Draw(ui_, playMode_.GetSession().GetScene(),
-		                        playSelection_.GetIds(), showMeasurements_);
 		const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
 		performancePanel_.Draw(
 		    ui_, runtime, playSelection_,
@@ -778,7 +760,6 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
-	measurementsPanel_.Draw(ui_, scene, selection_.GetIds(), showMeasurements_);
 	performancePanel_.Draw(
 	    ui_, scene, selection_,
 	    performanceTarget ? performanceTarget->GetWidth() : 0,
@@ -1699,17 +1680,6 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
-	if (showJumpGuide_ &&
-	    !jumpPreview_.Update(renderer_, scene, selection_.GetActiveId())) {
-		Logger::Error("EditorScene: ジャンプ軌跡を登録できませんでした。");
-		return false;
-	}
-
-	if (showMeasurements_ && !SelectionMeasurement::AppendLine(
-	                             renderer_, scene, selection_.GetIds())) {
-		return false;
-	}
-
 	if (stage_ == DialogStage::OBJECT_ARRAY &&
 	    objectArrayDialog_.CanPreview() &&
 	    !ColliderArrayPreview{}.Update(renderer_, scene,
@@ -1788,12 +1758,9 @@ void EditorScene::Finalize() {
 		current.showSelectionBounds = showSelectionBounds_;
 		current.showCameraGuides = showCameraGuides_;
 		current.showRespawnGuides = showRespawnGuides_;
-		current.showJumpGuide = showJumpGuide_;
-		current.showMotionTrail = showMotionTrail_;
 		current.maximizeGameOnPlay = playMode_.GetMaximizeOnPlay();
 		current.startPlayPaused = playMode_.GetStartPaused();
 		current.showObjectMarkers = showObjectMarkers_;
-		current.showMeasurements = showMeasurements_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
@@ -2643,26 +2610,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
-		                !IsBusy());
-		ImGui::MenuItem("Character Jump Guide", nullptr, &showJumpGuide_,
-		                !IsBusy());
-		ImGui::MenuItem("Character Motion Trail", nullptr, &showMotionTrail_,
-		                !IsBusy());
-
-		if (ui_.MenuItem("Frame Motion Trail", nullptr,
-		                 enabled && playMode_.IsPlaying() && showMotionTrail_ &&
-		                     motionTrail_.GetLineCount() != 0)) {
-			playFrameRequest_ = FrameRequest::MOTION_TRAIL;
-			ShowSceneView();
-		}
-
-		if (ui_.MenuItem("Clear Motion Trail", nullptr,
-		                 enabled && playMode_.IsPlaying() &&
-		                     motionTrail_.GetLineCount() != 0)) {
-			motionTrail_.Clear();
-		}
-
-		ImGui::MenuItem("Selection Measurements", nullptr, &showMeasurements_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());
@@ -7835,23 +7782,6 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::FRAME_JUMP) {
-			std::array<DirectX::XMFLOAT3, 8> corners;
-
-			if (!jumpPreview_.GetFrameBounds(document_.GetScene(),
-			                                 request.objectId, corners)) {
-				ShowError(
-				    "Could not frame the jump. Check the Character Controller, "
-				    "Collider and grounded starting position.");
-				return;
-			}
-
-			frameObject_ = request.objectId;
-			frameRequest_ = FrameRequest::JUMP;
-			ShowSceneView();
-			return;
-		}
-
 		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN ||
 		    request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
 			std::array<DirectX::XMFLOAT3, 8> corners;
@@ -8468,33 +8398,14 @@ bool EditorScene::FrameObjects(FrameRequest request,
 		return !runtimeScene && FrameDraft(projection);
 	}
 
-	if (request == FrameRequest::MOTION_TRAIL) {
-		std::array<DirectX::XMFLOAT3, 8> corners;
-
-		if (!runtimeScene || !playMode_.IsPlaying() || !showMotionTrail_ ||
-		    !motionTrail_.GetFrameBounds(corners)) {
-			return false;
-		}
-
-		if (!cameraController_.FrameBounds(corners, projection)) {
-			Logger::Warning("EditorScene: "
-			                "移動軌跡を現在の描画範囲に収められませんでした。");
-			return false;
-		}
-
-		return true;
-	}
-
 	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||
-	    request == FrameRequest::JUMP || request == FrameRequest::FOLLOW_PATH) {
+	    request == FrameRequest::FOLLOW_PATH) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		bool ready = false;
 
 		if (request == FrameRequest::FOLLOW_PATH) {
 			ready = followCameraPreview_.GetFrameBounds(scene, frameObject_,
 			                                            corners);
-		} else if (request == FrameRequest::JUMP) {
-			ready = jumpPreview_.GetFrameBounds(scene, frameObject_, corners);
 		} else if (const auto *object = scene.FindObject(frameObject_)) {
 			ready = request == FrameRequest::RESPAWN
 			            ? RespawnPreview::GetFrameBounds(scene, frameObject_,
@@ -8702,16 +8613,6 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		}
 	}
 
-	if (showMeasurements_ &&
-	    !SelectionMeasurement::AppendLine(playSceneRenderer_, runtime,
-	                                      playSelection_.GetIds())) {
-		return false;
-	}
-
-	if (showMotionTrail_ && !motionTrail_.Update(playSceneRenderer_)) {
-		return false;
-	}
-
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
 }
@@ -8864,7 +8765,6 @@ void EditorScene::SynchronizePlayScene() {
 }
 
 void EditorScene::ClearPlaySelection() {
-	motionTrail_.Clear();
 	sceneViewPanel_.CancelSelection();
 	playSelection_.Clear();
 	playHierarchyPanel_.Clear();

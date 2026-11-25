@@ -888,11 +888,6 @@ bool InspectorPanel::Draw(
 		objectRequest_ = {ObjectAction::PASTE_RESPAWN_POSITION, pasteId};
 	}
 
-	if (const auto jumpId = gameplayInspector_.GetJumpFrameRequest();
-	    jumpId != 0) {
-		objectRequest_ = {ObjectAction::FRAME_JUMP, jumpId};
-	}
-
 	if (const auto frameId = gameplayInspector_.GetRespawnFrameRequest();
 	    frameId != 0) {
 		objectRequest_ = {ObjectAction::FRAME_RESPAWN, frameId};

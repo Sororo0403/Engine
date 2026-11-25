@@ -1,5 +1,4 @@
 #include "gameplay/GameplayInspector.h"
-#include "gameplay/CharacterJumpPreview.h"
 #include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
@@ -47,86 +46,6 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 	return applied;
 }
 
-/// <summary>
-/// 開いたときだけ実際のジャンプを予測し、方向別の終了理由・時間・上昇量・水平距離を表示する
-/// </summary>
-/// <param name="ui">描画用UI</param>
-/// <param name="scene">変更しない編集シーン</param>
-/// <param name="id">Inspectorに表示する主人公。選択状態には依存しない</param>
-/// <returns>選択を要求した着地先のCollider。要求なしは0。選択の変更は描画後に行う</returns>
-SceneObjectId DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
-                                   SceneObjectId id) {
-	if (!ui.CollapsingHeader("Jump Measurements", false)) {
-		return 0;
-	}
-
-	CharacterJumpPreview::Paths paths;
-
-	if (!CharacterJumpPreview{}.BuildPaths(scene, id, paths)) {
-		ui.Text("Jump measurements unavailable.");
-		return 0;
-	}
-
-	if (!ImGui::BeginTable("JumpMeasurements", 6,
-	                       ImGuiTableFlags_RowBg |
-	                           ImGuiTableFlags_BordersInnerV |
-	                           ImGuiTableFlags_ScrollX,
-	                       {0, 0}, 760.0f)) {
-		return 0;
-	}
-
-	ImGui::TableSetupColumn("Direction");
-	ImGui::TableSetupColumn("Result");
-	ImGui::TableSetupColumn("Time (s)");
-	ImGui::TableSetupColumn("Height");
-	ImGui::TableSetupColumn("Planar Distance");
-	ImGui::TableSetupColumn("Landing Collider");
-	ImGui::TableHeadersRow();
-	SceneObjectId selectedLanding = 0;
-	const std::array<const char *, CharacterJumpPreview::kDirectionCount>
-	    labels{"In Place", "Right", "Left", "Forward", "Back",
-	           "Right / Forward", "Right / Back", "Left / Forward", "Left / Back"};
-
-	for (std::size_t i = 0; i < paths.size(); ++i) {
-		const auto &path = paths[i];
-		ImGui::TableNextRow();
-		ImGui::TableNextColumn();
-		ui.Text(labels[i]);
-		ImGui::TableNextColumn();
-		ui.Text(path.end == CharacterJumpPreview::End::LANDED ? "Landed"
-		        : path.end == CharacterJumpPreview::End::FALL_LIMIT
-		            ? "Fall Limit"
-		            : "Time Limit");
-		ImGui::TableNextColumn();
-		ui.Text(std::format("{:.3f}", path.durationSeconds));
-		ImGui::TableNextColumn();
-		ui.Text(std::format("{:.3f}", path.maximumHeight));
-		ImGui::TableNextColumn();
-		ui.Text(std::format("{:.3f}", path.horizontalDistance));
-		ImGui::TableNextColumn();
-		const auto *landing = path.end == CharacterJumpPreview::End::LANDED
-		                          ? scene.FindObject(path.landingObject)
-		                          : nullptr;
-
-		if (landing && landing->collider) {
-			ImGui::PushID(static_cast<int>(i));
-
-			if (ui.Button("Select Landing Collider")) {
-				selectedLanding = path.landingObject;
-			}
-
-			ImGui::PopID();
-			ui.Text(
-			    std::format("{} (ID {})", landing->name, path.landingObject));
-		} else {
-			ui.Text("-");
-		}
-	}
-
-	ImGui::EndTable();
-	return selectedLanding;
-}
-
 } // namespace
 
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
@@ -141,7 +60,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	respawnRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
-	jumpFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -200,13 +118,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			characterRequest_ = {CharacterAction::SELECT_GROUND, id};
 		}
 
-		if (ui.Button("Frame Jump")) {
-			jumpFrameRequest_ = id;
-		}
-
 		ui.EndDisabled();
 
-		targetSelectionRequest = DrawJumpMeasurements(ui, scene, id);
 
 		ui.BeginDisabled(!object.character->IsValid());
 
@@ -497,7 +410,6 @@ void GameplayInspector::Clear() noexcept {
 	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
-	jumpFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 }
 
@@ -524,8 +436,4 @@ SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {
 
 GameplayInspector::RespawnRequest GameplayInspector::GetRespawnRequest() const {
 	return respawnRequest_;
-}
-
-SceneObjectId GameplayInspector::GetJumpFrameRequest() const {
-	return jumpFrameRequest_;
 }

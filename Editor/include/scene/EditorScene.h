@@ -24,8 +24,6 @@
 #include "animation/AnimationClipEditor.h"
 #include "dialogs/TextureImportDialog.h"
 #include "files/SceneRecovery.h"
-#include "gameplay/CharacterJumpPreview.h"
-#include "gameplay/CharacterMotionTrail.h"
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
@@ -44,7 +42,6 @@
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneCheckPanel.h"
 #include "panels/SceneViewPanel.h"
-#include "panels/SelectionMeasurementsPanel.h"
 #include "panels/TexturePreviewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "physics/ColliderPlacement.h"
@@ -261,11 +258,9 @@ class EditorScene final : public IScene {
 		ALL,
 		RESPAWN,
 		COLLIDER,
-		JUMP,
 		FOLLOW_PATH,
 		INSPECTED,
 		DRAFT,
-		MOTION_TRAIL,
 	};
 
 	/// <summary>
@@ -1030,8 +1025,6 @@ class EditorScene final : public IScene {
 	bool showSelectionBounds_ = true;
 	bool showCameraGuides_ = true;
 	bool showRespawnGuides_ = true;
-	bool showJumpGuide_ = false;
-	bool showMotionTrail_ = false;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
@@ -1188,8 +1181,6 @@ class EditorScene final : public IScene {
 	ColliderBounds colliderBounds_;
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
-	CharacterJumpPreview jumpPreview_;
-	CharacterMotionTrail motionTrail_;
 	CameraFrustum cameraFrustum_;
 	FollowCameraPreview followCameraPreview_;
 
@@ -1199,8 +1190,6 @@ class EditorScene final : public IScene {
 	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
 	PerformancePanel performancePanel_;
-	SelectionMeasurementsPanel measurementsPanel_;
-	bool showMeasurements_ = false;
 	std::uint64_t playSceneRevision_ = 0;
 	PlayStatePanel playStatePanel_;
 };

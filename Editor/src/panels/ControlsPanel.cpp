@@ -1403,20 +1403,8 @@ void ControlsPanel::Draw() {
 	         "Play shortcuts remain available; other panels are hidden until "
 	         "the layout is restored. Opening a panel, Grid Settings or Help, "
 	         "or framing Scene from the menu restores the layout immediately "
-	         "and shows that view. Motion Trail recording continues."},
-	        {"View > Character Motion Trail",
-	         "Record the live Character position once per simulated frame "
-	         "and show its path only in Scene. Grounded movement is green; "
-	         "airborne movement is orange. Pause adds no samples; Step can "
-	         "add one segment. Respawns begin a new segment without drawing "
-	         "the teleport. The most recent 2048 moving segments are kept. "
-	         "Frame Motion Trail fits the retained path in Scene without "
-	         "changing its direction or Play. If the path exceeds the "
-	         "current clipping range, the view is kept. Clear Motion Trail "
-	         "starts a fresh path without changing Play. "
-	         "Restart, Stop and disabling the display clear the path. The "
-	         "display preference is saved; the recorded path is not saved "
-	         "in scenes, exported games or Undo history."},
+	         "and shows that view."},
+
 	        {"View > Play State",
 	         "Inspect the live character position, vertical velocity and "
 	         "grounded state, plus the rendered camera pose and lens. "
@@ -1620,17 +1608,7 @@ void ControlsPanel::Draw() {
 	         "survives "
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
-	        {"Inspector > Character Controller > Frame Jump",
-	         "Fit the inspected character's nine predicted jump paths and "
-	         "endpoint markers into Scene. A valid Character Controller, "
-	         "Collider and grounded starting position are required. A locked "
-	         "Inspector uses its displayed object. The Scene tab opens when "
-	         "needed. Uses the current camera direction and Scene aspect "
-	         "ratio. Selection, Inspector lock, guide visibility, scene data "
-	         "and history stay unchanged. Unavailable during Play or modal "
-	         "operations. If the trajectory cannot be calculated, the camera "
-	         "stays in place and an error is shown. Use View > Character Jump "
-	         "Guide to display paths for the active selection."},
+
 	        {"Inspector > Character Controller > Select Ground Collider",
 	         "Select the Collider immediately below the inspected character "
 	         "using the same short downward probe as ground detection. This "
@@ -1641,38 +1619,8 @@ void ControlsPanel::Draw() {
 	         "its displayed character and keeps its lock. Invalid settings or "
 	         "no ground keep the current selection. Scene data, camera and "
 	         "history stay unchanged. Available while editing only."},
-	        {"Inspector > Character Controller > Jump Measurements",
-	         "Expand to measure the inspected character's nine predicted "
-	         "jumps. Result distinguishes landing, the Respawn fall threshold "
-	         "and the three-second preview limit. Time is the simulated "
-	         "duration, Height is the greatest rise from the starting origin, "
-	         "and Distance XZ is the straight horizontal distance from start "
-	         "to finish. "
-	         "Landing Collider names the object supporting the final landed "
-	         "pose. Select Landing Collider selects it and reveals it in "
-	         "Hierarchy; Inspector locks are kept. Hidden Colliders are "
-	         "included. A dash means no supported landing endpoint. "
-	         "Fall Limit and Time Limit are not safe landing "
-	         "ranges. Measurements use every physics update before drawing "
-	         "samples are reduced, with the same collisions and speed limits "
-	         "as Play. Values update while expanded; collapse to stop "
-	         "calculating. Valid Character and Collider settings and a "
-	         "grounded start are required. A locked Inspector uses its "
-	         "displayed character. No scene data or history is changed."},
-	        {"View > Character Jump Guide",
-	         "Preview a jump from the active selected Character Controller "
-	         "at rest: white stays in place, red moves along world X and blue "
-	         "along world Z; purple previews the four world X/Z diagonals. "
-	         "Diagonal input uses the same movement-speed limit as Play. "
-	         "A valid Collider and grounded starting position "
-	         "are required. Lines follow the object origin using actual "
-	         "120 Hz movement and all static Colliders, including hidden ones. "
-	         "Green endpoints land, red endpoints reach the Respawn fall "
-	         "height, and yellow endpoints reach the 3-second preview limit. "
-	         "The preview does not teleport, replay current input or validate "
-	         "the whole scene. It changes no scene data, selection or history. "
-	         "Off by default; the preference is saved. Available while editing "
-	         "only. Use Play to test other movement directions and timing."},
+
+
 	        {"Inspector > Character Controller > Step Height",
 	         "Set Step Height above zero to walk onto small steps while "
 	         "grounded. The controller checks clearance above and ahead, "
@@ -1833,7 +1781,7 @@ void ControlsPanel::Draw() {
 	         "Off by default, including old game configurations. Applies to "
 	         "Editor Play and exported games with the same keys and focus "
 	         "guards. Jump remains vertical. Apply and Cancel keep scene data "
-	         "and history unchanged. The jump guide remains in world axes."},
+	         "and history unchanged."},
 	        {"File > Game Settings > Lighting",
 	         "Set the directional light's travel direction, color, intensity "
 	         "and ambient brightness. Direction must be finite and nonzero. "
@@ -1938,18 +1886,7 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Editor settings",
 	    {
-	        {"View > Selection Measurements",
-	         "Inspect the selected objects' Collider bounds and, for exactly "
-	         "two objects, their origin distance, horizontal distance and "
-	         "signed "
-	         "X/Y/Z differences. A yellow Scene line connects those origins. "
-	         "When both Colliders are valid, gap values measure the separation "
-	         "of their world-axis collision boxes; touching gives zero gap "
-	         "without overlap. Invalid Colliders are counted separately and "
-	         "excluded from combined bounds. Hidden and model-free objects are "
-	         "included. During Play the panel measures runtime selection. This "
-	         "is read-only and does not change objects, game settings or "
-	         "history."},
+
 	        {"View > Camera Bookmarks",
 	         "Save the current Scene view in one of five slots, restore a "
 	         "saved "

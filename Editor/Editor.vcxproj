@@ -290,10 +290,6 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\TriggerActionsInspector.h" />
     <ClCompile Include="src\gameplay\GameplayInspector.cpp" />
     <ClCompile Include="src\gameplay\RespawnPreview.cpp" />
-    <ClInclude Include="include\gameplay\CharacterJumpPreview.h" />
-    <ClCompile Include="src\gameplay\CharacterJumpPreview.cpp" />
-    <ClInclude Include="include\gameplay\CharacterMotionTrail.h" />
-    <ClCompile Include="src\gameplay\CharacterMotionTrail.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h" />
@@ -448,10 +444,6 @@ exit /b 0</Command>
     <ClCompile Include="src\camera\EditorCameraBookmarks.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\selection\SelectionMeasurement.h"></ClInclude>
-    <ClCompile Include="src\selection\SelectionMeasurement.cpp"></ClCompile>
-    <ClInclude Include="include\panels\SelectionMeasurementsPanel.h"></ClInclude>
-    <ClCompile Include="src\panels\SelectionMeasurementsPanel.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\lighting\LightingControls.h" />

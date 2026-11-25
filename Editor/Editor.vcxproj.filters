@@ -473,18 +473,6 @@
     <ClCompile Include="src\gameplay\RespawnPreview.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
-    <ClInclude Include="include\gameplay\CharacterJumpPreview.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\CharacterJumpPreview.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
-    <ClInclude Include="include\gameplay\CharacterMotionTrail.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\CharacterMotionTrail.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h">
@@ -768,10 +756,6 @@
     <ClCompile Include="src\camera\EditorCameraBookmarks.cpp"><Filter>src\camera</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\selection\SelectionMeasurement.h"><Filter>include\selection</Filter></ClInclude>
-    <ClCompile Include="src\selection\SelectionMeasurement.cpp"><Filter>src\selection</Filter></ClCompile>
-    <ClInclude Include="include\panels\SelectionMeasurementsPanel.h"><Filter>include\panels</Filter></ClInclude>
-    <ClCompile Include="src\panels\SelectionMeasurementsPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include\lighting"><UniqueIdentifier>{832f1f08-97d9-4b8b-9d8f-77a91b1527ec}</UniqueIdentifier></Filter>
