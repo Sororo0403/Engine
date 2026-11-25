@@ -1,7 +1,6 @@
 #include "panels/HierarchyPanel.h"
 #include "scene/SceneActivity.h"
 
-#include "gameplay/FollowCameraUsage.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "physics/ColliderPlacement.h"
 #include "scene/Scene.h"
@@ -454,15 +453,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 				if (ui.MenuItem("Frame Selected", "F", true)) {
 					result.action = Action::FRAME_SELECTED;
-				}
-
-				const bool hasFollowers =
-				    !FollowCameraUsage::FindObjects(scene, selection.GetIds())
-				         .empty();
-
-				if (ui.MenuItem("Select Follow Cameras", nullptr,
-				                hasFollowers)) {
-					result.action = Action::SELECT_FOLLOW_CAMERAS;
 				}
 
 				ui.BeginDisabled(!editable);

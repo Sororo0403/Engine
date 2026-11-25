@@ -17,7 +17,6 @@
 #include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
-#include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SceneScripts.h"
 #include "graphics/model/ModelManager.h"
@@ -442,16 +441,6 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (hierarchy.action == HierarchyPanel::Action::FRAME_SELECTED) {
 			action = EditorAction::FRAME_SELECTED;
-		} else if (hierarchy.action ==
-		           HierarchyPanel::Action::SELECT_FOLLOW_CAMERAS) {
-			try {
-				FollowCameraUsage::SelectObjects(runtime, playSelection_);
-				playHierarchyPanel_.RequestReveal(playSelection_.GetActiveId());
-			} catch (const std::exception &error) {
-				Logger::Error(std::format(
-				    "EditorScene::SelectRuntimeFollowers: {}", error.what()));
-				ShowError("Could not select runtime Follow Cameras.");
-			}
 		}
 
 		ui_.BeginDisabled(true);
@@ -1173,9 +1162,6 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
-					break;
-				case HierarchyPanel::Action::SELECT_FOLLOW_CAMERAS:
-					SelectFollowingCameras();
 					break;
 				case HierarchyPanel::Action::ENABLE_OBJECTS:
 				case HierarchyPanel::Action::DISABLE_OBJECTS:
@@ -3966,19 +3952,6 @@ void EditorScene::SelectTextureUsers(const std::filesystem::path &path) {
 		Logger::Error(
 		    std::format("EditorScene::SelectTextureUsers: {}", error.what()));
 		ShowError("Could not select texture users. See the log for details.");
-	}
-}
-
-void EditorScene::SelectFollowingCameras() {
-	FinishEdit();
-
-	try {
-		FollowCameraUsage::SelectObjects(document_.GetScene(), selection_);
-		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::SelectFollowingCameras: {}",
-		                          error.what()));
-		ShowError("Could not select Follow Cameras. See the log for details.");
 	}
 }
 
