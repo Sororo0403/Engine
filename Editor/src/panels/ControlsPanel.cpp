@@ -1384,7 +1384,7 @@ void ControlsPanel::Draw() {
 	         "requirements as Align to Scene View. Game uses the aspect ratio "
 	         "in Game Settings, so its horizontal framing may differ."},
 	        {"View > Camera Guides / Respawn Guides",
-	         "Toggle selected Camera frustums and follow links, or Respawn "
+	         "Toggle selected Camera frustums, or Respawn "
 	         "position and fall-height markers. Each setting is saved for "
 	         "the next Editor session. These settings affect only Scene "
 	         "guides; they do not change Game rendering or gameplay."},
@@ -1424,13 +1424,7 @@ void ControlsPanel::Draw() {
 	         "The orange plane marks Fall Boundary across the whole scene, "
 	         "not only inside the square. These guides check the recovery "
 	         "position, not every condition required for Play."},
-	        {"Selected Follow Camera in Scene",
-	         "The cyan cross marks the target's starting position. "
-	         "The cyan line connects it to the Camera. "
-	         "The gold cross marks Look Offset; its line shows the view "
-	         "direction. "
-	         "Follow chains use their resolved starting positions. "
-	         "These guides appear only in Scene and do not change the scene."},
+
 	        {"Inspector > Camera > Copy / Paste Lens Settings",
 	         "Copy Vertical FOV and Near/Far Clip, then paste onto the "
 	         "inspected Camera. A locked Inspector uses its displayed object. "
@@ -1557,27 +1551,8 @@ void ControlsPanel::Draw() {
 	         "Respawn uses the start position and default fall height. "
 	         "Transform and other components stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
-	        {"Inspector > Follow Camera > Frame Follow Path",
-	         "Fit the inspected camera's complete follow links, clearance "
-	         "boxes and requested camera position into Scene. A locked "
-	         "Inspector uses its displayed object. Initial obstacle-placement "
-	         "errors can still be framed for diagnosis. The Scene tab opens "
-	         "when needed. Selection, Inspector lock, Camera Guides "
-	         "visibility, "
-	         "scene data and Undo history stay unchanged; pending edits finish "
-	         "first. An invalid target or configuration keeps the view and "
-	         "reports an error. Available while editing only."},
-	        {"Scene > Follow Camera clearance guide",
-	         "Select a Follow Camera and enable View > Camera Guides. With "
-	         "Avoid Obstacles on, purple boxes show Camera Clearance around "
-	         "the look point and corrected starting camera position. When a "
-	         "wall shortens the distance, a gray box and connecting line show "
-	         "the requested camera position. Red links and boxes mean an "
-	         "initial clearance cannot be placed; inspect Colliders and "
-	         "adjust Look Offset or Camera Clearance. The requested pose "
-	         "remains visible for diagnosis. Guides do not add Colliders or "
-	         "change scene data, selection, Undo history or Game rendering. "
-	         "Turn Avoid Obstacles off to keep the usual follow links only."},
+
+
 	        {"Inspector > Follow Camera > Avoid Obstacles",
 	         "Keep the camera before the first static Collider between "
 	         "its look point and smoothed position. Camera Clearance is the "

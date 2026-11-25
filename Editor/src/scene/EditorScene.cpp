@@ -1615,13 +1615,6 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
-		if (showCameraGuides_ &&
-		    !followCameraPreview_.Update(renderer_, scene, id)) {
-			Logger::Error(
-			    "EditorScene: カメラの追従関係を登録できませんでした。");
-			return false;
-		}
-
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
@@ -7203,23 +7196,6 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::FRAME_FOLLOW_PATH) {
-			std::array<DirectX::XMFLOAT3, 8> corners;
-
-			if (!followCameraPreview_.GetFrameBounds(
-			        document_.GetScene(), request.objectId, corners)) {
-				ShowError("Could not frame the Follow Camera path. Check its "
-				          "Camera, target and offsets.",
-				          request.objectId);
-				return;
-			}
-
-			frameObject_ = request.objectId;
-			frameRequest_ = FrameRequest::FOLLOW_PATH;
-			ShowSceneView();
-			return;
-		}
-
 		if (request.action ==
 		    InspectorPanel::ObjectAction::COPY_CHARACTER_SETTINGS) {
 			if (!object->character ||
@@ -7799,15 +7775,11 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
 
-	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||
-	    request == FrameRequest::FOLLOW_PATH) {
+	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		bool ready = false;
 
-		if (request == FrameRequest::FOLLOW_PATH) {
-			ready = followCameraPreview_.GetFrameBounds(scene, frameObject_,
-			                                            corners);
-		} else if (const auto *object = scene.FindObject(frameObject_)) {
+		if (const auto *object = scene.FindObject(frameObject_)) {
 			ready = request == FrameRequest::RESPAWN
 			            ? RespawnPreview::GetFrameBounds(scene, frameObject_,
 			                                             corners)

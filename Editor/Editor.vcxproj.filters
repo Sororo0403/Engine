@@ -620,12 +620,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\FollowCameraPreview.h">
-      <Filter>include\gameplay</Filter>
-    </ClInclude>
-    <ClCompile Include="src\gameplay\FollowCameraPreview.cpp">
-      <Filter>src\gameplay</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

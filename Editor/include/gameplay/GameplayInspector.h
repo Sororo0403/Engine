@@ -21,7 +21,7 @@ class GameplayInspector {
 	/// <summary>
 	/// 描画後に表示対象の追従設定へ適用する操作と経路の表示要求。追従対象はコピーしない
 	/// </summary>
-	enum class FollowAction { NONE, COPY, PASTE, FRAME_PATH };
+	enum class FollowAction { NONE, COPY, PASTE };
 
 	/// <summary>
 	/// 追従設定の操作と、Inspectorに表示している対象ID

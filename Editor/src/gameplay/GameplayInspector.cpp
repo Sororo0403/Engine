@@ -239,15 +239,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			    0.05f, object.followCamera->orbit.minimumDistance, 10000);
 		}
 
-		ui.BeginDisabled(!object.camera || !object.camera->IsValid() ||
-		                 !object.followCamera->IsValid() || !currentTarget ||
-		                 object.followCamera->target == id);
-		if (ui.Button("Frame Follow Path")) {
-			followRequest_ = {FollowAction::FRAME_PATH, id};
-		}
-
-		ui.EndDisabled();
-
 		ui.BeginDisabled(!object.followCamera->IsValid());
 
 		if (ui.Button("Copy Follow Settings")) {

@@ -23,7 +23,6 @@
 #include "dialogs/TextureImportDialog.h"
 #include "files/SceneRecovery.h"
 #include "gameplay/EditorPlayMode.h"
-#include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
 #include "gizmo/TransformGizmo.h"
 #include "graphics/camera/CameraSettings.h"
@@ -235,7 +234,6 @@ class EditorScene final : public IScene {
 		ALL,
 		RESPAWN,
 		COLLIDER,
-		FOLLOW_PATH,
 		INSPECTED,
 	};
 
@@ -1104,7 +1102,6 @@ class EditorScene final : public IScene {
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
 	CameraFrustum cameraFrustum_;
-	FollowCameraPreview followCameraPreview_;
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;
