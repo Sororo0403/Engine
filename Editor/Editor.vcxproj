@@ -360,8 +360,6 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\physics\ColliderPlacement.h" />
     <ClCompile Include="src\physics\ColliderPlacement.cpp" />
-    <ClInclude Include="include\physics\ColliderArrayPreview.h" />
-    <ClCompile Include="src\physics\ColliderArrayPreview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\ObjectFrameBounds.h" />
@@ -386,9 +384,6 @@ exit /b 0</Command>
     <ClCompile Include="src\assets\TextureUsage.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\history\ObjectArraySettings.h"></ClInclude>
-    <ClInclude Include="include\dialogs\ObjectArrayDialog.h"></ClInclude>
-    <ClCompile Include="src\dialogs\ObjectArrayDialog.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\panels\SceneCheckPanel.h"></ClInclude>

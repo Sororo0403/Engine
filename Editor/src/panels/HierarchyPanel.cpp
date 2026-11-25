@@ -506,10 +506,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::DUPLICATE_OBJECTS;
 				}
 
-				if (ui.MenuItem("Duplicate with Offset...", nullptr, true)) {
-					result.action = Action::DUPLICATE_ARRAY;
-				}
-
 				if (ui.MenuItem("Paste Colliders", nullptr,
 				                canPasteCollider &&
 				                    selection.GetCount() != 0)) {

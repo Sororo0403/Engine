@@ -642,12 +642,6 @@
     <ClCompile Include="src\physics\ColliderPlacement.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
-    <ClInclude Include="include\physics\ColliderArrayPreview.h">
-      <Filter>include\physics</Filter>
-    </ClInclude>
-    <ClCompile Include="src\physics\ColliderArrayPreview.cpp">
-      <Filter>src\physics</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\ObjectFrameBounds.h">
@@ -692,9 +686,6 @@
     <ClCompile Include="src\assets\TextureUsage.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\history\ObjectArraySettings.h"><Filter>include\history</Filter></ClInclude>
-    <ClInclude Include="include\dialogs\ObjectArrayDialog.h"><Filter>include\dialogs</Filter></ClInclude>
-    <ClCompile Include="src\dialogs\ObjectArrayDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\panels\SceneCheckPanel.h"><Filter>include\panels</Filter></ClInclude>

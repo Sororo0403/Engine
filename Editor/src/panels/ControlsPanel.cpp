@@ -349,34 +349,7 @@ void ControlsPanel::Draw() {
 	         "For three or more selected objects, space origins evenly in "
 	         "world coordinate order with both endpoints fixed. Other axes, "
 	         "rotation and scale stay unchanged."},
-	        {"Edit > Duplicate with Offset",
-	         "Repeat selected objects as a group in world coordinates. Copies "
-	         "counts additional groups; group 1 uses World Offset, group 2 "
-	         "uses twice that offset, and so on. Set Rows above one to repeat "
-	         "the "
-	         "line in another direction using Row Offset. Rows includes the "
-	         "first "
-	         "line. Copies can be zero for a single column. The original group "
-	         "stays in the first cell. "
-	         "Spacing +X/-X/+Y/-Y/+Z/-Z fits the selected Collider group's "
-	         "world-space width, including rotation, scale and hidden objects. "
-	         "While the dialog is open, cyan Scene outlines preview the "
-	         "combined Collider bounds of each copied group, using the current "
-	         "count and offset. Objects without Colliders are not outlined. "
-	         "Invalid drafts hide the outlines; they do not add scene objects "
-	         "or selectable models. Create and Cancel remove this preview. "
-	         "Minimum Gap fits the columns in the first row with a small "
-	         "clearance for rounding. The row offset is manual. Changing "
-	         "Copies refits the column spacing; editing World Offset "
-	         "switches back to manual spacing. The preview shows the "
-	         "positions of the copies, including any overlaps. "
-	         "Hidden objects and all components are copied; follow targets "
-	         "inside each group point to that group's copies. External targets "
-	         "and explicit Respawn positions stay unchanged. Existing Primary "
-	         "Cameras are kept. Up to 100 groups and 10000 new objects can be "
-	         "created in one Undo/Redo. New objects are selected and revealed "
-	         "in Hierarchy. Cancel changes nothing. The Hierarchy context menu "
-	         "has the same action."},
+
 	        {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	    });
 
@@ -1874,16 +1847,7 @@ void ControlsPanel::Draw() {
 	         "and do not change Camera components, Game rendering, game "
 	         "output, "
 	         "scene data or Undo history."},
-	        {"Duplicate with Offset > Frame Preview",
-	         "Fit the entire draft Collider outline into Scene without "
-	         "closing the dialog or creating objects. Array framing includes "
-	         "every copied group's Collider bounds, excluding originals and "
-	         "objects without Colliders. Current Scene view direction and "
-	         "aspect ratio are preserved. Selection, Inspector locks, scene "
-	         "and history stay unchanged. Invalid drafts or arrays without "
-	         "Colliders cannot be framed. If the current camera clipping "
-	         "range cannot contain the draft, the view stays unchanged. "
-	         "Cancel keeps the explicitly chosen camera view."},
+
 
 	        {"Inspector > Camera > Preview in Game",
 	         "Pin the stopped Game view to the inspected Camera without "

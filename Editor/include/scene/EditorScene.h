@@ -13,7 +13,6 @@
 #include "dialogs/GameExportResultDialog.h"
 #include "dialogs/GameSettingsDialog.h"
 #include "dialogs/ModelImportDialog.h"
-#include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/PrefabCreateDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneImportDialog.h"
@@ -174,7 +173,6 @@ class EditorScene final : public IScene {
 		CREATE_UI_IMAGE,
 		CREATE_UI_BUTTON,
 		DUPLICATE_OBJECTS,
-		DUPLICATE_ARRAY,
 		DELETE_OBJECTS,
 		FRAME_SELECTED,
 		FRAME_ALL,
@@ -255,7 +253,6 @@ class EditorScene final : public IScene {
 		COLLIDER,
 		FOLLOW_PATH,
 		INSPECTED,
-		DRAFT,
 	};
 
 	/// <summary>
@@ -308,7 +305,6 @@ class EditorScene final : public IScene {
 		CONFIRM_RELOAD,
 		CONFIRM_CONFLICT_RELOAD,
 		BATCH_RENAME,
-		OBJECT_ARRAY,
 		ERROR,
 		SAVE_SELECTION_FILE,
 		RECOVERY,
@@ -832,13 +828,6 @@ class EditorScene final : public IScene {
 	                  bool runtimeScene = false);
 
 	/// <summary>
-	/// 開いているBox作成・等間隔複製の下書き全体をSceneカメラへ収める。ダイアログは閉じない
-	/// </summary>
-	/// <param name="projection">Sceneビューの更新済み透視投影行列</param>
-	/// <returns>true:移動成功 false:未編集中・再生中・範囲なし・無効・描画範囲外。失敗時はカメラを保持する</returns>
-	bool FrameDraft(const DirectX::XMFLOAT4X4 &projection);
-
-	/// <summary>
 	/// 再生シーンを独立したSceneカメラで更新する。編集や再生入力には反映しない
 	/// </summary>
 	/// <param name="deltaTime">Sceneカメラの経過時間。Pause中もカメラ操作には使用する</param>
@@ -927,11 +916,6 @@ class EditorScene final : public IScene {
 	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く
 	/// </summary>
 	void StartBatchRename();
-
-	/// <summary>
-	/// 選択物体を等間隔で複製するダイアログを開始する
-	/// </summary>
-	void StartObjectArray();
 
 	/// <summary>
 	/// 選択物体の原点を、アクティブ物体の指定軸の座標へそろえる
@@ -1088,7 +1072,6 @@ class EditorScene final : public IScene {
 
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
-	ObjectArrayDialog objectArrayDialog_;
 	FileDialog fileDialog_;
 	FileDialog openSceneDialog_;
 	FileDialog projectDialog_;

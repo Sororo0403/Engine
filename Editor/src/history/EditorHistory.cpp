@@ -287,47 +287,6 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 }
 
 std::vector<SceneObjectId>
-EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
-                                       const ObjectArraySettings &settings) {
-	CommitEdit();
-
-	std::vector<SceneObjectId> roots, expanded;
-	if (!SceneHierarchy::GetSelectionRoots(scene_, objectIds, roots) ||
-	    !SceneHierarchy::ExpandSelection(scene_, objectIds, expanded) ||
-	    !settings.IsValid(expanded.size())) {
-		return {};
-	}
-
-	std::vector<SceneObject> copies;
-	const auto count = settings.GetCopyCount();
-	copies.reserve(expanded.size() * static_cast<std::size_t>(count));
-
-	for (int copy = 1; copy <= count; ++copy) {
-		Scene working;
-		working.ReplaceObjects(scene_.GetObjects());
-
-		for (const auto id : roots) {
-			SceneWorldTransform world;
-			if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
-				return {};
-			const auto moved = settings.GetPosition(world.GetPosition(), copy);
-			if (!SceneHierarchy::SetWorldPosition(working, id, moved))
-				return {};
-		}
-
-		for (const auto id : expanded) {
-			auto object = *working.FindObject(id);
-			object.name =
-			    std::format("{} Copy {}",
-			                object.name.empty() ? "Object" : object.name, copy);
-			copies.push_back(std::move(object));
-		}
-	}
-
-	return CreateObjectGroups(std::move(copies), expanded);
-}
-
-std::vector<SceneObjectId>
 EditorHistory::CreateObjects(std::vector<SceneObject> objects,
                              std::span<const SceneObjectId> sourceIds) {
 	CommitEdit();
@@ -336,33 +295,15 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 		return {};
 	}
 
-	return CreateObjectGroups(std::move(objects), sourceIds);
-}
-
-std::vector<SceneObjectId>
-EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
-                                  std::span<const SceneObjectId> sourceIds) {
-	CommitEdit();
-
 	if (objects.empty()) {
 		return {};
 	}
 
-	if (!sourceIds.empty() && objects.size() % sourceIds.size() != 0) {
-		return {};
-	}
-
-	const auto groupSize =
-	    sourceIds.empty() ? objects.size() : sourceIds.size();
-	std::vector<std::map<SceneObjectId, SceneObjectId>> remaps(objects.size() /
-	                                                           groupSize);
-
-	for (auto &remap : remaps) {
-		for (const auto id : sourceIds) {
-			if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)() ||
-			    !remap.emplace(id, 0).second) {
-				return {};
-			}
+	std::map<SceneObjectId, SceneObjectId> remap;
+	for (const auto id : sourceIds) {
+		if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)() ||
+		    !remap.emplace(id, 0).second) {
+			return {};
 		}
 	}
 
@@ -415,7 +356,7 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 	const std::uint64_t next = PrepareAppend();
 
 	const bool created = scene_.ApplyTransaction([&objects, &createdIds,
-	                                              &commands, &remaps, groupSize,
+	                                              &commands, &remap,
 	                                              sourceIds](Scene &working) {
 		// 全IDが決まってから参照を解決し、入力順に依存しないようにする。
 		for (std::size_t i = 0; i < objects.size(); ++i) {
@@ -425,13 +366,12 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 			createdIds.push_back(id);
 
 			if (!sourceIds.empty()) {
-				remaps[i / groupSize].at(sourceIds[i % groupSize]) = id;
+				remap.at(sourceIds[i]) = id;
 			}
 		}
 
 		for (std::size_t i = 0; i < objects.size(); ++i) {
 			auto &object = objects[i];
-			auto &remap = remaps[i / groupSize];
 
 			if (const auto found = remap.find(object.parentId);
 			    found != remap.end()) {

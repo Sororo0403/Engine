@@ -31,7 +31,6 @@
 #include "math/MathUtils.h"
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
-#include "physics/ColliderArrayPreview.h"
 #include "physics/ColliderPlacement.h"
 #include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
@@ -1136,9 +1135,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::PASTE_RESPAWN_SETTINGS:
 					PasteRespawnSettingsToSelection();
 					break;
-				case HierarchyPanel::Action::DUPLICATE_ARRAY:
-					StartObjectArray();
-					break;
 				case HierarchyPanel::Action::DUPLICATE_OBJECTS:
 					DuplicateSelectedObjects();
 					break;
@@ -1677,16 +1673,6 @@ bool EditorScene::Update(float deltaTime) {
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
 			return false;
 		}
-	}
-
-	if (stage_ == DialogStage::OBJECT_ARRAY &&
-	    objectArrayDialog_.CanPreview() &&
-	    !ColliderArrayPreview{}.Update(renderer_, scene,
-	                                   objectArrayDialog_.GetSourceIds(),
-	                                   objectArrayDialog_.GetSettings())) {
-		Logger::Error(
-		    "EditorScene: 等間隔複製の下書きを表示できませんでした。");
-		return false;
 	}
 
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
@@ -2232,10 +2218,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECTS;
-		}
-
-		if (ui_.MenuItem("Duplicate with Offset...", nullptr, objectEnabled)) {
-			action = EditorAction::DUPLICATE_ARRAY;
 		}
 
 		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
@@ -3365,10 +3347,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 	case EditorAction::PASTE_COLLIDERS:
 		PasteCollidersToSelection();
-		return;
-
-	case EditorAction::DUPLICATE_ARRAY:
-		StartObjectArray();
 		return;
 
 	case EditorAction::DUPLICATE_OBJECTS:
@@ -5744,48 +5722,6 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::OBJECT_ARRAY: {
-		const auto result = objectArrayDialog_.Draw(ui_, document_.GetScene());
-
-		if (result == ObjectArrayResult::FRAME_PREVIEW) {
-			frameRequest_ = FrameRequest::DRAFT;
-			return;
-		}
-
-		if (result == ObjectArrayResult::NONE) {
-			return;
-		}
-
-		if (frameRequest_ == FrameRequest::DRAFT) {
-			frameRequest_ = FrameRequest::NONE;
-		}
-
-		stage_ = DialogStage::IDLE;
-
-		if (result == ObjectArrayResult::ACCEPTED) {
-			try {
-				auto ids = document_.GetHistory().DuplicateObjectsInArray(
-				    objectArrayDialog_.GetSourceIds(),
-				    objectArrayDialog_.GetSettings());
-
-				if (ids.empty()) {
-					ShowError("Could not create the offset copies. Check the "
-					          "targets and coordinates.");
-				} else {
-					selection_.Set(std::move(ids));
-					hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-				}
-			} catch (const std::exception &error) {
-				Logger::Error(
-				    std::format("EditorScene::ObjectArray: {}", error.what()));
-				ShowError("Could not create the offset copies. See the log for "
-				          "details.");
-			}
-		}
-
-		return;
-	}
-
 	case DialogStage::BATCH_RENAME: {
 		const auto result = batchRenameDialog_.Draw(ui_);
 
@@ -8155,60 +8091,6 @@ EditorScene::ReadFrameShortcut(const ViewportInput &viewport,
 	                                   : FrameRequest::SELECTED;
 }
 
-bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
-	if (playMode_.IsPlaying()) {
-		return false;
-	}
-
-	try {
-		std::vector<AxisAlignedBox> bounds;
-
-		if (stage_ == DialogStage::OBJECT_ARRAY &&
-		           objectArrayDialog_.CanPreview()) {
-			if (!ColliderArrayPreview{}.BuildBounds(
-			        document_.GetScene(), objectArrayDialog_.GetSourceIds(),
-			        objectArrayDialog_.GetSettings(), bounds)) {
-				return false;
-			}
-		}
-
-		if (bounds.empty()) {
-			return false;
-		}
-
-		auto combined = bounds.front();
-
-		for (const auto &box : bounds) {
-			combined.minimum = {(std::min)(combined.minimum.x, box.minimum.x),
-			                    (std::min)(combined.minimum.y, box.minimum.y),
-			                    (std::min)(combined.minimum.z, box.minimum.z)};
-			combined.maximum = {(std::max)(combined.maximum.x, box.maximum.x),
-			                    (std::max)(combined.maximum.y, box.maximum.y),
-			                    (std::max)(combined.maximum.z, box.maximum.z)};
-		}
-
-		std::array<DirectX::XMFLOAT3, 8> corners;
-
-		for (std::size_t i = 0; i < corners.size(); ++i) {
-			corners[i] = {(i & 1) ? combined.maximum.x : combined.minimum.x,
-			              (i & 2) ? combined.maximum.y : combined.minimum.y,
-			              (i & 4) ? combined.maximum.z : combined.minimum.z};
-		}
-
-		if (cameraController_.FrameBounds(corners, projection)) {
-			return true;
-		}
-
-		Logger::Warning(
-		    "EditorScene: 下書き全体を現在の描画範囲に収められませんでした。");
-	} catch (const std::exception &error) {
-		Logger::Warning(
-		    std::format("EditorScene::FrameDraft: {}", error.what()));
-	}
-
-	return false;
-}
-
 void EditorScene::ShowSceneView() {
 	playMode_.RestoreLayout();
 	windowFocusRequest_ = "Scene";
@@ -8220,10 +8102,6 @@ bool EditorScene::FrameObjects(FrameRequest request,
                                bool runtimeScene) {
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
-
-	if (request == FrameRequest::DRAFT) {
-		return !runtimeScene && FrameDraft(projection);
-	}
 
 	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||
 	    request == FrameRequest::FOLLOW_PATH) {
@@ -9033,31 +8911,6 @@ bool EditorScene::HasSelection() const {
 bool EditorScene::HasSingleSelection() const {
 	return selection_.GetCount() == 1 &&
 	       document_.GetScene().Contains(selection_.GetActiveId());
-}
-
-void EditorScene::StartObjectArray() {
-	if (IsBusy() || !HasSelection()) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!objectArrayDialog_.Show(document_.GetScene(),
-		                             selection_.GetIds())) {
-			ShowError("Could not prepare the selected objects for offset "
-			          "duplication.");
-			return;
-		}
-
-		stage_ = DialogStage::OBJECT_ARRAY;
-		ShowSceneView();
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::StartObjectArray: {}", error.what()));
-		ShowError(
-		    "Could not prepare offset duplication. See the log for details.");
-	}
 }
 
 void EditorScene::PasteCollidersToSelection() {
