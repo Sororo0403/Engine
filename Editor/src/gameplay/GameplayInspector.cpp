@@ -377,8 +377,15 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		auto edited = *object.respawn;
+		int axis = static_cast<int>(edited.axis);
+		if (ImGui::Combo("Fall Axis", &axis, "X\0Y\0Z\0")) {
+			edited.axis = static_cast<RespawnSettings::Axis>(axis);
+			changed |= history.SetRespawn(id, edited);
+		}
+		if (ImGui::Checkbox("Respawn Above Boundary", &edited.whenAbove))
+			changed |= history.SetRespawn(id, edited);
 		bool value =
-		    ImGui::DragFloat("Fall Below Y", &edited.minimumY, 0.1f, -100000,
+		    ImGui::DragFloat("Fall Boundary", &edited.threshold, 0.1f, -100000,
 		                     100000, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 		changed |= ApplyField(history, id, object.respawn, edited, value,
 		                      &EditorHistory::BeginRespawn);

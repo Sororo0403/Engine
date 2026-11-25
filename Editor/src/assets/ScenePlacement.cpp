@@ -178,7 +178,7 @@ bool ScenePlacement::Place(Scene &objects, const Scene &target, const Ray &ray,
 
 			if (object->respawn) {
 				auto &respawn = *object->respawn;
-				respawn.minimumY += delta.y;
+				respawn.threshold += respawn.Coordinate(delta);
 				respawn.position = {respawn.position.x + delta.x,
 				                    respawn.position.y + delta.y,
 				                    respawn.position.z + delta.z};

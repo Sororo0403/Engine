@@ -1291,7 +1291,10 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	if (object->respawn && ui.CollapsingHeader("Respawn")) {
 		auto settings = *object->respawn;
 		ui.BeginDisabled(true);
-		ImGui::DragFloat("Fall Below Y", &settings.minimumY);
+		int axis = static_cast<int>(settings.axis);
+		ImGui::Combo("Fall Axis", &axis, "X\0Y\0Z\0");
+		ui.Checkbox("Respawn Above Boundary", settings.whenAbove);
+		ImGui::DragFloat("Fall Boundary", &settings.threshold);
 		ui.Checkbox("Use Start Position", settings.useStartPosition);
 
 		if (!settings.useStartPosition) {

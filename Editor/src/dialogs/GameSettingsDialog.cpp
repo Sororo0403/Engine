@@ -23,6 +23,9 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	focusInputAction_ = !inputAction_.empty();
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gamepadEnabled_ = config.gamepadEnabled;
+	fullscreen_ = config.fullscreen;
+	verticalSync_ = config.verticalSync;
+	frameTimeLimit_ = config.frameTimeLimit;
 	lighting_ = config.lighting;
 	settingsId_ = config.settingsId;
 	persistentScriptKeys_ = config.persistentScriptKeys;
@@ -93,6 +96,17 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
+	ImGui::Checkbox("Borderless Fullscreen", &fullscreen_);
+	ImGui::Checkbox("Vertical Sync", &verticalSync_);
+	bool synchronizedTime = frameTimeLimit_ > 0.0f;
+	if (ImGui::Checkbox("Limit Simulation Frame Time", &synchronizedTime))
+		frameTimeLimit_ = synchronizedTime ? GameConfig::kMaximumFrameTimeLimit : 0.0f;
+	if (synchronizedTime) {
+		float milliseconds = frameTimeLimit_ * 1000.0f;
+		if (ImGui::SliderFloat("Maximum Frame Time (ms)", &milliseconds, 1.0f, 100.0f,
+		                       "%.1f", ImGuiSliderFlags_AlwaysClamp))
+			frameTimeLimit_ = milliseconds / 1000.0f;
+	}
 
 	ImGui::Checkbox("Camera Relative Movement", &cameraRelativeMovement_);
 
@@ -187,6 +201,9 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 			gamepadButton(buttonLabel.c_str(), input_.ui.buttons[i]);
 		}
 		key("UI Cycle Focus", input_.ui.next);
+		int reverse = static_cast<int>(input_.ui.reverseModifier);
+		if (ImGui::Combo("UI Reverse Focus Modifier", &reverse, "None\0Shift\0Ctrl\0Alt\0"))
+			input_.ui.reverseModifier = static_cast<GameInputBindings::UI::ReverseModifier>(reverse);
 		key("UI Alternate Submit", input_.ui.alternateSubmit);
 		mouseButton("UI Pointer Button", input_.ui.pointer);
 		ImGui::Checkbox("UI Captures Gameplay Input", &input_.ui.capturesGameplay);
@@ -435,6 +452,9 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	actions_ = loaded.actions;
 	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
 	gamepadEnabled_ = loaded.gamepadEnabled;
+	fullscreen_ = loaded.fullscreen;
+	verticalSync_ = loaded.verticalSync;
+	frameTimeLimit_ = loaded.frameTimeLimit;
 	lighting_ = loaded.lighting;
 	settingsId_ = std::move(loaded.settingsId);
 	persistentScriptKeys_ = std::move(loaded.persistentScriptKeys);
@@ -450,6 +470,9 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.actions = actions_;
 	value.cameraRelativeMovement = cameraRelativeMovement_;
 	value.gamepadEnabled = gamepadEnabled_;
+	value.fullscreen = fullscreen_;
+	value.verticalSync = verticalSync_;
+	value.frameTimeLimit = frameTimeLimit_;
 	value.lighting = lighting_;
 	value.settingsId = settingsId_;
 	value.persistentScriptKeys = persistentScriptKeys_;

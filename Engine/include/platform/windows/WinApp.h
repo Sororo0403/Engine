@@ -13,7 +13,7 @@ class WinApp {
 	/// <param name="height">ウィンドウの高さ</param>
 	/// <returns>true:初期化成功 false:初期化失敗</returns>
 	bool Initialize(HINSTANCE hInstance, const std::wstring &title, int width,
-	                int height);
+	                int height, bool fullscreen = false);
 
 	/// <summary>
 	/// Windowsメッセージを処理する

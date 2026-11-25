@@ -283,9 +283,9 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			auto settings = *object->respawn;
 			settings.useStartPosition = false;
 			settings.position = {numbers[0], numbers[1], numbers[2]};
-			if (!settings.IsValid() || settings.position.y <= settings.minimumY)
+			if (!settings.IsValid() || !settings.IsSafe(settings.position))
 				throw std::runtime_error("Checkpoint must be a valid world "
-				                         "position above Fall Below Y.");
+				                         "position on the safe side of the respawn boundary.");
 			object->respawn = settings;
 			break;
 		}

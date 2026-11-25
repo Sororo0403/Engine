@@ -423,12 +423,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			}
 
 			if ((resolveInitialPose &&
-			     transforms.at(id).GetPosition().y <= settings.minimumY) ||
-			    recovery._42 <= settings.minimumY ||
+			     !settings.IsSafe(transforms.at(id).GetPosition())) ||
+			    !settings.IsSafe({recovery._41, recovery._42, recovery._43}) ||
 			    !controller.Initialize(recovery, *object.collider,
 			                           *object.character, world)) {
-				add(id, "The character and its respawn point must be above "
-				        "Fall Below Y and outside solid colliders.");
+				add(id, "The character and its respawn point must be on the safe side of "
+				        "the respawn boundary and outside solid colliders.");
 			}
 		}
 	}

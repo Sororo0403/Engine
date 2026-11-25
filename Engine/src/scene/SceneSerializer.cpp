@@ -933,7 +933,10 @@ bool SerializeScene(const Scene &scene, std::string &text,
 			if (object.respawn) {
 				const auto &v = *object.respawn;
 				objects.back()["respawn"] = {
-				    {"minimumY", v.minimumY},
+				    {"threshold", v.threshold},
+				    {"axis", v.axis == RespawnSettings::Axis::X ? "X"
+				        : v.axis == RespawnSettings::Axis::Z ? "Z" : "Y"},
+				    {"whenAbove", v.whenAbove},
 				    {"useStartPosition", v.useStartPosition},
 				    {"position", ToJson(v.position)}};
 			}
@@ -1922,14 +1925,25 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 			if (version >= 5 && item.contains("respawn")) {
 				const auto &v = item.at("respawn");
 
-				if (!v.at("minimumY").is_number()) {
+				const auto &threshold = v.at(version >= 88 ? "threshold" : "minimumY");
+				if (!threshold.is_number()) {
 					throw std::runtime_error("落下高度には数値が必要です。");
 				}
 
 				object.respawn =
-				    RespawnSettings{v.at("minimumY").get<float>(),
+				    RespawnSettings{threshold.get<float>(),
 				                    v.at("useStartPosition").get<bool>(),
 				                    ReadFloat3(v.at("position"))};
+				if (version >= 88) {
+					const auto axis = v.at("axis").get<std::string>();
+					if (axis == "X")
+						object.respawn->axis = RespawnSettings::Axis::X;
+					else if (axis == "Z")
+						object.respawn->axis = RespawnSettings::Axis::Z;
+					else if (axis != "Y")
+						throw std::runtime_error("Invalid respawn axis.");
+					object.respawn->whenAbove = v.at("whenAbove").get<bool>();
+				}
 			}
 
 			if ((object.camera && !object.camera->IsValid()) ||

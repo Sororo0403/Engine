@@ -22,7 +22,7 @@ class Window {
 	/// <param name="height">ウィンドウの高さ</param>
 	/// <returns>true:生成成功 false:生成失敗</returns>
 	bool Create(HINSTANCE hInstance, const std::wstring &title, int width,
-	            int height);
+	            int height, bool fullscreen = false);
 
 	/// <summary>
 	/// ウィンドウを廃棄する

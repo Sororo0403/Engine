@@ -15,6 +15,8 @@ struct EngineConfig {
 
 	// 内蔵GPUなど、消費電力の少ないGPUを優先する
 	bool preferLowPowerGpu = false;
+	bool fullscreen = false;
+	bool verticalSync = true;
 
 	// Windows のシェルダイアログを使う UI スレッドで有効にする。
 	bool useSingleThreadedCom = false;

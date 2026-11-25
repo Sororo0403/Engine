@@ -1084,7 +1084,7 @@ void ControlsPanel::Draw() {
 	         "destination object. The action runs when that character enters, "
 	         "exits or interacts with the Trigger, depending on Event. Falling "
 	         "later returns the character to the destination's position at "
-	         "activation. Place it above Fall Below Y and clear of solids. "
+	         "activation. Place it on the safe side of the Fall Boundary and clear of solids. "
 	         "Restart restores the authored Respawn settings."},
 	        {"Trigger Actions > Teleport",
 	         "Choose Teleport, set Target to the object to move and "
@@ -1506,7 +1506,7 @@ void ControlsPanel::Draw() {
 	         "without changing the scene, selection, Inspector lock or Undo "
 	         "history. The inspected object is used even when Inspector is "
 	         "locked. Invalid or missing colliders frame the position marker; "
-	         "blocked positions can still be inspected. Fall Below Y is not "
+	         "blocked positions can still be inspected. Fall Boundary is not "
 	         "included in the view bounds. The command also works with "
 	         "Respawn Guides hidden and opens the Scene tab if necessary."},
 	        {"Inspector > Respawn > Select Blocking Colliders",
@@ -1522,12 +1522,12 @@ void ControlsPanel::Draw() {
 	        {"Selected Respawn in Scene",
 	         "The cross marks the recovery position and the wire box shows "
 	         "the character's collider there, including rotation and scale. "
-	         "Cyan means the recovery position is above Fall Below Y, has "
+	         "Cyan means the recovery position is on the safe side of the Fall Boundary, has "
 	         "valid Character Controller settings and is clear of solid "
 	         "colliders; red means it cannot be used. Hidden colliders count "
 	         "and the character's own collider is ignored. Face contact is "
 	         "allowed. Invalid shapes show only the red position marker. "
-	         "The orange plane marks Fall Below Y across the whole scene, "
+	         "The orange plane marks Fall Boundary across the whole scene, "
 	         "not only inside the square. These guides check the recovery "
 	         "position, not every condition required for Play."},
 	        {"Selected Follow Camera in Scene",
@@ -1591,7 +1591,7 @@ void ControlsPanel::Draw() {
 	         "Collider and Respawn "
 	         "settings stay unchanged. A locked Inspector moves its displayed "
 	         "object. Use Start Position must be off, and the destination must "
-	         "be above Fall Below Y with valid Character and Collider settings "
+	         "be on the safe side of the Fall Boundary with valid Character and Collider settings "
 	         "and no blocking Collider. The travel path is not checked. "
 	         "Pending edits finish first. Already being at the destination "
 	         "adds no history. Available while editing only."},
@@ -2193,7 +2193,7 @@ void ControlsPanel::Draw() {
 	         "does not click. Child labels forward hits to the nearest Button. "
 	         "A Text/Image with Raycast Target blocks UI behind it; clearing "
 	         "that flag lets hits pass through. Buttons always use their own "
-	         "rectangle for hits. Tab/Shift+Tab cycle buttons; arrows or "
+	         "rectangle for hits. Tab/Shift+Tab cycle buttons by default; arrows or "
 	         "gamepad D-pad select by direction, and Enter/Space or the south "
 	         "gamepad button activates the selection once per press by default. Use "
 	         "Game Settings > Game UI Input to change bindings and input capture. Click "
@@ -2510,7 +2510,7 @@ void ControlsPanel::Draw() {
 	        {"Lua > Set Checkpoint",
 	         "character:set_checkpoint(x,y,z) updates the fall recovery "
 	         "position of an active Character Controller with Respawn. Call "
-	         "it in a callback. The destination must be above Fall Below Y "
+	         "it in a callback. The destination must be on the safe side of the Fall Boundary "
 	         "and clear of solids after the callback changes are applied. "
 	         "The current position and velocity are preserved. Restart "
 	         "starts from the authored Respawn settings."},

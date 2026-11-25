@@ -61,7 +61,7 @@ bool PrefabAsset::Capture(const Scene &source, SceneObjectId root,
 			(void)value;
 
 			if (auto &respawn = candidate.FindObject(id)->respawn; respawn) {
-				respawn->minimumY -= origin.y;
+				respawn->threshold -= respawn->Coordinate(origin);
 				respawn->position = {respawn->position.x - origin.x,
 				                     respawn->position.y - origin.y,
 				                     respawn->position.z - origin.z};

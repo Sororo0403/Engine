@@ -42,10 +42,13 @@ UIInput UIInputReader::Read(const Keyboard &keyboard, const Mouse *mouse,
 		return (key && keyboard.IsPressed(*key)) ||
 		       (gamepad && button && gamepad->IsPressed(*button));
 	};
-	const bool shift = keyboard.IsDown(Key::SHIFT);
+	constexpr std::array reverseKeys{Key::UNKNOWN, Key::SHIFT, Key::CTRL, Key::ALT};
+	const auto modifier = static_cast<std::size_t>(bindings.reverseModifier);
+	const bool reverse = modifier > 0 && modifier < reverseKeys.size() &&
+	                     keyboard.IsDown(reverseKeys[modifier]);
 	const bool cycle = bindings.next && keyboard.IsPressed(*bindings.next);
-	result.next = cycle && !shift;
-	result.previous = cycle && shift;
+	result.next = cycle && !reverse;
+	result.previous = cycle && reverse;
 	result.horizontal = int(pressed(UI::RIGHT)) - int(pressed(UI::LEFT));
 	result.vertical = int(pressed(UI::DOWN)) - int(pressed(UI::UP));
 	const auto primary = bindings.keys[UI::SUBMIT];

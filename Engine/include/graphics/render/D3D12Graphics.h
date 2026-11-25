@@ -24,7 +24,7 @@ class D3D12Graphics {
 	/// <param name="preferLowPowerGpu">消費電力の少ないGPUを優先するか</param>
 	/// <returns>true:初期化成功 false:初期化失敗</returns>
 	bool Initialize(HWND hwnd, int width, int height,
-	                bool preferLowPowerGpu = false);
+	                bool preferLowPowerGpu = false, bool verticalSync = true);
 
 	/// <summary>
 	/// フレームの記録を開始し、指定した色で画面をクリアする
@@ -173,6 +173,8 @@ class D3D12Graphics {
 	bool CreateDepthBuffer(int width, int height);
 
   private:
+	bool verticalSync_ = true;
+	UINT swapChainFlags_ = 0;
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
 	ConstantBufferPool constantBuffers_;

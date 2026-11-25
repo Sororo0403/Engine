@@ -7,7 +7,7 @@
 #include <format>
 
 bool D3D12Graphics::Initialize(HWND hwnd, int width, int height,
-                               bool preferLowPowerGpu) {
+                               bool preferLowPowerGpu, bool verticalSync) {
 	if (!hwnd || width <= 0 || height <= 0 || factory_ || device_ ||
 	    commandQueue_ || swapChain_) {
 		Logger::Error(
@@ -17,6 +17,7 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height,
 		return false;
 	}
 
+	verticalSync_ = verticalSync;
 	EnableDebugLayer();
 
 	if (!CreateFactory() || !CreateDevice(preferLowPowerGpu) ||
@@ -111,7 +112,8 @@ bool D3D12Graphics::EndFrame() {
 	commandQueue_->ExecuteCommandLists(1, lists);
 
 	// 描画した画像を表示する
-	const HRESULT presentResult = swapChain_->Present(1, 0);
+	const HRESULT presentResult = swapChain_->Present(
+	    verticalSync_ ? 1 : 0, swapChainFlags_ ? DXGI_PRESENT_ALLOW_TEARING : 0);
 
 	if (FAILED(presentResult)) {
 		Logger::Error(std::format(
@@ -155,7 +157,7 @@ bool D3D12Graphics::Resize(int width, int height) {
 
 	HRESULT hr = swapChain_->ResizeBuffers(
 	    kBufferCount, static_cast<UINT>(width), static_cast<UINT>(height),
-	    DXGI_FORMAT_UNKNOWN, 0);
+	    DXGI_FORMAT_UNKNOWN, swapChainFlags_);
 
 	if (FAILED(hr)) {
 		Logger::Error(
@@ -336,7 +338,13 @@ bool D3D12Graphics::CreateCommandQueue() {
 }
 
 bool D3D12Graphics::CreateSwapChain(HWND hwnd, int width, int height) {
+	BOOL allowTearing = FALSE;
+	swapChainFlags_ = !verticalSync_ &&
+	    SUCCEEDED(factory_->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING,
+	                                            &allowTearing, sizeof(allowTearing))) &&
+	    allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 	DXGI_SWAP_CHAIN_DESC1 desc{};
+	desc.Flags = swapChainFlags_;
 	desc.Width = static_cast<UINT>(width);
 	desc.Height = static_cast<UINT>(height);
 	desc.Format = GetRenderTargetFormat();

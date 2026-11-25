@@ -1,4 +1,5 @@
 #include "gameplay/EditorPlaySession.h"
+#include "gameplay/GameConfig.h"
 #include "gameplay/SceneScripts.h"
 #include "gameplay/SceneValidation.h"
 #include "scene/SceneActivity.h"
@@ -182,7 +183,8 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
                                const UIInput &uiInput,
                                std::span<const GameActionState> actions,
                                SceneObjectId *invalidObject,
-                               std::optional<std::span<const GameActionBinding>> destinationBindings) {
+                               std::optional<std::span<const GameActionBinding>> destinationBindings,
+                               float frameTimeLimit) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -209,15 +211,16 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	const auto revision = simulation_.GetSceneRevision();
 	const bool gamePaused = simulation_.IsGamePaused();
 
-	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions,
+	const float elapsed = GameConfig::LimitFrameTime(*time, frameTimeLimit);
+	if (!simulation_.Update(elapsed, input, cameraInput, uiInput, actions,
 	                        invalidObject, destinationBindings)) {
 		return false;
 	}
 
 	if (simulation_.GetSceneRevision() != revision)
 		triggerRecordCount_ = 0;
-	if (*time > 0.0f && !gamePaused) {
-		elapsedSeconds_ += static_cast<double>(*time);
+	if (elapsed > 0.0f && !gamePaused) {
+		elapsedSeconds_ += static_cast<double>(elapsed);
 		++simulationFrameCount_;
 		RememberTriggerEvents();
 	}

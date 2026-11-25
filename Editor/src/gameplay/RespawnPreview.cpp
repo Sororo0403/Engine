@@ -66,7 +66,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 
 		if (SceneActivity::IsActive(scene, id) && object->character &&
 		    object->character->IsValid() && !object->collider->isTrigger &&
-		    result.markers[3].start.y > settings.minimumY) {
+		    settings.IsSafe(result.markers[3].start)) {
 			CollisionWorld world;
 			std::vector<SceneObjectId> ignored;
 			result.canRespawn =
@@ -128,17 +128,24 @@ bool RespawnPreview::BuildLines(const RespawnSettings &settings,
 		return false;
 	}
 
-	const DirectX::XMFLOAT3 below{position.x, settings.minimumY, position.z};
-	const std::array<DirectX::XMFLOAT3, 4> corners{{
-	    {position.x - kFallPlaneHalfExtent, settings.minimumY,
-	     position.z - kFallPlaneHalfExtent},
-	    {position.x + kFallPlaneHalfExtent, settings.minimumY,
-	     position.z - kFallPlaneHalfExtent},
-	    {position.x + kFallPlaneHalfExtent, settings.minimumY,
-	     position.z + kFallPlaneHalfExtent},
-	    {position.x - kFallPlaneHalfExtent, settings.minimumY,
-	     position.z + kFallPlaneHalfExtent},
-	}};
+	const auto boundary = settings.OnBoundary(position);
+	const auto corner = [&](float u, float v) {
+		auto point = boundary;
+		if (settings.axis == RespawnSettings::Axis::X) {
+			point.y += u;
+			point.z += v;
+		} else if (settings.axis == RespawnSettings::Axis::Z) {
+			point.x += u;
+			point.y += v;
+		} else {
+			point.x += u;
+			point.z += v;
+		}
+		return point;
+	};
+	const float extent = kFallPlaneHalfExtent;
+	const std::array corners{corner(-extent, -extent), corner(extent, -extent),
+	                         corner(extent, extent), corner(-extent, extent)};
 	Lines result{};
 	result[0] = {{position.x - kMarkerRadius, position.y, position.z},
 	             {position.x + kMarkerRadius, position.y, position.z},
@@ -149,7 +156,7 @@ bool RespawnPreview::BuildLines(const RespawnSettings &settings,
 	result[2] = {{position.x, position.y, position.z - kMarkerRadius},
 	             {position.x, position.y, position.z + kMarkerRadius},
 	             positionColor_};
-	result[3] = {position, below, positionColor_};
+	result[3] = {position, boundary, positionColor_};
 
 	for (std::size_t i = 0; i < corners.size(); ++i) {
 		result[4 + i] = {corners[i], corners[(i + 1) % corners.size()],

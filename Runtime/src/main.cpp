@@ -91,6 +91,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	config.windowTitle = StringConversion::Utf8ToWide(game.title);
 	config.windowWidth = game.width;
 	config.windowHeight = game.height;
+	config.fullscreen = game.fullscreen;
+	config.verticalSync = game.verticalSync;
 	config.enableUI = false;
 	config.preferLowPowerGpu = arguments == "--low-power-gpu";
 	const auto result = Engine::Run(config, CreateScene);

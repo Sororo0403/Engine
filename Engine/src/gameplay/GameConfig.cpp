@@ -1,4 +1,5 @@
 #include "gameplay/GameConfig.h"
+#include <cmath>
 #include "graphics/camera/Camera.h"
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
@@ -140,12 +141,21 @@ bool GameConfig::HasValidWindowTitle() const {
 	       !StringConversion::Utf8ToWide(title).empty();
 }
 
+bool GameConfig::IsValidFrameTimeLimit(float limit) {
+	return limit == 0.0f || (std::isfinite(limit) &&
+	       limit >= kMinimumFrameTimeLimit && limit <= kMaximumFrameTimeLimit);
+}
+
+float GameConfig::LimitFrameTime(float seconds, float limit) {
+	return limit > 0.0f ? (std::min)(seconds, limit) : seconds;
+}
+
 bool GameConfig::IsValidWindowDimension(int value) {
 	return value >= 1 && value <= 8192;
 }
 
 bool GameConfig::HasValidStartupSettings() const {
-	if (!lighting.IsValid() || !input.IsValid() ||
+	if (!lighting.IsValid() || !input.IsValid() || !IsValidFrameTimeLimit(frameTimeLimit) ||
 	    !GameActionBinding::IsValid(actions) || scenePath.empty() ||
 	    scenePath.has_root_path() ||
 	    scenePath.native().find(L'\0') != std::wstring::npos ||
@@ -221,7 +231,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		inputJson["ui"] = {
 		    {"keys", std::move(uiKeys)}, {"buttons", std::move(uiButtons)},
 		    {"next", uiKey(input.ui.next)}, {"alternateSubmit", uiKey(input.ui.alternateSubmit)},
-		    {"pointer", mouseButton(input.ui.pointer)}, {"capturesGameplay", input.ui.capturesGameplay}};
+		    {"pointer", mouseButton(input.ui.pointer)}, {"capturesGameplay", input.ui.capturesGameplay},
+		    {"reverseModifier", GameInputBindings::UI::kReverseNames[static_cast<std::size_t>(input.ui.reverseModifier)]}};
 
 		auto actionsJson = nlohmann::json::array();
 
@@ -256,6 +267,9 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		    {"format", "EngineGame"},
 		    {"version", kCurrentVersion},
 		    {"gamepadEnabled", gamepadEnabled},
+		    {"fullscreen", fullscreen},
+		    {"verticalSync", verticalSync},
+		    {"frameTimeLimit", frameTimeLimit},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"actions", actionsJson},
@@ -354,6 +368,9 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		candidate.title = data.at("title").get<std::string>();
 		candidate.width = data.at("width").get<int>();
 		candidate.height = data.at("height").get<int>();
+		candidate.fullscreen = data.value("fullscreen", false);
+		candidate.verticalSync = data.value("verticalSync", true);
+		candidate.frameTimeLimit = data.value("frameTimeLimit", 0.0f);
 		candidate.scenePath =
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
 		if (data.at("version") >= 2) {
@@ -449,6 +466,12 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				ui.alternateSubmit = readKey(settings.at("alternateSubmit"));
 				ui.pointer = readMouse(settings.at("pointer"));
 				ui.capturesGameplay = settings.at("capturesGameplay").get<bool>();
+				const auto name = settings.value("reverseModifier", std::string{"Shift"});
+				const auto &names = GameInputBindings::UI::kReverseNames;
+				const auto entry = std::ranges::find(names, name);
+				if (entry == names.end())
+					throw std::runtime_error("Unsupported UI reverse focus modifier.");
+				ui.reverseModifier = static_cast<GameInputBindings::UI::ReverseModifier>(entry - names.begin());
 			}
 		}
 

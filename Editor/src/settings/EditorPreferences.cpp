@@ -932,6 +932,11 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			    settings.value("cameraRelativeMovement", false);
 			loaded.gameExport.gamepadEnabled =
 			    settings.value("gamepadEnabled", true);
+			loaded.gameExport.fullscreen = settings.value("fullscreen", false);
+			loaded.gameExport.verticalSync = settings.value("verticalSync", true);
+			loaded.gameExport.frameTimeLimit = settings.value("frameTimeLimit", 0.0f);
+			if (!GameConfig::IsValidFrameTimeLimit(loaded.gameExport.frameTimeLimit))
+				throw std::runtime_error("Invalid simulation frame time limit.");
 
 			if (settings.contains("input")) {
 				loaded.gameExport.input.arrowMovement =
@@ -1233,6 +1238,9 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"height", gameExport.height},
 		      {"input", inputJson},
 		      {"gamepadEnabled", gameExport.gamepadEnabled},
+		      {"fullscreen", gameExport.fullscreen},
+		      {"verticalSync", gameExport.verticalSync},
+		      {"frameTimeLimit", gameExport.frameTimeLimit},
 		      {"cameraRelativeMovement", gameExport.cameraRelativeMovement}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
@@ -1320,6 +1328,9 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.actions == other.gameExport.actions &&
 	       gameExport.lighting == other.gameExport.lighting &&
 	       gameExport.gamepadEnabled == other.gameExport.gamepadEnabled &&
+	       gameExport.fullscreen == other.gameExport.fullscreen &&
+	       gameExport.verticalSync == other.gameExport.verticalSync &&
+	       gameExport.frameTimeLimit == other.gameExport.frameTimeLimit &&
 	       gameExport.cameraRelativeMovement ==
 	           other.gameExport.cameraRelativeMovement &&
 	       showGrid == other.showGrid &&

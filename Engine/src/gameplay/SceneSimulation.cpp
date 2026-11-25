@@ -508,11 +508,11 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				if (!settings.useStartPosition)
 					spawn = settings.position;
 				auto placement = controller;
-				if (spawn.y <= settings.minimumY ||
-				    (!continuing && transform.GetPosition().y <= settings.minimumY) ||
+				if (!settings.IsSafe(spawn) ||
+				    (!continuing && !settings.IsSafe(transform.GetPosition())) ||
 				    !placement.Teleport(spawn, characterWorld))
-					return fail(id, "The character and its respawn point must be above "
-					                "Fall Below Y and outside solid colliders.");
+					return fail(id, "The character and its respawn point must be on the safe side of "
+					                "the respawn boundary and outside solid colliders.");
 			}
 
 			if (id == character)
@@ -970,7 +970,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				    !next.SynchronizeWorldMatrix(transform.matrix, world) ||
 				    !next.Update(seconds, id == character_ ? input : CharacterInput{}, world))
 					return false;
-				if (object->respawn && next.GetTransform().translation.y < object->respawn->minimumY) {
+				if (object->respawn && object->respawn->HasCrossed(next.GetTransform().translation)) {
 					if (!next.Teleport(spawns_.at(id), world))
 						return false;
 					respawned.insert(id);

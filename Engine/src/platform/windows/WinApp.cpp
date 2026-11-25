@@ -2,8 +2,8 @@
 #include "core/Logger.h"
 
 bool WinApp::Initialize(HINSTANCE hInstance, const std::wstring &title,
-                        int width, int height) {
-	return window_.Create(hInstance, title, width, height);
+                        int width, int height, bool fullscreen) {
+	return window_.Create(hInstance, title, width, height, fullscreen);
 }
 
 bool WinApp::ProcessMessages() {

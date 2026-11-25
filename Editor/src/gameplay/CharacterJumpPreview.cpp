@@ -20,7 +20,7 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 	    !object->character || !object->collider ||
 	    (object->respawn &&
 	     (!object->respawn->IsValid() ||
-	      transform.GetPosition().y <= object->respawn->minimumY))) {
+	      !object->respawn->IsSafe(transform.GetPosition())))) {
 		return false;
 	}
 
@@ -69,7 +69,7 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 			    static_cast<double>(position.x) - transform.GetPosition().x,
 			    static_cast<double>(position.z) - transform.GetPosition().z);
 			const bool fell =
-			    object->respawn && position.y < object->respawn->minimumY;
+			    object->respawn && object->respawn->HasCrossed(position);
 			const bool landed = controller.IsGrounded();
 			const bool finished = fell || landed || step == kMaximumSteps;
 

@@ -51,7 +51,7 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
 					    object.transform.translation = position;
 				    if (object.respawn) {
 					    auto &r = *object.respawn;
-					    r.minimumY += delta.y;
+					    r.threshold += r.Coordinate(delta);
 					    r.position = {r.position.x + delta.x,
 					                  r.position.y + delta.y,
 					                  r.position.z + delta.z};

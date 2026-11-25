@@ -442,6 +442,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	actionReader_.Reset();
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gamepadEnabled_ = config.gamepadEnabled;
+	frameTimeLimit_ = config.frameTimeLimit;
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
 	maximized_ = false;
@@ -609,7 +610,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	if (suspended) {
 		session_.CancelUIInput();
 	} else if (!session_.Update(seconds, controls, cameraControls, uiInput, actions,
-	                            invalidObject, std::span<const GameActionBinding>{actionBindings_})) {
+	                            invalidObject, std::span<const GameActionBinding>{actionBindings_}, frameTimeLimit_)) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}

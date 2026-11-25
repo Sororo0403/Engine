@@ -85,6 +85,9 @@ class GameSettingsDialog {
 	std::vector<std::string> persistentScriptKeys_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;
+	bool fullscreen_ = false;
+	bool verticalSync_ = true;
+	float frameTimeLimit_ = 0.0f;
 	std::string title_, error_;
 	std::string locationError_;
 	std::string inputAction_;

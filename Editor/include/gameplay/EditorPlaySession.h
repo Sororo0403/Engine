@@ -183,7 +183,7 @@ class EditorPlaySession {
 	            std::span<const GameActionState> actions = {},
 	            SceneObjectId *invalidObject = nullptr,
 	            std::optional<std::span<const GameActionBinding>> destinationBindings =
-	                std::nullopt);
+	                std::nullopt, float frameTimeLimit = 0.0f);
 
 	/// <summary>
 	/// 再生状態を取得する

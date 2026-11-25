@@ -186,7 +186,7 @@ bool RuntimeScene::Update(float seconds) {
 		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, size[0],
 		    size[1], true, true, config_.input.ui);
 		if (!simulation_.Update(
-		        seconds, input,
+		        GameConfig::LimitFrameTime(seconds, config_.frameTimeLimit), input,
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
 		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, config_.input.camera),

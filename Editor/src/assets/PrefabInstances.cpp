@@ -126,7 +126,7 @@ void Align(Scene &scene, SceneObjectId root,
 		(void)value;
 
 		if (auto &respawn = scene.FindObject(id)->respawn; respawn) {
-			respawn->minimumY += delta.y;
+			respawn->threshold += respawn->Coordinate(delta);
 			respawn->position = {respawn->position.x + delta.x,
 			                     respawn->position.y + delta.y,
 			                     respawn->position.z + delta.z};
@@ -776,10 +776,10 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 				object.respawn->position = {object.respawn->position.x - at.x,
 				                            object.respawn->position.y - at.y,
 				                            object.respawn->position.z - at.z};
-				object.respawn->minimumY -=
-				    prior && prior->minimumY == object.respawn->minimumY
-				        ? anchor.y
-				        : world.GetPosition().y;
+				auto &respawn = *object.respawn;
+				const bool retained = prior && prior->axis == respawn.axis &&
+				                      prior->threshold == respawn.threshold;
+				respawn.threshold -= respawn.Coordinate(retained ? anchor : world.GetPosition());
 			}
 
 			objects.emplace(source, std::move(object));

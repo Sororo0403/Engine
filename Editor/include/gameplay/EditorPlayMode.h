@@ -282,6 +282,7 @@ class EditorPlayMode {
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;
+	float frameTimeLimit_ = 0.0f;
 	int gameWidth_ = 1280;
 	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;

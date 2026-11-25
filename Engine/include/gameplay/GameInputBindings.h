@@ -44,6 +44,9 @@ struct GameInputBindings {
 		std::optional<Key> alternateSubmit = Key::SPACE;
 		std::optional<MouseButton> pointer = MouseButton::LEFT;
 		bool capturesGameplay = true;
+		enum class ReverseModifier { NONE, SHIFT, CTRL, ALT };
+		ReverseModifier reverseModifier = ReverseModifier::SHIFT;
+		static constexpr std::array<std::string_view, 4> kReverseNames{"None", "Shift", "Ctrl", "Alt"};
 		bool operator==(const UI &) const = default;
 	} ui;
 
@@ -133,7 +136,8 @@ struct GameInputBindings {
 		const auto validMouse = [](auto button) { return !button || *button < MouseButton::COUNT; };
 		if (!validStick(camera.stick) || !validMouse(camera.rotate) ||
 		    !validMouse(camera.mouseReset) || !validPad(camera.padReset) ||
-		    !validMouse(ui.pointer) || !validKey(ui.next) || !validKey(ui.alternateSubmit))
+		    !validMouse(ui.pointer) || !validKey(ui.next) || !validKey(ui.alternateSubmit) ||
+		    static_cast<std::size_t>(ui.reverseModifier) >= UI::kReverseNames.size())
 			return false;
 		for (std::size_t index = 0; index < UI::COUNT; ++index)
 			if (!validKey(ui.keys[index]) || !validPad(ui.buttons[index]))

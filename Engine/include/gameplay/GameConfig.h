@@ -16,7 +16,7 @@ struct GameConfig {
 	/// <summary>
 	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
 	/// </summary>
-	static constexpr int kCurrentVersion = 17;
+	static constexpr int kCurrentVersion = 18;
 
 	std::string title = "Game";
 	int width = 1280, height = 720;
@@ -27,6 +27,14 @@ struct GameConfig {
 	LightingSettings lighting;
 	bool cameraRelativeMovement = false;
 	bool gamepadEnabled = true;
+	bool fullscreen = false;
+	bool verticalSync = true;
+	// 0は従来設定。正の値は全シミュレーションへ渡す経過時間の上限（秒）。
+	float frameTimeLimit = 0.0f;
+	static constexpr float kMinimumFrameTimeLimit = .001f;
+	static constexpr float kMaximumFrameTimeLimit = .1f;
+	static bool IsValidFrameTimeLimit(float limit);
+	static float LimitFrameTime(float seconds, float limit);
 
 	/// <summary>
 	/// ユーザー設定の保存先を識別するIDと、保存するスクリプト共有テーブルのキー

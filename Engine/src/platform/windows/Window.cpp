@@ -10,7 +10,7 @@ Window::~Window() {
 }
 
 bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
-                    int height) {
+                    int height, bool fullscreen) {
 	if (hwnd_ || isClassRegistered_) {
 		Logger::Error("Window::Create: ウィンドウはすでに作成されています。");
 		return false;
@@ -50,8 +50,23 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
 	isClassRegistered_ = true;
 
 	RECT rect{0, 0, width, height};
+	POINT origin{CW_USEDEFAULT, CW_USEDEFAULT};
+	const DWORD style = fullscreen ? WS_POPUP : WS_OVERLAPPEDWINDOW;
+	if (fullscreen) {
+		MONITORINFO monitor{};
+		monitor.cbSize = sizeof(monitor);
+		if (!GetMonitorInfoW(MonitorFromPoint({0, 0}, MONITOR_DEFAULTTOPRIMARY), &monitor)) {
+			Logger::Error("Could not resolve the fullscreen monitor.");
+			Destroy();
+			return false;
+		}
+		rect = monitor.rcMonitor;
+		origin = {rect.left, rect.top};
+		width = rect.right - rect.left;
+		height = rect.bottom - rect.top;
+	}
 
-	if (!AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0)) {
+	if (!fullscreen && !AdjustWindowRectEx(&rect, style, FALSE, 0)) {
 		const DWORD error = GetLastError();
 		Logger::Error(std::format(
 		    "AdjustWindowRectExに失敗しました。Win32=0x{:08X}", error));
@@ -63,7 +78,7 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
 	height_ = height;
 
 	hwnd_ = CreateWindowEx(0, kClassName.c_str(), title.c_str(),
-	                       WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+	                       style, origin.x, origin.y,
 	                       rect.right - rect.left, rect.bottom - rect.top,
 	                       nullptr, nullptr, hInstance_, this);
 

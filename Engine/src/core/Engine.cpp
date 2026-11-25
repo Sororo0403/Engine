@@ -147,12 +147,13 @@ struct Engine::Impl {
 		}
 
 		if (!app_.Initialize(hInstance, config.windowTitle, config.windowWidth,
-		                     config.windowHeight)) {
+		                     config.windowHeight, config.fullscreen)) {
 			return false;
 		}
 
-		if (!graphics_.Initialize(app_.GetHwnd(), config.windowWidth,
-		                          config.windowHeight, config.preferLowPowerGpu)) {
+		if (!graphics_.Initialize(app_.GetHwnd(), app_.GetWidth(),
+		                          app_.GetHeight(), config.preferLowPowerGpu,
+		                          config.verticalSync)) {
 			return false;
 		}
 
