@@ -261,7 +261,7 @@ void ControlsPanel::Draw() {
 	         "for unused or not-yet-loaded slots. Slot numbers and existing "
 	         "assignments are never changed automatically."},
 	        {"Inspector > Mesh Renderer > Material Asset",
-	         "Assign a shared material to a model slot. Material Actions > New Material saves "
+	         "Assign a shared material to a model slot. New Material saves "
 	         "an asset in the Assets folder and assigns it to the slot. "
 	         "Save Shared Material updates every slot using the asset. "
 	         "Texture Override replaces the base color image for this slot."},
@@ -436,7 +436,7 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
-	        {"Assets > Actions > Open in Explorer",
+	        {"Assets > Explorer",
 	         "Open the current Assets folder in Windows Explorer. The Assets "
 	         "list refreshes when you return to Editor. Use Refresh to update "
 	         "the list after other external changes. For moves and renames "

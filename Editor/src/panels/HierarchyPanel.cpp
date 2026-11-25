@@ -107,6 +107,17 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	revealRequested_ = false;
 
+	ui.BeginDisabled(!editable);
+	if (ui.Button("+ Empty"))
+		result.action = Action::CREATE_EMPTY;
+	ImGui::SetItemTooltip("Create Empty");
+	ui.SameLine();
+	if (ui.Button("+ Box"))
+		result.action = Action::CREATE_BOX;
+	ImGui::SetItemTooltip("Create Box");
+	ui.EndDisabled();
+	ui.SameLine();
+
 	const bool filtersActive = filter_.hiddenOnly || pickingDisabledOnly_ ||
 	                           filter_.component != HierarchyFilter::Component::ALL;
 	if (ui.Button(filtersActive ? "Options*###HierarchyOptionsButton"
@@ -114,7 +125,8 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::OpenPopup("HierarchyOptions");
 	ImGui::SetItemTooltip("%zu selected. Filters, sorting, and object actions.",
 	                      selection.GetCount());
-	ui.SameLine();
+	if (ImGui::GetContentRegionAvail().x >= 240.f)
+		ui.SameLine();
 	ImGui::SetNextItemWidth(-1.f);
 	ImGui::InputTextWithHint("##HierarchySearch", "Search", &filter_.text);
 	ImGui::SetItemTooltip(
@@ -221,13 +233,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                      "order. Selection is kept.");
 		ImGui::Separator();
 		ui.BeginDisabled(!editable);
-
-		if (ui.MenuItem("Create Empty", nullptr, true)) {
-			result.action = Action::CREATE_EMPTY;
-		}
-		if (ui.MenuItem("Create Box", nullptr, true)) {
-			result.action = Action::CREATE_BOX;
-		}
 
 		ui.BeginDisabled(selection.GetCount() == 0);
 

@@ -52,12 +52,19 @@ bool TextureSlotInspector::DrawMaterialSlot(SceneObjectId id, std::uint32_t slot
 
 	bool create = false;
 	bool edit = false;
-	if (ImGui::SmallButton("Material Actions"))
-		ImGui::OpenPopup("MaterialActions");
-	if (ImGui::BeginPopup("MaterialActions")) {
-		create = ImGui::MenuItem("New Material...", nullptr, false, !assets.GetRootDirectory().empty());
-		edit = ImGui::MenuItem("Edit Material...", nullptr, false, !assigned.empty());
-		ImGui::EndPopup();
+	if (assigned.empty()) {
+		ImGui::BeginDisabled(assets.GetRootDirectory().empty());
+		create = ImGui::SmallButton("New Material...");
+		ImGui::EndDisabled();
+	} else {
+		edit = ImGui::SmallButton("Edit Material...");
+		ImGui::SameLine();
+		if (ImGui::SmallButton("...##MaterialActions"))
+			ImGui::OpenPopup("MaterialActions");
+		if (ImGui::BeginPopup("MaterialActions")) {
+			create = ImGui::MenuItem("New Material...", nullptr, false, !assets.GetRootDirectory().empty());
+			ImGui::EndPopup();
+		}
 	}
 	if (create) {
 		editingMaterial_.clear();

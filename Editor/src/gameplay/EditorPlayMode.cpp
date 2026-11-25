@@ -128,20 +128,19 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		if (ui.Button(session_.IsPaused() ? "Resume" : "Pause"))
 			action = Action::TOGGLE_PAUSE;
 		ImGui::SameLine();
+		if (ui.Button("Restart"))
+			action = Action::RESTART;
+		ImGui::SameLine();
+		if (session_.IsPaused()) {
+			if (ui.Button("Step"))
+				action = Action::STEP;
+			ImGui::SameLine();
+		}
 		if (ui.Button("Options"))
 			ImGui::OpenPopup("GameOptions");
 
 		bool pickScript = false;
 		if (ImGui::BeginPopup("GameOptions")) {
-			if (ui.MenuItem("Restart", nullptr, true))
-				action = Action::RESTART;
-			ui.BeginDisabled(!session_.IsPaused());
-
-			if (ui.MenuItem("Step", nullptr, true)) {
-				action = Action::STEP;
-			}
-
-			ui.EndDisabled();
 			ui.BeginDisabled(!canStart);
 			ImGui::SetNextItemWidth(110.0f);
 			const auto speedLabel = std::format("{:g}x", session_.GetTimeScale());

@@ -576,14 +576,41 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 
-	if (ui.Button("Actions")) {
-		ImGui::OpenPopup("AssetActions");
+	refreshRequested = ui.Button("Refresh");
+	ui.SameLine();
+	const auto explorerDirectory = assets.GetRootDirectory() / currentDirectory_;
+	const auto directoryLabel = PathUtils::ToUtf8(explorerDirectory);
+	ui.BeginDisabled(assets.GetRootDirectory().empty());
+	if (ui.Button("Explorer")) {
+		unavailableRevealPath_.clear();
+		if (ShellUtils::OpenDirectory(explorerDirectory, revealMessage_))
+			trackExplorer();
 	}
-	const auto directoryLabel = PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_);
-	ImGui::SetItemTooltip("%s", directoryLabel.c_str());
+	ui.EndDisabled();
+	ImGui::SetItemTooltip("Open in Explorer\n%s", directoryLabel.c_str());
+
+	ui.SameLine();
+	ui.BeginDisabled(!canWriteAssets);
+	if (ui.Button("Import"))
+		ImGui::OpenPopup("AssetImport");
+	ui.EndDisabled();
+	if (ImGui::BeginPopup("AssetImport")) {
+		if (ui.MenuItem("Texture", nullptr, canWriteAssets))
+			textureImportRequested_ = true;
+		if (ui.MenuItem("Model", nullptr, canWriteAssets))
+			modelImportRequested_ = true;
+		if (ui.MenuItem("Audio", nullptr, canWriteAssets))
+			audioImportRequested_ = true;
+		ImGui::EndPopup();
+	}
+
+	ui.SameLine();
+	if (ui.Button("Actions"))
+		ImGui::OpenPopup("AssetActions");
 
 	if (!currentDirectory_.empty() || !filter_.empty()) {
-		ui.SameLine();
+		if (ImGui::GetContentRegionAvail().x >= 340.f)
+			ui.SameLine();
 		if (ui.Button("Root"))
 			OpenDirectory({});
 		acceptFolder(assets.GetRootDirectory());
@@ -960,7 +987,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	const bool drawEntries = ui.BeginChild("AssetEntries", 0.0f, 0.0f);
+	// 対象がある時だけ一覧の下に主操作を出す。
+	const auto primaryPath = selectedPath_;
+	const auto primaryType = selectedType;
+	const bool hasPrimaryAction = !primaryPath.empty() &&
+	    (primaryType == AssetType::MODEL || primaryType == AssetType::TEXTURE ||
+	     (canEditAssets && (primaryType == AssetType::SCENE || primaryType == AssetType::PREFAB)));
+	const bool drawEntries = ui.BeginChild(
+	    "AssetEntries", 0.0f, hasPrimaryAction ? -ImGui::GetFrameHeightWithSpacing() : 0.0f);
 	std::filesystem::path nextDirectory;
 	bool openRequested = false;
 
@@ -1268,14 +1302,30 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (ImGui::BeginPopup("AssetActions")) {
-		if (ui.MenuItem("Refresh", nullptr, true))
-			refreshRequested = true;
-		if (ui.MenuItem("Open in Explorer", nullptr, !assets.GetRootDirectory().empty())) {
-			unavailableRevealPath_.clear();
-			if (ShellUtils::OpenDirectory(assets.GetRootDirectory() / currentDirectory_, revealMessage_))
-				trackExplorer();
+	if (hasPrimaryAction && selectedPath_ == primaryPath) {
+		switch (primaryType) {
+		case AssetType::MODEL:
+			if (ui.Button("Add to Scene"))
+				requestedPath = primaryPath;
+			break;
+		case AssetType::TEXTURE:
+			if (ui.Button("Preview Image"))
+				texturePreviewPath_ = primaryPath;
+			break;
+		case AssetType::SCENE:
+			if (ui.Button("Open Scene"))
+				sceneOpenPath_ = primaryPath;
+			break;
+		case AssetType::PREFAB:
+			if (ui.Button("Add Prefab"))
+				prefabAppendPath_ = primaryPath;
+			break;
+		default:
+			break;
 		}
+	}
+
+	if (ImGui::BeginPopup("AssetActions")) {
 		if (canReturnToExport && ui.MenuItem("Return to Export Check", nullptr, true))
 			exportCheckRequested_ = true;
 
@@ -1288,15 +1338,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scriptCreateRequested_ = true;
 			if (ui.MenuItem("Animation Clip", nullptr, true))
 				clipCreateRequested_ = true;
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Import", canWriteAssets)) {
-			if (ui.MenuItem("Texture", nullptr, true))
-				textureImportRequested_ = true;
-			if (ui.MenuItem("Model", nullptr, true))
-				modelImportRequested_ = true;
-			if (ui.MenuItem("Audio", nullptr, true))
-				audioImportRequested_ = true;
 			ImGui::EndMenu();
 		}
 		if (!selectedItems_.empty() || selectedType == AssetType::TEXTURE) {
