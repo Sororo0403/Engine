@@ -1159,33 +1159,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::ALIGN_Z:
 					AlignSelection(AlignmentAxis::Z);
 					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MIN_X:
-					AlignSelectedColliderBounds(AlignmentAxis::X, false);
-					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MAX_X:
-					AlignSelectedColliderBounds(AlignmentAxis::X, true);
-					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MIN_Y:
-					AlignSelectedColliderBounds(AlignmentAxis::Y, false);
-					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MAX_Y:
-					AlignSelectedColliderBounds(AlignmentAxis::Y, true);
-					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MIN_Z:
-					AlignSelectedColliderBounds(AlignmentAxis::Z, false);
-					break;
-				case HierarchyPanel::Action::ALIGN_COLLIDER_MAX_Z:
-					AlignSelectedColliderBounds(AlignmentAxis::Z, true);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_X:
-					DistributeSelectedColliderGaps(AlignmentAxis::X);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_Y:
-					DistributeSelectedColliderGaps(AlignmentAxis::Y);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_Z:
-					DistributeSelectedColliderGaps(AlignmentAxis::Z);
-					break;
 				case HierarchyPanel::Action::DISTRIBUTE_X:
 					DistributeSelection(AlignmentAxis::X);
 					break;
@@ -2347,62 +2320,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::ALIGN_Z;
 		}
 
-		ui_.BeginDisabled(!objectEnabled || selection_.GetCount() < 2 ||
-		                  !ColliderPlacement::CanDrop(document_.GetScene(),
-		                                              selection_.GetIds()));
-
-		if (ui_.BeginMenu("Align Collider Bounds")) {
-			if (ui_.MenuItem("Min X to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MIN_X;
-			}
-
-			if (ui_.MenuItem("Max X to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MAX_X;
-			}
-
-			if (ui_.MenuItem("Min Y to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MIN_Y;
-			}
-
-			if (ui_.MenuItem("Max Y to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MAX_Y;
-			}
-
-			if (ui_.MenuItem("Min Z to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MIN_Z;
-			}
-
-			if (ui_.MenuItem("Max Z to Active", nullptr, true)) {
-				action = EditorAction::ALIGN_COLLIDER_MAX_Z;
-			}
-
-			ui_.EndMenu();
-		}
-
-		ui_.EndDisabled();
-
-		ui_.BeginDisabled(!objectEnabled || selection_.GetCount() < 3 ||
-		                  !ColliderPlacement::CanDrop(document_.GetScene(),
-		                                              selection_.GetIds()));
-
-		if (ui_.BeginMenu("Distribute Collider Gaps")) {
-			if (ui_.MenuItem("Equal Gaps X", nullptr, true)) {
-				action = EditorAction::DISTRIBUTE_COLLIDER_X;
-			}
-
-			if (ui_.MenuItem("Equal Gaps Y", nullptr, true)) {
-				action = EditorAction::DISTRIBUTE_COLLIDER_Y;
-			}
-
-			if (ui_.MenuItem("Equal Gaps Z", nullptr, true)) {
-				action = EditorAction::DISTRIBUTE_COLLIDER_Z;
-			}
-
-			ui_.EndMenu();
-		}
-
-		ui_.EndDisabled();
-
 		if (ui_.MenuItem("Distribute X", nullptr,
 		                 objectEnabled && selection_.GetCount() > 2)) {
 			action = EditorAction::DISTRIBUTE_X;
@@ -3104,33 +3021,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::ALIGN_Z:
 		AlignSelection(AlignmentAxis::Z);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MIN_X:
-		AlignSelectedColliderBounds(AlignmentAxis::X, false);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MAX_X:
-		AlignSelectedColliderBounds(AlignmentAxis::X, true);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MIN_Y:
-		AlignSelectedColliderBounds(AlignmentAxis::Y, false);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MAX_Y:
-		AlignSelectedColliderBounds(AlignmentAxis::Y, true);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MIN_Z:
-		AlignSelectedColliderBounds(AlignmentAxis::Z, false);
-		return;
-	case EditorAction::ALIGN_COLLIDER_MAX_Z:
-		AlignSelectedColliderBounds(AlignmentAxis::Z, true);
-		return;
-	case EditorAction::DISTRIBUTE_COLLIDER_X:
-		DistributeSelectedColliderGaps(AlignmentAxis::X);
-		return;
-	case EditorAction::DISTRIBUTE_COLLIDER_Y:
-		DistributeSelectedColliderGaps(AlignmentAxis::Y);
-		return;
-	case EditorAction::DISTRIBUTE_COLLIDER_Z:
-		DistributeSelectedColliderGaps(AlignmentAxis::Z);
 		return;
 	case EditorAction::DISTRIBUTE_X:
 		DistributeSelection(AlignmentAxis::X);
@@ -8616,28 +8506,6 @@ void EditorScene::AlignSelection(AlignmentAxis axis) {
 	}
 }
 
-void EditorScene::AlignSelectedColliderBounds(AlignmentAxis axis,
-                                              bool maximum) {
-	if (!HasSelection() || selection_.GetCount() < 2) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!document_.GetHistory().AlignColliderBounds(
-		        selection_.GetIds(), selection_.GetActiveId(), axis, maximum)) {
-			ShowError("Could not align Collider bounds. Select objects with "
-			          "valid Colliders and representable coordinates. No "
-			          "selected object was changed.");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "EditorScene::AlignSelectedColliderBounds: {}", error.what()));
-		ShowError("Could not align Collider bounds. See the log for details.");
-	}
-}
-
 void EditorScene::DistributeSelection(AlignmentAxis axis) {
 	if (!HasSelection() || selection_.GetCount() < 3) {
 		return;
@@ -8655,29 +8523,6 @@ void EditorScene::DistributeSelection(AlignmentAxis axis) {
 		    std::format("EditorScene::DistributeSelection: {}", error.what()));
 		ShowError("Could not distribute the selected objects. See the log for "
 		          "details.");
-	}
-}
-
-void EditorScene::DistributeSelectedColliderGaps(AlignmentAxis axis) {
-	if (!HasSelection() || selection_.GetCount() < 3) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!document_.GetHistory().DistributeColliderGaps(selection_.GetIds(),
-		                                                   axis)) {
-			ShowError(
-			    "Could not distribute Collider gaps. Select valid Box "
-			    "Colliders with enough space between the fixed endpoints and "
-			    "representable coordinates. No selected object was changed.");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "EditorScene::DistributeSelectedColliderGaps: {}", error.what()));
-		ShowError(
-		    "Could not distribute Collider gaps. See the log for details.");
 	}
 }
 

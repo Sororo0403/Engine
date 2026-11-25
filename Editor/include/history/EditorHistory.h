@@ -683,19 +683,6 @@ class EditorHistory {
 	                  SceneObjectId referenceId, AlignmentAxis axis);
 
 	/// <summary>
-	/// Colliderを囲むワールド座標の端を基準物体の同じ端へそろえ、1操作として記録する
-	/// </summary>
-	/// <param name="objectIds">有効なColliderを持つ、重複しない2件以上のID。編集中の内容は先に確定する</param>
-	/// <param name="referenceId">位置を保持する基準物体。一覧に含まれること</param>
-	/// <param name="axis">そろえるワールド座標のX・Y・Z</param>
-	/// <param name="maximum">true:最大側の端 false:最小側の端</param>
-	/// <returns>true:全件成功または配置済み false:対象・形状・軸・座標精度が無効。全対象を保持する</returns>
-	/// <remarks>回転・拡縮を反映した軸平行ボックスを使用する。他軸・姿勢・形状・表示状態は変更しない。成功後は物体参照を取得し直す</remarks>
-	bool AlignColliderBounds(std::span<const SceneObjectId> objectIds,
-	                         SceneObjectId referenceId, AlignmentAxis axis,
-	                         bool maximum);
-
-	/// <summary>
 	/// 指定軸の座標順で両端を固定し、間の原点を等間隔に配置して1操作として記録する
 	/// </summary>
 	/// <param name="objectIds">重複のない3件以上の対象ID一覧。編集中の内容は先に確定する</param>
@@ -703,16 +690,6 @@ class EditorHistory {
 	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
 	bool DistributeObjects(std::span<const SceneObjectId> objectIds,
 	                       AlignmentAxis axis);
-
-	/// <summary>
-	/// 指定軸のCollider間のすき間を均等にし、両端を固定して1操作として記録する
-	/// </summary>
-	/// <param name="objectIds">有効なColliderを持つ、重複しない3件以上のID。編集中の内容は先に確定する</param>
-	/// <param name="axis">ワールド座標のX・Y・Z。Colliderの最小端、同値ならID順で配置する</param>
-	/// <returns>true:全件成功または配置済み false:対象・形状・軸・座標精度が無効、または両端の間に収まらない。全件を保持する</returns>
-	/// <remarks>回転・拡縮を反映した軸平行ボックスを使用する。他軸・姿勢・形状・表示状態は保持する。選択外との重なりは検証しない。成功後は物体参照を取得し直す</remarks>
-	bool DistributeColliderGaps(std::span<const SceneObjectId> objectIds,
-	                            AlignmentAxis axis);
 
 	/// <summary>
 	/// 作業シーンへの変更を検証し、追加・変更・削除を1回の履歴操作として確定する
