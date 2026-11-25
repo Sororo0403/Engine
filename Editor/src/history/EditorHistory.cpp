@@ -928,14 +928,12 @@ bool EditorHistory::SetActive(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
-bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
-                                    std::optional<CameraSettings> projection) {
+bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
 
 	if (!object || !object->camera || !object->camera->IsValid() ||
-	    !TransformUtils::IsValid(object->transform) ||
-	    (projection && !projection->IsValid())) {
+	    !TransformUtils::IsValid(object->transform)) {
 		return false;
 	}
 
@@ -983,7 +981,7 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 	}
 
 	std::vector<CommandGroup::Command> commands;
-	commands.reserve(3);
+	commands.reserve(2);
 
 	if (!TransformUtils::AreEqual(object->transform, after)) {
 		commands.emplace_back(TransformCommand{id, object->transform, after});
@@ -992,12 +990,6 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 	if (object->followCamera != follow) {
 		commands.emplace_back(
 		    FollowCameraCommand{id, object->followCamera, follow});
-	}
-
-	if (projection && object->camera->settings != *projection) {
-		auto camera = *object->camera;
-		camera.settings = *projection;
-		commands.emplace_back(CameraCommand{id, object->camera, camera});
 	}
 
 	if (commands.empty()) {
@@ -1012,8 +1004,7 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 	}
 
 	AppendPrepared(Command{std::move(group)}, next,
-	               projection ? "Match Camera to Scene View"
-	                          : "Align Camera to Scene View");
+	               "Align Camera to Scene View");
 	return true;
 }
 

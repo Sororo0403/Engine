@@ -805,9 +805,6 @@ bool InspectorPanel::Draw(
 	} else if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {
 		objectRequest_ = {ObjectAction::ALIGN_CAMERA_VIEW,
 		                  cameraRequest.objectId};
-	} else if (cameraRequest.action == CameraInspector::Action::MATCH_VIEW) {
-		objectRequest_ = {ObjectAction::MATCH_CAMERA_VIEW,
-		                  cameraRequest.objectId};
 	} else if (cameraRequest.action == CameraInspector::Action::MAKE_PRIMARY) {
 		objectRequest_ = {ObjectAction::MAKE_PRIMARY_CAMERA,
 		                  cameraRequest.objectId};

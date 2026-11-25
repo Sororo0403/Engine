@@ -7323,16 +7323,9 @@ void EditorScene::ApplyInspectorRequest(
 		           InspectorPanel::ObjectAction::RESET_TRANSFORM) {
 			applied = document_.GetHistory().ResetTransforms(ids);
 		} else if (request.action ==
-		               InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW ||
-		           request.action ==
-		               InspectorPanel::ObjectAction::MATCH_CAMERA_VIEW) {
-			const auto projection =
-			    request.action ==
-			            InspectorPanel::ObjectAction::MATCH_CAMERA_VIEW
-			        ? std::optional<CameraSettings>{sceneProjection_}
-			        : std::nullopt;
+		               InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW) {
 			applied = document_.GetHistory().AlignCameraView(
-			    request.objectId, cameraController_.GetPose(), projection);
+			    request.objectId, cameraController_.GetPose());
 		} else if (request.action == InspectorPanel::ObjectAction::ADD_CAMERA &&
 		           !object->camera) {
 			applied = document_.GetHistory().SetCamera(request.objectId,
@@ -7348,9 +7341,7 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (!applied) {
 			if (request.action ==
-			        InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW ||
-			    request.action ==
-			        InspectorPanel::ObjectAction::MATCH_CAMERA_VIEW) {
+			        InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW) {
 				ShowError("Could not align the Camera. Check its Transform and "
 				          "Follow Camera target and settings.");
 			} else if (request.action ==

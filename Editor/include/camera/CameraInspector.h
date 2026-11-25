@@ -17,7 +17,6 @@ class CameraInspector {
 	enum class Action {
 		NONE,
 		ALIGN_VIEW,
-		MATCH_VIEW,
 		MAKE_PRIMARY,
 		COPY_LENS,
 		PASTE_LENS,
