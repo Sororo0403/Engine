@@ -223,9 +223,6 @@ class EditorScene final : public IScene {
 		DISTRIBUTE_COLLIDER_Y,
 		DISTRIBUTE_COLLIDER_Z,
 		RESET_CAMERA,
-		SAVE_CAMERA_BOOKMARK,
-		RESTORE_CAMERA_BOOKMARK,
-		CLEAR_CAMERA_BOOKMARK,
 		VIEW_FRONT,
 		VIEW_BACK,
 		VIEW_LEFT,
@@ -864,10 +861,6 @@ class EditorScene final : public IScene {
 	/// </summary>
 	void SynchronizePlayScene();
 
-	/// <summary>
-	/// 追従中の再生物体の移動量をSceneカメラへ反映する。選択変更時は飛ばさず基準を取り直す
-	/// </summary>
-	void UpdatePlaySelectionFollow();
 
 	/// <summary>
 	/// 選択中の再生物体のTransformを全件検証して編集シーンへ1操作で反映し、成功時だけ停止する
@@ -1060,8 +1053,6 @@ class EditorScene final : public IScene {
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
 	CameraSettings sceneProjection_;
-	EditorCameraBookmarks cameraBookmarks_;
-	std::size_t cameraBookmarkSlot_ = 0;
 
 	AssetDatabase assets_{L"resources/editor"};
 	AssetSources assetSources_;
@@ -1095,9 +1086,6 @@ class EditorScene final : public IScene {
 	std::optional<PlayFailureReplay> playFailureReplay_;
 	SceneObjectId playInitialCameraOverride_ = 0;
 	SceneObjectId scriptReplayCameraOverride_ = 0;
-	bool followPlaySelection_ = false;
-	SceneObjectId followedPlayObject_ = 0;
-	DirectX::XMFLOAT3 followedPlayPosition_{};
 	FrameRequest playFrameRequest_ = FrameRequest::NONE;
 	EditorClipboard clipboard_;
 

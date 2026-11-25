@@ -1,7 +1,6 @@
 #pragma once
 
 #include "assets/AssetSources.h"
-#include "camera/EditorCameraBookmarks.h"
 #include "camera/EditorCameraController.h"
 #include "export/GameExporter.h"
 #include "gameplay/GameConfig.h"
@@ -42,7 +41,6 @@ class EditorPreferences {
 	EditorCameraController::Settings camera;
 	CameraSettings sceneProjection;
 	SceneGrid::Settings grid;
-	EditorCameraBookmarks cameraBookmarks;
 
 	// タイトル・画面サイズ・操作キー・移動基準・照明だけを保存し、起動シーンとカメラ姿勢は出力時に決める
 	GameConfig gameExport;

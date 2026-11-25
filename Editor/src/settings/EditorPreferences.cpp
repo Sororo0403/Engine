@@ -1018,36 +1018,6 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			    json.at("assetDirectory").get<std::string>()));
 		}
 
-		if (json.contains("cameraBookmarks")) {
-			const auto &bookmarks = json.at("cameraBookmarks");
-
-			if (!bookmarks.is_array() ||
-			    bookmarks.size() != EditorCameraBookmarks::kSlotCount) {
-				throw std::runtime_error("カメラのブックマーク数が無効です。");
-			}
-
-			for (std::size_t i = 0; i < bookmarks.size(); ++i) {
-				const auto &bookmark = bookmarks[i];
-
-				if (bookmark.is_null()) {
-					continue;
-				}
-
-				std::optional<CameraSettings> projection;
-
-				if (bookmark.contains("projection")) {
-					projection = ReadProjection(bookmark.at("projection"));
-				}
-
-				const auto view = ReadCameraView(bookmark);
-
-				if (!view || !loaded.cameraBookmarks.Set(i, *view, projection)) {
-					throw std::runtime_error(
-					    "カメラのブックマークが無効です。");
-				}
-			}
-		}
-
 		if (json.contains("sceneViews") && json.at("sceneViews").is_object()) {
 			for (const auto &[key, value] : json.at("sceneViews").items()) {
 				const auto scene = PathUtils::FromUtf8(key);
@@ -1104,7 +1074,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
 		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
-		    !sceneProjection.IsValid() || !cameraBookmarks.IsValid() ||
+		    !sceneProjection.IsValid() ||
 		    !gridValidator.SetSettings(grid) || !gameExport.IsValid() ||
 		    (!lastProject.empty() &&
 		     (!lastProject.is_absolute() ||
@@ -1152,21 +1122,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		const auto gameJson = nlohmann::json::parse(gameText);
 		const auto &inputJson = gameJson.at("input");
 		const auto lighting = gameJson.at("lighting");
-
-		auto bookmarks = nlohmann::json::array();
-
-		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
-			if (const auto *bookmark = cameraBookmarks.Get(i)) {
-				auto saved = CameraViewJson(*bookmark);
-				if (const auto *projection = cameraBookmarks.GetProjection(i)) {
-					saved["projection"] = ProjectionJson(*projection);
-				}
-
-				bookmarks.push_back(std::move(saved));
-			} else {
-				bookmarks.push_back(nullptr);
-			}
-		}
 
 		auto projectScenesJson = nlohmann::json::object();
 		auto recentProjectsJson = nlohmann::json::array();
@@ -1227,7 +1182,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 
 		const nlohmann::json json{
 		    {"version", 1},
-		    {"cameraBookmarks", bookmarks},
 		    {"assetDirectory", PathUtils::ToUtf8(assets.GetDirectory())},
 		    {"assetDirectories", assetDirectories},
 		    {"gameExport",
@@ -1306,7 +1260,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	return sceneProjection == other.sceneProjection &&
-	       cameraBookmarks == other.cameraBookmarks &&
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&

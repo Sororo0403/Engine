@@ -84,12 +84,6 @@ class EditorCameraController {
 	/// <returns>位置・注視点・上方向</returns>
 	CameraPose GetPose() const;
 
-	/// <summary>
-	/// 向きを保ってカメラを平行移動する。オービット中は回転中心も同じ量だけ移動する
-	/// </summary>
-	/// <param name="offset">有限なワールド座標の移動量</param>
-	/// <returns>true:移動成功 false:値や移動後の姿勢が無効。操作状態と位置は保持する</returns>
-	bool Translate(const DirectX::XMFLOAT3 &offset);
 
 	/// <summary>
 	/// カメラの姿勢と操作状態を初期状態へ戻す

@@ -121,7 +121,6 @@ bool EditorScene::Initialize() {
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	exportConfig_ = preferences_.gameExport;
-	cameraBookmarks_ = preferences_.cameraBookmarks;
 	assetSources_ = preferences_.assets;
 	recentScenes_.Clear();
 
@@ -1769,7 +1768,6 @@ void EditorScene::Finalize() {
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
 		current.sceneProjection = sceneProjection_;
-		current.cameraBookmarks = cameraBookmarks_;
 		current.grid = sceneGrid_.GetSettings();
 		if (project_.GetRoot().empty()) {
 			current.gameExport = exportConfig_;
@@ -2520,13 +2518,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			ShowSceneView();
 		}
 
-		if (ImGui::MenuItem("Follow Active in Play", nullptr,
-		                    &followPlaySelection_,
-		                    enabled && playMode_.IsPlaying() &&
-		                        playSelection_.GetActiveId() != 0)) {
-			followedPlayObject_ = 0;
-		}
-
 		ui_.BeginDisabled(playMode_.IsPlaying());
 
 		if (ui_.BeginMenu("Camera View")) {
@@ -2554,36 +2545,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::VIEW_BOTTOM;
 			}
 
-			ui_.EndMenu();
-		}
-
-		if (ui_.BeginMenu("Camera Bookmarks")) {
-			for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount;
-			     ++i) {
-				const auto label = std::format("View {}", i + 1);
-
-				if (ui_.BeginMenu(label.c_str())) {
-					const bool saved = cameraBookmarks_.Get(i) != nullptr;
-
-					if (ui_.MenuItem("Save Current View", nullptr, enabled)) {
-						cameraBookmarkSlot_ = i;
-						action = EditorAction::SAVE_CAMERA_BOOKMARK;
-					}
-
-					if (ui_.MenuItem("Restore View", nullptr,
-					                 enabled && saved)) {
-						cameraBookmarkSlot_ = i;
-						action = EditorAction::RESTORE_CAMERA_BOOKMARK;
-					}
-
-					if (ui_.MenuItem("Clear View", nullptr, enabled && saved)) {
-						cameraBookmarkSlot_ = i;
-						action = EditorAction::CLEAR_CAMERA_BOOKMARK;
-					}
-
-					ui_.EndMenu();
-				}
-			}
 			ui_.EndMenu();
 		}
 
@@ -2949,14 +2910,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	}
 
-	if ((action == EditorAction::SAVE_CAMERA_BOOKMARK ||
-	     action == EditorAction::RESTORE_CAMERA_BOOKMARK ||
-	     action == EditorAction::CLEAR_CAMERA_BOOKMARK) &&
-	    (playMode_.IsPlaying() || gizmo_.IsUsing() || gizmoEditActive_ ||
-	     sceneViewPanel_.IsSelecting())) {
-		return;
-	}
-
 	// 保存やUndoを実行する前に、編集中の値を確定する
 	FinishEdit();
 
@@ -3144,34 +3097,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::VIEW_BOTTOM:
 		SetCameraView(CameraView::BOTTOM);
-		return;
-	case EditorAction::SAVE_CAMERA_BOOKMARK:
-		if (!cameraBookmarks_.Set(cameraBookmarkSlot_,
-		                          cameraController_.GetViewState(),
-		                          sceneProjection_)) {
-			ShowError("Could not save this Scene camera view.");
-		}
-		return;
-	case EditorAction::RESTORE_CAMERA_BOOKMARK:
-		if (const auto *state = cameraBookmarks_.Get(cameraBookmarkSlot_)) {
-			const auto *projection =
-			    cameraBookmarks_.GetProjection(cameraBookmarkSlot_);
-			if ((!projection || projection->IsValid()) &&
-			    cameraController_.SetViewState(*state)) {
-				if (projection) {
-					sceneProjection_ = *projection;
-				}
-
-				frameRequest_ = FrameRequest::NONE;
-				ShowSceneView();
-			} else {
-				ShowError("Could not restore this Scene camera view.");
-			}
-		}
-
-		return;
-	case EditorAction::CLEAR_CAMERA_BOOKMARK:
-		cameraBookmarks_.Clear(cameraBookmarkSlot_);
 		return;
 	case EditorAction::RESET_CAMERA:
 		cameraController_.Reset();
@@ -8530,7 +8455,6 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 	const bool hasActive = SceneHierarchy::GetWorldTransform(
 	    runtime, playSelection_.GetActiveId(), activeWorld);
 	const auto activePosition = activeWorld.GetPosition();
-	UpdatePlaySelectionFollow();
 	cameraController_.Update(input_, viewport, deltaTime,
 	                         hasActive ? &activePosition : nullptr);
 	auto *target = sceneViewPanel_.GetRenderTexture();
@@ -8699,51 +8623,6 @@ void EditorScene::StopAndSelectEditingObjects() {
 	}
 }
 
-void EditorScene::UpdatePlaySelectionFollow() {
-	const auto id = playSelection_.GetActiveId();
-	SceneWorldTransform world;
-
-	if (!followPlaySelection_ || !playMode_.IsPlaying() ||
-	    !SceneHierarchy::GetWorldTransform(playMode_.GetSession().GetScene(),
-	                                       id, world)) {
-		followPlaySelection_ = false;
-		followedPlayObject_ = 0;
-		return;
-	}
-
-	const auto position = world.GetPosition();
-
-	if (followedPlayObject_ != id) {
-		followedPlayObject_ = id;
-		followedPlayPosition_ = position;
-		return;
-	}
-
-	const double x = double(position.x) - followedPlayPosition_.x;
-	const double y = double(position.y) - followedPlayPosition_.y;
-	const double z = double(position.z) - followedPlayPosition_.z;
-	const double limit = (std::numeric_limits<float>::max)();
-	const bool representable =
-	    std::abs(x) <= limit && std::abs(y) <= limit && std::abs(z) <= limit;
-	DirectX::XMFLOAT3 offset{};
-
-	if (representable) {
-		offset = {static_cast<float>(x), static_cast<float>(y),
-		          static_cast<float>(z)};
-	}
-
-	if (!representable || !cameraController_.Translate(offset)) {
-		followPlaySelection_ = false;
-		followedPlayObject_ = 0;
-		Logger::Warning(
-		    "EditorScene: "
-		    "Sceneカメラの追従先を表現できないため追従を解除しました。");
-		return;
-	}
-
-	followedPlayPosition_ = position;
-}
-
 void EditorScene::SynchronizePlayScene() {
 	if (!playMode_.IsPlaying()) {
 		playSceneRevision_ = 0;
@@ -8769,8 +8648,6 @@ void EditorScene::ClearPlaySelection() {
 	playSelection_.Clear();
 	playHierarchyPanel_.Clear();
 	playSelectionActive_ = false;
-	followPlaySelection_ = false;
-	followedPlayObject_ = 0;
 	playFrameRequest_ = FrameRequest::NONE;
 }
 

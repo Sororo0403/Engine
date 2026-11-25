@@ -536,50 +536,6 @@ bool EditorCameraController::SetView(CameraView view,
 	return true;
 }
 
-bool EditorCameraController::Translate(const DirectX::XMFLOAT3 &offset) {
-	if (!MathUtils::IsFinite(offset)) {
-		return false;
-	}
-
-	const auto add = [&](const DirectX::XMFLOAT3 &value,
-	                     DirectX::XMFLOAT3 &result) {
-		const double x = double(value.x) + offset.x;
-		const double y = double(value.y) + offset.y;
-		const double z = double(value.z) + offset.z;
-		const double limit = (std::numeric_limits<float>::max)();
-
-		if (std::abs(x) > limit || std::abs(y) > limit || std::abs(z) > limit) {
-			return false;
-		}
-
-		result = {static_cast<float>(x), static_cast<float>(y),
-		          static_cast<float>(z)};
-		return MathUtils::IsFinite(result);
-	};
-	DirectX::XMFLOAT3 position;
-	auto center = orbitCenter_;
-
-	if (!add(position_, position) ||
-	    (orbiting_ && !add(orbitCenter_, center))) {
-		return false;
-	}
-
-	const auto forward = GetForward();
-	auto pose = GetPose();
-	pose.position = position;
-	pose.target = {position.x + forward.x, position.y + forward.y,
-	               position.z + forward.z};
-	Camera validator;
-
-	if (!validator.SetPose(pose)) {
-		return false;
-	}
-
-	position_ = position;
-	orbitCenter_ = center;
-	return true;
-}
-
 void EditorCameraController::Reset() {
 	position_ = {0.0f, 0.0f, -2.0f};
 	yaw_ = 0.0f;
