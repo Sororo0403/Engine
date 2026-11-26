@@ -135,12 +135,6 @@ class AssetsPanel {
 	const std::filesystem::path &GetTextureSelectionRequest() const;
 
 	/// <summary>
-	/// このフレームに、選択物体の指定スロットを白へ戻す要求があったか確認する
-	/// </summary>
-	/// <returns>true:解除要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
-	bool IsTextureClearRequested() const;
-
-	/// <summary>
 	/// このフレームに外部画像の取り込みを要求したか確認する
 	/// </summary>
 	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
@@ -349,7 +343,6 @@ class AssetsPanel {
 	std::filesystem::path clipboardRoot_;
 	bool clipboardCut_ = false;
 	bool clipboardHasMissingItems_ = false;
-	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;
 	bool modelImportRequested_ = false;

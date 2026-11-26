@@ -669,10 +669,7 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
-	const auto requestedTexture =
-	    assetsPanel_.IsTextureClearRequested()
-	        ? std::filesystem::path{}
-	        : assetsPanel_.GetTextureSelectionRequest();
+	const auto requestedTexture = assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedObjects = !assetsPanel_.GetPrefabAppendRequest().empty()
 	                                  ? assetsPanel_.GetPrefabAppendRequest()
 	                                  : assetsPanel_.GetSceneAppendRequest();
@@ -684,8 +681,7 @@ bool EditorScene::Update(float deltaTime) {
 	const auto &requestedTextureReload = checkedRequest.textureReloadPath.empty()
 	                                        ? assetsPanel_.GetTextureReloadRequest()
 	                                        : checkedRequest.textureReloadPath;
-	const bool textureAssignment =
-	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
+	const bool textureAssignment = !requestedTexture.empty();
 
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,

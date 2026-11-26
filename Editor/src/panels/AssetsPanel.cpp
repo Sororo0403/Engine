@@ -221,7 +221,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureSelectionPath_.clear();
-	textureClearRequested_ = false;
 	textureImportRequested_ = false;
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
@@ -383,7 +382,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureSelectionPath_.clear();
-	textureClearRequested_ = false;
 	textureImportRequested_ = false;
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
@@ -1361,11 +1359,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 				ui.EndDisabled();
 
-				if (ui.MenuItem("Clear Texture Slot", nullptr, true)) {
-					textureSelectionPath_.clear();
-					textureClearRequested_ = true;
-				}
-
 				ui.EndDisabled();
 			}
 
@@ -1441,7 +1434,6 @@ void AssetsPanel::Clear() {
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
 	textureSelectionPath_.clear();
-	textureClearRequested_ = false;
 	textureImportRequested_ = false;
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
@@ -1507,10 +1499,6 @@ void AssetsPanel::FinishPaste() {
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {
 	return textureSlot_ < 0 ? 0 : static_cast<std::uint32_t>(textureSlot_);
-}
-
-bool AssetsPanel::IsTextureClearRequested() const {
-	return textureClearRequested_;
 }
 
 bool AssetsPanel::IsTextureImportRequested() const {

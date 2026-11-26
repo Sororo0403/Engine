@@ -561,11 +561,9 @@ void ControlsPanel::Draw() {
 	         "Selection "
 	         "or double-click an image to assign it to every selected Mesh "
 	         "Renderer. "
-	         "Clear Texture Slot returns that slot on all selected renderers "
-	         "to white without selecting an image. Other slots are preserved. "
-	         "One Undo restores the entire assignment or clear operation. "
-		         "Repeated clears of an empty slot add no history. These actions are "
-         "blocked during Play and modal operations."},
+	         "Use Clear Assignment in Inspector to remove an override. "
+	         "One Undo restores the entire assignment. Assignment is blocked "
+	         "during Play and modal operations."},
 
 	        {"Assets > Add to Scene",
 	         "Place the selected model at the world origin."},
