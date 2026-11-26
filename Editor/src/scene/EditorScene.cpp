@@ -5511,6 +5511,10 @@ void EditorScene::UpdateDialogs() {
 
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
+			if (sceneSaveFailed_ && !document_.GetFilePath().empty()) {
+				ImGui::TextWrapped("Save path: %s",
+				                   PathUtils::ToUtf8(document_.GetFilePath()).c_str());
+			}
 			if (!errorPlayModelFile_.empty()) {
 				ImGui::TextWrapped("Model: %s", PathUtils::ToUtf8(errorPlayModelFile_).c_str());
 			}
@@ -5730,11 +5734,6 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (sceneSaveFailed_) {
-				if (ui_.Button("Show Save Location")) {
-					ShellUtils::RevealLocationInExplorer(document_.GetFilePath(),
-					                                     errorActionMessage_);
-				}
-				ui_.SameLine();
 				if (ui_.Button("Retry Save")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
