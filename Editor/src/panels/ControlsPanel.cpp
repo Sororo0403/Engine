@@ -695,20 +695,6 @@ void ControlsPanel::Draw() {
 	         "Inspector locks are unchanged. Normal Stop keeps the selection "
 	         "from before Play. Unavailable without runtime selection or "
 	         "while another dialog is open."},
-	        {"Game > Stop and Keep Selected Transforms",
-	         "Select objects in the playing Hierarchy or Scene, then stop "
-	         "with this button to keep their current position, rotation and "
-	         "scale in the editing scene. All selected objects must exist "
-	         "in both scenes and have valid Transforms. Failure keeps Play "
-	         "and all editing Transforms unchanged. One Undo/Redo restores "
-	         "the batch; identical values stop without adding history. "
-	         "Other objects, components, editing selection, Inspector locks "
-	         "and clipboard data are preserved. Follow Camera offsets and "
-	         "Respawn settings are not copied. Normal Stop discards runtime "
-	         "changes. No automatic save occurs. Pause first to inspect a "
-	         "specific frame. Unavailable without runtime selection or while "
-	         "another dialog is open."},
-
 
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "

@@ -1053,52 +1053,6 @@ bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
-bool EditorHistory::SetTransforms(std::span<const TransformEdit> edits) {
-	CommitEdit();
-
-	if (edits.empty()) {
-		return false;
-	}
-
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(edits.size());
-
-	for (const auto &edit : edits) {
-		const auto *object = scene_.FindObject(edit.objectId);
-		auto after = edit.transform;
-
-		if (!object || !seen.insert(edit.objectId).second ||
-		    !TransformUtils::IsValid(object->transform) ||
-		    !TransformUtils::IsValid(after) ||
-		    !TransformUtils::TryNormalizeRotation(after.rotation,
-		                                          after.rotation)) {
-			return false;
-		}
-
-		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(
-			    TransformCommand{edit.objectId, object->transform, after});
-		}
-	}
-
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto state = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, state,
-	               edits.size() == 1 ? "Transform Object"
-	                                 : "Transform Objects");
-	return true;
-}
-
 bool EditorHistory::SnapObjectsToGrid(std::span<const SceneObjectId> objectIds,
                                       const DirectX::XMFLOAT3 &step) {
 	CommitEdit();

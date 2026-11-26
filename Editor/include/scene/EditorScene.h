@@ -796,11 +796,6 @@ class EditorScene final : public IScene {
 
 
 	/// <summary>
-	/// 選択中の再生物体のTransformを全件検証して編集シーンへ1操作で反映し、成功時だけ停止する
-	/// </summary>
-	void StopAndKeepSelectedTransforms();
-
-	/// <summary>
 	/// 選択中の再生物体が編集シーンに全件存在する場合だけ、選択を引き継いで停止する
 	/// </summary>
 	void StopAndSelectEditingObjects();

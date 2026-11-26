@@ -162,10 +162,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 				action = Action::STOP_AND_SELECT;
 			}
 
-			if (ui.MenuItem("Stop and Keep Selected Transforms", nullptr, true)) {
-				action = Action::STOP_AND_KEEP_TRANSFORMS;
-			}
-
 			ui.EndDisabled();
 			ui.BeginDisabled(!canStart);
 
