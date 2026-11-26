@@ -154,10 +154,10 @@ class GameExportResultDialog {
 	/// </summary>
 	void RefreshLog();
 
-	enum class ErrorSearch { PREVIOUS, NEXT, LATEST, CRASH_CAUSE };
+	enum class ErrorSearch { LATEST, CRASH_CAUSE };
 
 	/// <summary>
-	/// 選択中の実行範囲で、指定方向のエラーから表示する
+	/// 選択中の実行範囲で、直近のエラーまたは異常終了の原因から表示する
 	/// </summary>
 	bool OpenLogAtError(ErrorSearch search, bool reportMissing = true);
 

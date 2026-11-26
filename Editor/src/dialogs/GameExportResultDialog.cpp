@@ -428,18 +428,12 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 	const auto start = run.sinceLaunchOnly && run.logStart &&
 	                           *run.logStart <= static_cast<std::uintmax_t>(end)
 	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
-	const bool previous = search == ErrorSearch::PREVIOUS;
-	const bool nextError = search == ErrorSearch::NEXT;
-	const auto anchor = start + static_cast<std::streamoff>(
-	                                (std::min)(run.logPageOffset,
-	                                           static_cast<std::uintmax_t>(end - start)));
-	input.seekg(nextError ? anchor : start);
+	input.seekg(start);
 	std::optional<std::uintmax_t> match;
 	std::optional<std::uintmax_t> summary;
 	// 見出しだけを読み取り、長い詳細行でもメモリ使用量を抑える。
 	std::array<char, 128> prefix{};
-	for (auto offset = nextError ? anchor : start;
-	     offset < (previous ? anchor : end);) {
+	for (auto offset = start; offset < end;) {
 		input.getline(prefix.data(), prefix.size());
 		if (input.bad())
 			break;
@@ -448,7 +442,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 			input.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 		}
 		const auto level = LogLevelPrefix(prefix.data());
-		if ((!nextError || offset > anchor) && level.starts_with(" [ERROR] ")) {
+		if (level.starts_with(" [ERROR] ")) {
 			const auto position = static_cast<std::uintmax_t>(offset - start);
 			// 異常終了時の自動表示では、原因がある場合に終了・初期化の通知を優先しない。
 			if (search == ErrorSearch::CRASH_CAUSE &&
@@ -458,8 +452,6 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 			} else {
 				match = position;
 			}
-			if (nextError)
-				break;
 		}
 		const auto next = static_cast<std::streamoff>(input.tellg());
 		if (next <= offset)
@@ -476,9 +468,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 	}
 	if (!match) {
 		if (reportMissing) {
-			error_ = previous ? "No earlier errors in the selected log range."
-			         : nextError ? "No later errors in the selected log range."
-			                     : "No errors in the selected log range.";
+			error_ = "No errors in the selected log range.";
 		}
 		return false;
 	}
@@ -1076,15 +1066,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		ImGui::SetItemTooltip("Find the latest error across the selected log range.");
 		ui.EndDisabled();
-		if (run.showLogBeginning && !log_.empty()) {
-			if (ui.Button("Previous Log Error")) {
-				jumpToBeginning |= OpenLogAtError(ErrorSearch::PREVIOUS);
-			}
-			ui.SameLine();
-			if (ui.Button("Next Log Error")) {
-				jumpToBeginning |= OpenLogAtError(ErrorSearch::NEXT);
-			}
-		}
 		if (run.beforeErrorJump) {
 			ui.SameLine();
 			if (ui.Button("Back to Log Position")) {
