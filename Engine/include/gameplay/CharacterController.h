@@ -78,9 +78,7 @@ class CharacterController {
 	/// 地面に接しているか取得する
 	/// </summary>
 	/// <returns>true:接地 false:空中または未初期化</returns>
-	bool IsGrounded() const {
-		return grounded_;
-	}
+	bool IsGrounded() const;
 
 	/// <summary>
 	/// 現在の形状から、接地判定と同じ短い下向き探索で足元のColliderを検索する。
@@ -122,6 +120,19 @@ class CharacterController {
 	bool Launch(float speed);
 
   private:
+	class MovementState;
+	class GroundedState;
+	class RisingState;
+	class FallingState;
+
+	static const GroundedState groundedState_;
+	static const RisingState risingState_;
+	static const FallingState fallingState_;
+
+	// The shared states are immutable so copies can still be updated transactionally.
+	const MovementState *movementState_ = nullptr;
+	void BeginJump(float speed);
+
 	/// <summary>
 	/// 固定刻み1回分の移動を処理する
 	/// </summary>
@@ -140,7 +151,6 @@ class CharacterController {
 	double coyoteRemaining_ = 0.0;
 	double jumpBufferRemaining_ = 0.0;
 	bool initialized_ = false;
-	bool grounded_ = false;
 	bool jumpPending_ = false;
 
 	static constexpr double kFixedStepSeconds = 1.0 / 120.0;

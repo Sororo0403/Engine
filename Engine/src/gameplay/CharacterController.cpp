@@ -73,6 +73,113 @@ bool CharacterSettings::IsValid() const {
 	       stepHeight <= kMaximumStepHeight;
 }
 
+class CharacterController::MovementState {
+  public:
+	virtual ~MovementState() = default;
+
+	virtual bool CanProbeGround(const CharacterController &controller) const {
+		return controller.verticalVelocity_ <= 0.0f;
+	}
+
+	virtual const MovementState &AfterMove(CharacterController &controller,
+	                                       bool landed) const = 0;
+
+	const MovementState &TryJump(CharacterController &controller,
+	                             bool &grounded) const;
+
+  protected:
+	static const MovementState &Land(CharacterController &controller);
+};
+
+class CharacterController::GroundedState final : public MovementState {
+  public:
+	const MovementState &AfterMove(CharacterController &controller,
+	                              bool landed) const override;
+};
+
+class CharacterController::RisingState final : public MovementState {
+  public:
+	bool CanProbeGround(const CharacterController &) const override {
+		return false;
+	}
+
+	const MovementState &AfterMove(CharacterController &controller,
+	                              bool landed) const override;
+};
+
+class CharacterController::FallingState final : public MovementState {
+  public:
+	const MovementState &AfterMove(CharacterController &controller,
+	                              bool landed) const override;
+};
+
+const CharacterController::GroundedState CharacterController::groundedState_;
+const CharacterController::RisingState CharacterController::risingState_;
+const CharacterController::FallingState CharacterController::fallingState_;
+
+const CharacterController::MovementState &
+CharacterController::MovementState::TryJump(CharacterController &controller,
+                                            bool &grounded) const {
+	if ((controller.jumpPending_ || controller.jumpBufferRemaining_ > 0.0) &&
+	    (grounded || controller.coyoteRemaining_ > 0.0)) {
+		controller.BeginJump(controller.settings_.jumpSpeed);
+		grounded = false;
+		return risingState_;
+	}
+	return *this;
+}
+
+const CharacterController::MovementState &
+CharacterController::MovementState::Land(CharacterController &controller) {
+	controller.coyoteRemaining_ = controller.settings_.coyoteTime;
+	// Consume buffered input on contact, then move upward on the next fixed step.
+	if (controller.jumpBufferRemaining_ > 0.0) {
+		controller.BeginJump(controller.settings_.jumpSpeed);
+		return risingState_;
+	}
+	return groundedState_;
+}
+
+const CharacterController::MovementState &
+CharacterController::GroundedState::AfterMove(CharacterController &controller,
+                                              bool landed) const {
+	if (landed) {
+		return Land(controller);
+	}
+	return fallingState_;
+}
+
+const CharacterController::MovementState &
+CharacterController::RisingState::AfterMove(CharacterController &controller,
+                                            bool landed) const {
+	if (landed) {
+		return Land(controller);
+	}
+	if (controller.verticalVelocity_ <= 0.0f) {
+		return fallingState_;
+	}
+	return *this;
+}
+
+const CharacterController::MovementState &
+CharacterController::FallingState::AfterMove(CharacterController &controller,
+                                             bool landed) const {
+	if (landed) {
+		return Land(controller);
+	}
+	return *this;
+}
+
+bool CharacterController::IsGrounded() const {
+	return movementState_ == &groundedState_;
+}
+
+void CharacterController::BeginJump(float speed) {
+	verticalVelocity_ = speed;
+	coyoteRemaining_ = 0.0;
+	jumpBufferRemaining_ = 0.0;
+}
+
 bool CharacterController::Initialize(const Transform &transform,
                                      const Collider &collider,
                                      const CharacterSettings &settings,
@@ -118,10 +225,14 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	initialized_ = true;
 	const auto up = settings_.GetUp();
 	CollisionMoveResult contact;
-	grounded_ = world.Move(collider_, worldMatrix_,
+	const bool grounded = world.Move(collider_, worldMatrix_,
 	                       Scale(up, -kGroundProbeDistance), contact, up) &&
 	            contact.grounded;
-	coyoteRemaining_ = grounded_ ? settings_.coyoteTime : 0.0;
+	movementState_ = &fallingState_;
+	if (grounded) {
+		movementState_ = &groundedState_;
+		coyoteRemaining_ = settings_.coyoteTime;
+	}
 	return true;
 }
 
@@ -226,12 +337,12 @@ bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	const auto up = settings_.GetUp();
 	CollisionMoveResult ground;
-	grounded_ = verticalVelocity_ <= 0.0f &&
+	bool grounded = movementState_->CanProbeGround(*this) &&
 	            world.Move(collider_, worldMatrix_,
 	                       Scale(up, -kGroundProbeDistance), ground, up) &&
 	            ground.grounded;
 
-	if (grounded_) {
+	if (grounded) {
 		coyoteRemaining_ = settings_.coyoteTime;
 	} else {
 		coyoteRemaining_ =
@@ -242,16 +353,10 @@ bool CharacterController::Step(const CharacterInput &input,
 		jumpBufferRemaining_ = settings_.jumpBufferTime;
 	}
 
-	if ((jumpPending_ || jumpBufferRemaining_ > 0.0) &&
-	    (grounded_ || coyoteRemaining_ > 0.0)) {
-		verticalVelocity_ = settings_.jumpSpeed;
-		grounded_ = false;
-		coyoteRemaining_ = 0.0;
-		jumpBufferRemaining_ = 0.0;
-	}
+	movementState_ = &movementState_->TryJump(*this, grounded);
 
 	const bool canSnap =
-	    grounded_ && settings_.groundSnapDistance > 0;
+	    grounded && settings_.groundSnapDistance > 0;
 	const float step = static_cast<float>(kFixedStepSeconds);
 	jumpPending_ = false;
 	verticalVelocity_ = (std::max)(-settings_.terminalSpeed,
@@ -271,7 +376,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	}
 
 	const bool stepped =
-	    grounded_ && settings_.stepHeight > 0 && movement.hitWall &&
+	    grounded && settings_.stepHeight > 0 && movement.hitWall &&
 	    TryStepUp(world, horizontal, movement);
 	auto transform = transform_;
 	transform.translation.x += movement.displacement.x;
@@ -309,24 +414,12 @@ bool CharacterController::Step(const CharacterInput &input,
 
 	transform_ = transform;
 	worldMatrix_ = matrix;
-	grounded_ = movement.grounded;
 
 	if (movement.grounded || movement.hitCeiling) {
 		verticalVelocity_ = 0.0f;
 	}
 
-	if (grounded_) {
-		coyoteRemaining_ = settings_.coyoteTime;
-
-
-		// 着地した固定更新内で入力を消費し、次の更新から上昇する。
-		if (jumpBufferRemaining_ > 0.0) {
-			verticalVelocity_ = settings_.jumpSpeed;
-			grounded_ = false;
-			coyoteRemaining_ = 0.0;
-			jumpBufferRemaining_ = 0.0;
-		}
-	}
+	movementState_ = &movementState_->AfterMove(*this, movement.grounded);
 
 	jumpBufferRemaining_ =
 	    (std::max)(0.0, jumpBufferRemaining_ - kFixedStepSeconds);
@@ -355,10 +448,13 @@ bool CharacterController::RefreshContacts(const CollisionWorld &world) {
 		return false;
 	}
 
-	grounded_ = verticalVelocity_ <= 0 && ground.grounded;
-
-	if (grounded_) {
-		coyoteRemaining_ = settings_.coyoteTime;
+	if (verticalVelocity_ <= 0.0f) {
+		if (ground.grounded) {
+			movementState_ = &groundedState_;
+			coyoteRemaining_ = settings_.coyoteTime;
+		} else {
+			movementState_ = &fallingState_;
+		}
 	}
 
 	return true;
@@ -368,11 +464,9 @@ bool CharacterController::Launch(float speed) {
 	if (!initialized_ || !std::isfinite(speed) || speed <= 0 ||
 	    speed > CharacterSettings::kMaximumSpeed)
 		return false;
-	verticalVelocity_ = speed;
-	grounded_ = false;
+	BeginJump(speed);
+	movementState_ = &risingState_;
 	jumpPending_ = false;
-	coyoteRemaining_ = 0;
-	jumpBufferRemaining_ = 0;
 	return true;
 }
 
