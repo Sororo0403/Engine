@@ -516,7 +516,6 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\PrefabInstantiation.h" />
     <ClCompile Include="src\scene\PrefabInstantiation.cpp" />
   </ItemGroup>
-  <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp" /></ItemGroup>
 <ItemGroup><ClInclude Include="include\scene\SceneAssetReferences.h" /><ClCompile Include="src\scene\SceneAssetReferences.cpp" /></ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\ScenePrefabs.h" />

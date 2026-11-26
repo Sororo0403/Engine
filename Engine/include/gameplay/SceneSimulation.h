@@ -168,18 +168,6 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// 再生中のシーンへ独立したPrefab階層を追加し、物理・追従・UI・スクリプトの準備を同期する
-	/// </summary>
-	/// <param name="prefab">PrefabSerializerで読み込んだ単独階層。内容は変更しない</param>
-	/// <param name="position">根の有限なワールド配置先</param>
-	/// <param name="error">成功時は空、失敗時は理由</param>
-	/// <returns>追加した根のID。停止中・設定や素材が無効な場合は0で全実行状態を保持する</returns>
-	/// <remarks>編集シーンとSceneRevisionは変更しない。追加したスクリプトのstartは次の正の時間の更新で一度だけ呼ぶ。描画・音声の素材確保は呼び出し側が行う</remarks>
-	SceneObjectId InstantiatePrefab(const Scene &prefab,
-	                                const DirectX::XMFLOAT3 &position,
-	                                std::string &error);
-
-	/// <summary>
 	/// コンポーネントを検証し、再生用シーンを複製する。失敗時は現在の再生状態を保持する
 	/// </summary>
 	/// <param name="source">変更しない編集シーン</param>
