@@ -1209,9 +1209,6 @@ void ControlsPanel::Draw() {
 	        {"Game > Play Startup Scene",
 	         "Run the project's startup scene while keeping the current scene "
 	         "open for editing after Stop."},
-	        {"Assets > Play Scene",
-	         "Run the selected scene directly from Assets. Stop returns to the "
-	         "editing scene with its unsaved changes and Undo history."},
 	        {"F5 / F6 / F7 / F8",
 	         "Play or Stop / Pause or Resume / Step while paused / Restart. "
 	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "

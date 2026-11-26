@@ -210,7 +210,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	selectedItems_.clear();
 	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
-	scenePlayPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -371,7 +370,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	refreshed_ = false;
 	exportCheckRequested_ = false;
 	sceneOpenPath_.clear();
-	scenePlayPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -1114,10 +1112,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				    ui.MenuItem("Open Scene", nullptr, canEditAssets)) {
 					sceneOpenPath_ = assetPath;
 				}
-				if (assetType == AssetType::SCENE &&
-				    ui.MenuItem("Play Scene", nullptr, canEditAssets)) {
-					scenePlayPath_ = assetPath;
-				}
 
 				if (assetType == AssetType::TEXTURE &&
 				    ui.MenuItem("Assign Texture to Selection", nullptr,
@@ -1374,9 +1368,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Open Scene", nullptr, true)) {
 					sceneOpenPath_ = selectedPath_;
 				}
-				if (ui.MenuItem("Play Scene", nullptr, true)) {
-					scenePlayPath_ = selectedPath_;
-				}
 
 				if (ui.MenuItem("Add Objects", nullptr, true)) {
 					sceneAppendPath_ = selectedPath_;
@@ -1443,7 +1434,6 @@ void AssetsPanel::Clear() {
 	selectedItems_.clear();
 	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
-	scenePlayPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -1533,10 +1523,6 @@ const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetSceneOpenRequest() const {
 	return sceneOpenPath_;
-}
-
-const std::filesystem::path &AssetsPanel::GetScenePlayRequest() const {
-	return scenePlayPath_;
 }
 
 const std::filesystem::path &AssetsPanel::GetPrefabAppendRequest() const {

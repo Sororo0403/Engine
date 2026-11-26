@@ -88,11 +88,6 @@ class AssetsPanel {
 	const std::filesystem::path &GetSceneOpenRequest() const;
 
 	/// <summary>
-	/// 編集シーンを切り替えずに試遊するシーンを取得する
-	/// </summary>
-	const std::filesystem::path &GetScenePlayRequest() const;
-
-	/// <summary>
 	/// このフレームに現在のシーンへの物体追加を要求したシーンを取得する
 	/// </summary>
 	/// <returns>シーンの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
@@ -287,7 +282,6 @@ class AssetsPanel {
 	std::vector<std::filesystem::path> selectedItems_;
 	std::filesystem::path selectionAnchor_;
 	std::filesystem::path sceneOpenPath_;
-	std::filesystem::path scenePlayPath_;
 	std::filesystem::path sceneAppendPath_;
 	std::filesystem::path prefabAppendPath_;
 	std::filesystem::path modelReloadPath_;
