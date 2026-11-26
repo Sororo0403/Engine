@@ -241,12 +241,6 @@ void SceneAudioPlayer::Stop() {
 	actionRevision_.reset();
 }
 
-AudioPlaybackState SceneAudioPlayer::GetState(SceneObjectId id) const {
-	const auto found = entries_.find(id);
-	return found == entries_.end() ? AudioPlaybackState::STOPPED
-	                               : audio_.GetState(found->second.handle);
-}
-
 bool SceneAudioPlayer::PlaySource(SceneObjectId id, std::string &error) {
 	error.clear();
 	auto found = entries_.find(id);

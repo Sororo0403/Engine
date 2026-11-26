@@ -205,10 +205,6 @@ bool AudioSystem::IsAvailable() const {
 	       !impl_->engine->IsCriticalError();
 }
 
-std::uint32_t AudioSystem::GetOutputChannels() const {
-	return IsAvailable() ? impl_->engine->GetOutputChannels() : 0;
-}
-
 AudioPlaybackHandle AudioSystem::Play(const AudioClipHandle &clip,
                                       const AudioPlaybackSettings &settings,
                                       std::string &error) {
@@ -355,10 +351,6 @@ bool AudioSystem::SetMasterVolume(float volume) {
 	}
 }
 
-bool AudioSystem::SetListener(const AudioListenerPose &listener) {
-	return SetSpatialState(listener, {});
-}
-
 bool AudioSystem::SetSpatialState(const AudioListenerPose &listener,
                                   std::span<const AudioEmitterChange> changes) {
 	if (!listener.IsValid() || changes.size() > kMaximumVoices)
@@ -410,15 +402,4 @@ bool AudioSystem::SetSuspended(bool suspended) {
 
 std::uint64_t AudioSystem::GetDeviceRevision() const {
 	return impl_->deviceRevision;
-}
-
-bool AudioSystem::SetEmitter(AudioPlaybackHandle handle,
-                             const AudioEmitterSettings &emitter) {
-	auto *voice = impl_->Find(handle);
-	if (!voice || !voice->settings.spatial ||
-	    GetState(handle) == AudioPlaybackState::STOPPED ||
-	    !SpatialAudio::CanCalculate(impl_->listener, emitter))
-		return false;
-	voice->settings.emitter = emitter;
-	return true;
 }

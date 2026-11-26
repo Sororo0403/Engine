@@ -73,21 +73,6 @@ class SceneAudioPlayer {
 	/// <returns>true:停止済み false:対象なし</returns>
 	bool StopSource(SceneObjectId id);
 
-	/// <summary>
-	/// 物体の再生状態を取得する
-	/// </summary>
-	/// <param name="id">このシーンの音源</param>
-	/// <returns>現在の状態。無効・未割り当て・終了済みは停止</returns>
-	AudioPlaybackState GetState(SceneObjectId id) const;
-
-	/// <summary>
-	/// 開始済みか確認する。無音や全音源の自然終了後も開始済みとして扱う
-	/// </summary>
-	/// <returns>true:開始済み false:停止中</returns>
-	bool IsStarted() const {
-		return started_;
-	}
-
   private:
 	struct Entry {
 		AudioSourceComponent component;

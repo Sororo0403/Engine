@@ -59,12 +59,6 @@ class AudioSystem {
 	bool IsAvailable() const;
 
 	/// <summary>
-	/// 現在のデバイスの出力チャンネル数を取得する
-	/// </summary>
-	/// <returns>チャンネル数。出力不可の場合は0</returns>
-	std::uint32_t GetOutputChannels() const;
-
-	/// <summary>
 	/// 音声を最初から独立して再生する。再生が終わるまで共有データを保持する
 	/// </summary>
 	/// <param name="clip">同じデバイスに依存しない有効な音声</param>
@@ -124,13 +118,6 @@ class AudioSystem {
 	bool SetMasterVolume(float volume);
 
 	/// <summary>
-	/// 受信姿勢を次の更新に設定する。既存の空間音源との距離が無効なら現在値を保持する
-	/// </summary>
-	/// <param name="listener">左手座標系の有効な姿勢</param>
-	/// <returns>true:成功 false:姿勢または距離が無効</returns>
-	bool SetListener(const AudioListenerPose &listener);
-
-	/// <summary>
 	/// 受信姿勢と複数の音源位置を一括設定する。大きく移動しても途中の位置関係を検証に使わない
 	/// </summary>
 	/// <param name="listener">変更後の左手座標系の受信姿勢</param>
@@ -151,15 +138,6 @@ class AudioSystem {
 	/// </summary>
 	/// <returns>同じ値の間はデバイスの世代が同じ。初期値は0</returns>
 	std::uint64_t GetDeviceRevision() const;
-
-	/// <summary>
-	/// 空間音源の位置と減衰距離を次の更新に設定する
-	/// </summary>
-	/// <param name="handle">空間配置を使用しているモノラルの再生</param>
-	/// <param name="emitter">有効な位置と距離</param>
-	/// <returns>true:成功 false:対象・設定・受信位置との距離が無効</returns>
-	bool SetEmitter(AudioPlaybackHandle handle,
-	                const AudioEmitterSettings &emitter);
 
   private:
 	struct Impl;
