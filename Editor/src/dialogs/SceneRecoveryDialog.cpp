@@ -70,10 +70,6 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		return Result::NONE;
 	}
 
-	if (!confirmingDelete_ && ui.Button("Refresh")) {
-		Refresh(recovery);
-	}
-
 	const auto isProtected = [&](const auto &entry) {
 		return !protectedFile.empty() && PathUtils::IsSameFile(entry.path, protectedFile);
 	};
