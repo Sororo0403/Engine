@@ -1840,18 +1840,14 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			ImGui::SetItemTooltip("Use the previous export's window settings and suggest an unused output folder.");
 		}
 
+		const auto exportHistory = preferences_.RecentGameExports(project_.GetRoot());
+		std::vector<std::filesystem::path> recentExports(exportHistory.begin(), exportHistory.end());
 		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
-		if (ui_.MenuItem("Open Last Game Export", nullptr, enabled && !lastExport.empty())) {
-			pendingOpenPath_ = lastExport;
-			action = EditorAction::OPEN_GAME_EXPORT;
+		if (!lastExport.empty() &&
+		    std::ranges::find(recentExports, lastExport) == recentExports.end()) {
+			recentExports.push_back(lastExport);
 		}
-		if (!lastExport.empty()) {
-			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(lastExport).c_str());
-		}
-
-		const auto recentExports = preferences_.RecentGameExports(project_.GetRoot());
-		if (ImGui::BeginMenu("Recent Game Exports",
-		                     enabled && (!recentExports.empty() || !lastExport.empty()))) {
+		if (ImGui::BeginMenu("Recent Game Exports", enabled && !recentExports.empty())) {
 			std::size_t index = 0;
 			for (const auto &directory : recentExports) {
 				const auto problem = FileDialog::GameExportOpenProblem(directory);
