@@ -474,11 +474,7 @@ bool EditorScene::Update(float deltaTime) {
 		        playSelection_.GetActiveId(),
 		        playMode_.GetSession().GetScriptState(
 		            playSelection_.GetActiveId()))) {
-			SceneWorldTransform world;
-			if (!SceneHierarchy::GetWorldTransform(
-			        playMode_.GetSession().GetScene(),
-			        playSelection_.GetActiveId(), world) ||
-			    !clipboard_.CopyTransform(*copied, world.GetPosition())) {
+			if (!clipboard_.CopyTransform(*copied)) {
 				ShowError("Could not copy an invalid runtime Transform.");
 			}
 		}
@@ -7115,35 +7111,8 @@ void EditorScene::ApplyInspectorRequest(
 		}
 
 		if (request.action == InspectorPanel::ObjectAction::COPY_TRANSFORM) {
-			SceneWorldTransform world;
-			if (!SceneHierarchy::GetWorldTransform(document_.GetScene(),
-			                                       request.objectId, world) ||
-			    !clipboard_.CopyTransform(object->transform,
-			                              world.GetPosition())) {
+			if (!clipboard_.CopyTransform(object->transform)) {
 				ShowError("Could not copy an invalid Transform.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::PASTE_RESPAWN_POSITION) {
-			const auto *copied = clipboard_.GetWorldPosition();
-
-			if (!object->respawn || !copied) {
-				ShowError("Copy a Transform and inspect an object with Respawn "
-				          "before pasting its position.");
-				return;
-			}
-
-			auto settings = *object->respawn;
-			settings.useStartPosition = false;
-			settings.position = *copied;
-
-			if (!document_.GetHistory().SetRespawn(request.objectId,
-			                                       settings)) {
-				ShowError("Could not paste the Respawn position. Coordinates "
-				          "must be within -100000 and 100000.");
 			}
 
 			return;

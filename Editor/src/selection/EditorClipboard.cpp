@@ -1,6 +1,5 @@
 #include "selection/EditorClipboard.h"
 
-#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/ColliderUtils.h"
 #include "platform/windows/PathUtils.h"
@@ -111,23 +110,12 @@ bool EditorClipboard::HasObjects() const {
 }
 
 bool EditorClipboard::CopyTransform(const Transform &transform) {
-	return CopyTransform(transform, transform.translation);
-}
-
-bool EditorClipboard::CopyTransform(const Transform &transform,
-                                    const DirectX::XMFLOAT3 &worldPosition) {
-	if (!TransformUtils::IsValid(transform) ||
-	    !MathUtils::IsFinite(worldPosition)) {
+	if (!TransformUtils::IsValid(transform)) {
 		return false;
 	}
 
 	transform_ = transform;
-	worldPosition_ = worldPosition;
 	return true;
-}
-
-const DirectX::XMFLOAT3 *EditorClipboard::GetWorldPosition() const {
-	return worldPosition_ ? &*worldPosition_ : nullptr;
 }
 
 const Transform *EditorClipboard::GetTransform() const {
@@ -170,7 +158,6 @@ void EditorClipboard::Clear() {
 	sourceIds_.clear();
 	externalReferences_.clear();
 	transform_.reset();
-	worldPosition_.reset();
 	collider_.reset();
 	textureUVs_.reset();
 }

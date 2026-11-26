@@ -1386,18 +1386,7 @@ void ControlsPanel::Draw() {
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
-	        {"Inspector > Respawn > Paste Respawn Position",
-	         "Use the world position captured with the copied Transform as an "
-	         "explicit "
-	         "recovery "
-	         "point. You can copy a live position during Play, Stop, then "
-	         "paste "
-	         "it here. The inspected object is used even when Inspector is "
-	         "locked. This turns off Use Start Position and supports one "
-	         "Undo/Redo. Object Transform, fall height, selection and "
-	         "clipboard "
-	         "contents stay unchanged. Collision checks still apply when Play "
-	         "starts. Copy a Transform first to enable the action."},
+
 	        {"Inspector > Respawn > Frame Respawn",
 	         "Bring the recovery position and its collider into Scene view "
 	         "without changing the scene, selection, Inspector lock or Undo "

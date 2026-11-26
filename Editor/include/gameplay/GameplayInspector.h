@@ -35,12 +35,10 @@ class GameplayInspector {
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
 	/// <param name="targetSelectionRequest">追従先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
-	/// <param name="canPasteTransform">復帰先へ貼り付けるTransformを保持しているか</param>
 	/// <returns>true:変更あり false:変更なし。選択・貼り付け要求だけでは変更ありにしない</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
-	          SceneObjectId &targetSelectionRequest,
-	          bool canPasteTransform = false);
+	          SceneObjectId &targetSelectionRequest);
 	/// <summary>
 	/// コンポーネント選択UIの検索状態を解除する
 	/// </summary>
@@ -53,12 +51,6 @@ class GameplayInspector {
 	SceneObjectId GetRespawnFrameRequest() const;
 
 	/// <summary>
-	/// このフレームにコピー済みの位置を復帰先へ貼り付けることを要求した物体を取得する
-	/// </summary>
-	/// <returns>Inspectorの表示対象ID。要求なしは0。貼り付けは描画後に行う</returns>
-	SceneObjectId GetRespawnPasteRequest() const;
-
-	/// <summary>
 	/// このフレームに要求した復帰設定のコピー・貼り付けを取得する
 	/// </summary>
 	/// <returns>表示対象への要求。要求なしはNONE。実際の操作は描画後に行う</returns>
@@ -67,6 +59,5 @@ class GameplayInspector {
   private:
 	RespawnRequest respawnRequest_;
 	FollowTargetPicker targetPicker_;
-	SceneObjectId respawnPasteRequest_ = 0;
 	SceneObjectId respawnFrameRequest_ = 0;
 };

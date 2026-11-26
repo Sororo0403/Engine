@@ -50,11 +50,9 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
                              EditorHistory &history,
-                             SceneObjectId &targetSelectionRequest,
-                             bool canPasteTransform) {
+                             SceneObjectId &targetSelectionRequest) {
 	targetSelectionRequest = 0;
 	respawnRequest_ = {};
-	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -287,14 +285,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.EndDisabled();
 
-		ui.BeginDisabled(!canPasteTransform);
-
-		if (ui.Button("Paste Respawn Position")) {
-			respawnPasteRequest_ = id;
-		}
-
-		ui.EndDisabled();
-
 		std::array<DirectX::XMFLOAT3, 8> frameBounds;
 		ui.BeginDisabled(
 		    !RespawnPreview::GetFrameBounds(scene, id, frameBounds));
@@ -325,16 +315,11 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
 	respawnRequest_ = {};
-	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 }
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {
 	return respawnFrameRequest_;
-}
-
-SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {
-	return respawnPasteRequest_;
 }
 
 GameplayInspector::RespawnRequest GameplayInspector::GetRespawnRequest() const {
