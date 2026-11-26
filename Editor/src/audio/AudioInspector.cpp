@@ -50,7 +50,23 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	ImGui::PushID("AudioInspector");
 	bool changed = false;
 
-	if (object.audioSource && ui.CollapsingHeader("Audio Source")) {
+	bool sourceOpen = false;
+	if (object.audioSource) {
+		sourceOpen = ui.CollapsingHeader("Audio Source");
+		ImGui::SetItemTooltip("Right-click for audio source actions.");
+		if (ImGui::BeginPopupContextItem("AudioSourceActions")) {
+			const bool reset = ui.MenuItem("Reset Audio Source");
+			const bool remove = ui.MenuItem("Remove Audio Source");
+			ImGui::EndPopup();
+			if (reset || remove) {
+				error_.clear();
+				changed |= history.SetAudioSource(
+				    id, reset ? std::optional{AudioSourceComponent{}} : std::nullopt);
+				sourceOpen = false;
+			}
+		}
+	}
+	if (sourceOpen) {
 		auto edited = *object.audioSource;
 		const auto assign = [&](const std::filesystem::path &path) {
 			auto value = *object.audioSource;
@@ -133,24 +149,26 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			ImGui::TextWrapped("%s", error_.c_str());
 		if (ImGui::Button("Clear Audio Clip"))
 			assign({});
-		if (ImGui::Button("Reset Audio Source")) {
-			error_.clear();
-			changed |= history.SetAudioSource(id, AudioSourceComponent{});
-		}
-
-		if (ImGui::Button("Remove Audio Source")) {
-			error_.clear();
-			changed |= history.SetAudioSource(id, std::nullopt);
-		}
 	}
 
-	if (object.audioListener && ui.CollapsingHeader("Audio Listener")) {
+	bool listenerOpen = false;
+	if (object.audioListener) {
+		listenerOpen = ui.CollapsingHeader("Audio Listener");
+		ImGui::SetItemTooltip("Right-click for audio listener actions.");
+		if (ImGui::BeginPopupContextItem("AudioListenerActions")) {
+			const bool remove = ui.MenuItem("Remove Audio Listener");
+			ImGui::EndPopup();
+			if (remove) {
+				changed |= history.SetAudioListener(id, std::nullopt);
+				listenerOpen = false;
+			}
+		}
+	}
+	if (listenerOpen) {
 		auto listener = *object.audioListener;
 		if (ui.Checkbox("Preferred Listener", listener.preferred))
 			changed |= history.SetAudioListener(id, listener);
 		ImGui::SetItemTooltip("Use this listener for spatial audio while it is active.");
-		if (ImGui::Button("Remove Audio Listener"))
-			changed |= history.SetAudioListener(id, std::nullopt);
 	}
 
 	ImGui::PopID();

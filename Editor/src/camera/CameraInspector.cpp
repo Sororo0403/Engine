@@ -17,7 +17,16 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	ImGui::PushID("CameraInspector");
 	bool changed = false;
 
-	if (ui.CollapsingHeader("Camera")) {
+	const bool open = ui.CollapsingHeader("Camera");
+	ImGui::SetItemTooltip("Right-click for camera actions.");
+	bool remove = false;
+	if (ImGui::BeginPopupContextItem("CameraActions")) {
+		remove = ui.MenuItem("Remove Camera");
+		ImGui::EndPopup();
+	}
+	if (remove) {
+		changed = history.SetCamera(id, std::nullopt);
+	} else if (open) {
 		auto edited = *object.camera;
 
 		if (ImGui::Checkbox("Primary", &edited.primary)) {
@@ -74,9 +83,6 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 
 		ui.EndDisabled();
 
-		if (ui.Button("Remove Camera")) {
-			changed |= history.SetCamera(id, std::nullopt);
-		}
 	}
 
 	ImGui::PopID();
