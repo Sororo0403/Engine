@@ -1200,71 +1200,59 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				clipCreateRequested_ = true;
 			ImGui::EndMenu();
 		}
-		if (!selectedItems_.empty() || selectedType == AssetType::TEXTURE) {
+		if (selectedType == AssetType::TEXTURE) {
 			ImGui::Separator();
-			if (selectedItems_.size() > 1) {
-				ui.Text(std::format("{} items selected", selectedItems_.size()));
-			}
-			if (!selectedPath_.empty()) {
-				const auto displayPath =
-				    selectedPath_.lexically_relative(assets.GetRootDirectory());
+			ImGui::InputInt("Texture Slot", &textureSlot_);
 
-				ui.Text(PathUtils::ToUtf8(displayPath));
-			}
+			if (!textureSlots.empty() &&
+			    ImGui::BeginCombo("Model Slots",
+			                      std::to_string(textureSlot_).c_str())) {
+				if (ImGui::BeginTable("TextureSlotChoices", 2,
+				                      ImGuiTableFlags_RowBg)) {
+					ImGui::TableSetupColumn(
+					    "Slot", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+					ImGui::TableSetupColumn("Material / Objects");
+					ImGui::TableHeadersRow();
 
-			if (selectedType == AssetType::TEXTURE) {
-				ImGui::InputInt("Texture Slot", &textureSlot_);
-
-				if (!textureSlots.empty() &&
-				    ImGui::BeginCombo("Model Slots",
-				                      std::to_string(textureSlot_).c_str())) {
-					if (ImGui::BeginTable("TextureSlotChoices", 2,
-					                      ImGuiTableFlags_RowBg)) {
-						ImGui::TableSetupColumn(
-						    "Slot", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-						ImGui::TableSetupColumn("Material / Objects");
-						ImGui::TableHeadersRow();
-
-						for (const auto &choice : textureSlots) {
-							if (choice.index < 0) {
-								continue;
-							}
-
-							ImGui::TableNextRow();
-							ImGui::TableNextColumn();
-							ImGui::PushID(choice.index);
-							const auto label = std::to_string(choice.index);
-
-							if (ImGui::Selectable(
-							        label.c_str(), textureSlot_ == choice.index,
-							        ImGuiSelectableFlags_SpanAllColumns)) {
-								textureSlot_ = choice.index;
-							}
-
-							ImGui::PopID();
-							ImGui::TableNextColumn();
-							ui.Text(std::format("{} | Used: {}/{}{}", choice.name,
-							                    choice.usedBy, choice.selectedCount,
-							                    choice.usedBy == 0 ? " [Unused]" : ""));
+					for (const auto &choice : textureSlots) {
+						if (choice.index < 0) {
+							continue;
 						}
 
-						ImGui::EndTable();
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::PushID(choice.index);
+						const auto label = std::to_string(choice.index);
+
+						if (ImGui::Selectable(
+						        label.c_str(), textureSlot_ == choice.index,
+						        ImGuiSelectableFlags_SpanAllColumns)) {
+							textureSlot_ = choice.index;
+						}
+
+						ImGui::PopID();
+						ImGui::TableNextColumn();
+						ui.Text(std::format("{} | Used: {}/{}{}", choice.name,
+						                    choice.usedBy, choice.selectedCount,
+						                    choice.usedBy == 0 ? " [Unused]" : ""));
 					}
 
-					ImGui::EndCombo();
+					ImGui::EndTable();
 				}
 
-				ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
-				ui.BeginDisabled(selectedPath_.empty());
-
-				if (ui.MenuItem("Assign Texture to Selection", nullptr, true)) {
-					textureSelectionPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-
-				ui.EndDisabled();
+				ImGui::EndCombo();
 			}
+
+			ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
+			ui.BeginDisabled(selectedPath_.empty());
+
+			if (ui.MenuItem("Assign Texture to Selection", nullptr, true)) {
+				textureSelectionPath_ = selectedPath_;
+			}
+
+			ui.EndDisabled();
+
+			ui.EndDisabled();
 		}
 		ImGui::EndPopup();
 	}
