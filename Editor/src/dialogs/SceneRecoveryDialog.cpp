@@ -147,23 +147,12 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 			if (!entry.assetDirectory.empty()) {
 				ImGui::TextWrapped("Assets: %s",
 				                   PathUtils::ToUtf8(entry.assetDirectory).c_str());
-				if (ui.Button("Show Assets Location")) {
-					ShellUtils::RevealLocationInExplorer(entry.assetDirectory, error_);
-				}
-				ImGui::SetItemTooltip("Show the Assets folder or its nearest existing parent.");
 				std::error_code statusError;
 				if (!std::filesystem::is_directory(
 				        PathUtils::ResolveFromExecutable(entry.assetDirectory), statusError)) {
 					ImGui::TextWrapped("The Assets folder is unavailable. "
 					                   "Some models and images may be missing after restoration.");
 				}
-			}
-			if (!entry.sourceFile.empty()) {
-				if (ui.Button("Show Original Location")) {
-					ShellUtils::RevealLocationInExplorer(entry.sourceFile, error_);
-				}
-				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(entry.sourceFile).c_str());
-				ui.SameLine();
 			}
 			if (ui.Button("Show Recovery File")) {
 				ShellUtils::RevealLocationInExplorer(entry.path, error_);
