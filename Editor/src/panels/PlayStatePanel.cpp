@@ -67,15 +67,6 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 	auto data = session.GetSharedScriptData();
 	if (data.empty())
 		data = "{}";
-	if (ui.Button("Copy Summary")) {
-		const auto text = std::format(
-		    "Scene: {}\n{}\n{}\n{}\n{}\n"
-		    "Shared Script Data:\n{}",
-		    scenePath.empty() ? sceneName : PathUtils::ToUtf8(scenePath),
-		    status, time, frames, messages,
-		    data);
-		ImGui::SetClipboardText(text.c_str());
-	}
 	if (ImGui::CollapsingHeader("Shared Script Data")) {
 		ImGui::TextWrapped("%.*s", static_cast<int>(data.size()), data.data());
 	}
