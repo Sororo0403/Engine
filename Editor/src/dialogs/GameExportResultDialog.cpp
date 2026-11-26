@@ -518,13 +518,18 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 	for (auto offset = scanStart; offset < scanEnd && std::getline(input, line);
 	     offset = static_cast<std::streamoff>(input.tellg())) {
 		const auto relative = static_cast<std::uintmax_t>(offset - start);
-		if (const auto level = ParseLogLevel(line)) {
+		const auto level = ParseLogLevel(line);
+		if (level) {
 			entryLevel = *level;
 			entryOffset = relative;
 		}
 		auto match = std::string_view::npos;
 		if ((!next || relative > anchor) && entryLevel >= minimumLevel) {
-			match = FindLogText(line, query, searchPath);
+			if (!query.empty()) {
+				match = FindLogText(line, query, searchPath);
+			} else if (level) {
+				match = 0;
+			}
 		}
 		if (match != std::string_view::npos) {
 			// 見出しから開くと一致行がページ外になる場合は、一致行を優先する。
@@ -1042,12 +1047,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			run.lastMatch.reset();
 		}
 		ui.SameLine();
-		ui.BeginDisabled(run.logFilter.empty());
-		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
+		const bool canSearchLog =
+		    !run.logFilter.empty() || run.minimumLogLevel != LogLevel::LOG_INFO;
+		ui.BeginDisabled(!canSearchLog);
+		if (ui.Button("Find First in Log")) {
 			jumpToBeginning |= FindLogMatch(MatchSearch::FIRST);
 		}
 		ui.EndDisabled();
-		ImGui::SetItemTooltip("Find the first matching line across the selected log range.");
+		ImGui::SetItemTooltip("Search the selected log range by text or log level.");
 		if (run.lastMatch) {
 			ui.SameLine();
 			if (ui.Button("Find Previous in Log")) {
