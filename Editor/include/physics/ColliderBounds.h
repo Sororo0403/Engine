@@ -21,7 +21,6 @@ class ColliderBounds {
 	enum class Mode {
 		NONE,
 		SELECTED,
-		ALL,
 	};
 
 	/// <summary>

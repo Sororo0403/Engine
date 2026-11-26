@@ -1,5 +1,4 @@
 #include "physics/ColliderBounds.h"
-#include "scene/SceneActivity.h"
 
 #include "graphics/render/DebugLine.h"
 #include "math/MathUtils.h"
@@ -51,18 +50,6 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 		for (const auto id : selected) {
 			if (const auto *object = scene.FindObject(id);
 			    object && !Update(renderer, scene, id)) {
-				return false;
-			}
-		}
-
-		return true;
-	case Mode::ALL:
-		for (const auto &[id, object] : scene.GetObjects()) {
-			if (!SceneActivity::IsActive(scene, id)) {
-				continue;
-			}
-
-			if (!Update(renderer, scene, id)) {
 				return false;
 			}
 		}

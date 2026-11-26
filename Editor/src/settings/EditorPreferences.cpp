@@ -607,10 +607,8 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 			if (mode == "none") {
 				loaded.colliderDisplay = ColliderBounds::Mode::NONE;
-			} else if (mode == "selected") {
+			} else if (mode == "selected" || mode == "all") {
 				loaded.colliderDisplay = ColliderBounds::Mode::SELECTED;
-			} else if (mode == "all") {
-				loaded.colliderDisplay = ColliderBounds::Mode::ALL;
 			} else {
 				throw std::runtime_error("衝突形状の表示範囲が無効です。");
 			}
@@ -1079,8 +1077,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		     (!lastProject.is_absolute() ||
 		      lastProject.native().find(L'\0') != std::wstring::npos)) ||
 		    (colliderDisplay != ColliderBounds::Mode::NONE &&
-		     colliderDisplay != ColliderBounds::Mode::SELECTED &&
-		     colliderDisplay != ColliderBounds::Mode::ALL)) {
+		     colliderDisplay != ColliderBounds::Mode::SELECTED)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 
@@ -1204,9 +1201,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"searchProjectScenes", searchProjectScenes},
 		    {"showObjectMarkers", showObjectMarkers},
 		    {"colliderDisplay",
-		     colliderDisplay == ColliderBounds::Mode::NONE  ? "none"
-		     : colliderDisplay == ColliderBounds::Mode::ALL ? "all"
-		                                                    : "selected"},
+		     colliderDisplay == ColliderBounds::Mode::NONE ? "none" : "selected"},
 		    {"snapping", snapping},
 		    {"tool", tool},
 		    {"space",

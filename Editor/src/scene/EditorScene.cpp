@@ -2242,7 +2242,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			};
 			item("None", ColliderBounds::Mode::NONE);
 			item("Selected", ColliderBounds::Mode::SELECTED);
-			item("All", ColliderBounds::Mode::ALL);
 			ui_.EndMenu();
 		}
 

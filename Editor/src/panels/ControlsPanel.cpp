@@ -590,8 +590,8 @@ void ControlsPanel::Draw() {
 	         "Add Collider, Character Controller, Camera, Follow Camera or "
 	         "Respawn. Changes support Undo and scene saving."},
 	        {"View > Colliders",
-	         "Show collider outlines for None, Selected or All objects in "
-	         "Scene. All includes hidden models and objects without models. "
+	         "Show collider outlines for selected objects or turn them off. "
+	         "Selected objects can be hidden or have no model. "
 	         "The outlines match world-axis collision boxes and never appear "
 	         "in Game. This display setting is saved with Editor preferences."},
 	        {"Create > Camera from Scene View",
@@ -1138,8 +1138,7 @@ void ControlsPanel::Draw() {
 	         "view, including its center offset, rotation and scale. Models "
 	         "may be hidden or absent; a locked Inspector uses its fixed "
 	         "object. The Scene tab opens if necessary. Selection, collider "
-	         "display, object data and Undo history stay unchanged. View > "
-	         "Colliders > All shows hidden or unselected shapes. Invalid "
+	         "display, object data and Undo history stay unchanged. Invalid "
 	         "colliders disable the action. Bounds outside the camera's "
 	         "clipping range leave the camera unchanged."},
 
