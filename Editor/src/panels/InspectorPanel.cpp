@@ -199,7 +199,6 @@ bool InspectorPanel::Draw(
     const ImGuiSystem &ui, Scene &scene, SceneObjectId selectedObjectId,
     EditorHistory &history, bool canPasteTransform, ModelManager *models,
     AssetDatabase *assets, bool canPasteCollider,
-    bool canPasteRespawn,
     std::span<const SceneObjectId> uvTargets, bool canPasteUv,
     std::span<const GameActionBinding> inputBindings) {
 	objectRequest_ = {};
@@ -813,19 +812,11 @@ bool InspectorPanel::Draw(
 	SceneObjectId targetSelectionRequest = 0;
 	changed |= gameplayInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history, targetSelectionRequest,
-	    canPasteTransform, canPasteRespawn);
+	    canPasteTransform);
 
 	const auto respawnRequest = gameplayInspector_.GetRespawnRequest();
 
-	if (respawnRequest.action == GameplayInspector::RespawnAction::COPY) {
-		objectRequest_ = {ObjectAction::COPY_RESPAWN_SETTINGS,
-		                  respawnRequest.objectId};
-	} else if (respawnRequest.action ==
-	           GameplayInspector::RespawnAction::PASTE) {
-		objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
-		                  respawnRequest.objectId};
-	} else if (respawnRequest.action ==
-	           GameplayInspector::RespawnAction::MOVE_TO_POSITION) {
+	if (respawnRequest.action == GameplayInspector::RespawnAction::MOVE_TO_POSITION) {
 		objectRequest_ = {ObjectAction::MOVE_TO_RESPAWN,
 		                  respawnRequest.objectId};
 	}
@@ -977,12 +968,6 @@ bool InspectorPanel::Draw(
 
 		if (componentItem("Respawn", !object->respawn)) {
 			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
-		}
-
-		if (componentItem("Paste Respawn Settings",
-		                  canPasteRespawn && !object->respawn)) {
-			objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
-			                  inspectedObjectId};
 		}
 
 		if (!hasMatches) {

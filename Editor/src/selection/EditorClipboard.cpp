@@ -147,19 +147,6 @@ const Collider *EditorClipboard::GetCollider() const {
 	return collider_ ? &*collider_ : nullptr;
 }
 
-bool EditorClipboard::CopyRespawnSettings(const RespawnSettings &settings) {
-	if (!settings.IsValid()) {
-		return false;
-	}
-
-	respawnSettings_ = settings;
-	return true;
-}
-
-const RespawnSettings *EditorClipboard::GetRespawnSettings() const {
-	return respawnSettings_ ? &*respawnSettings_ : nullptr;
-}
-
 bool EditorClipboard::CopyTextureUVs(const std::array<float, 2> &scale,
                                      const std::array<float, 2> &offset) {
 	MeshRendererComponent values;
@@ -185,6 +172,5 @@ void EditorClipboard::Clear() {
 	transform_.reset();
 	worldPosition_.reset();
 	collider_.reset();
-	respawnSettings_.reset();
 	textureUVs_.reset();
 }

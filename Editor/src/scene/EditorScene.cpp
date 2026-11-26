@@ -617,8 +617,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(
-	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetRespawnSettings() != nullptr);
+	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr);
 
 	if (hierarchyRequest.selectionChanged) {
 		FinishEdit();
@@ -631,7 +630,7 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, scene, selection_.GetActiveId(), history,
 	    clipboard_.GetTransform() != nullptr, &models_, &assets_,
 	    clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetRespawnSettings() != nullptr, selection_.GetIds(),
+	    selection_.GetIds(),
 	    clipboard_.GetTextureUVs() != nullptr, exportConfig_.actions);
 	const auto prefabRequest = inspectorPanel_.GetPrefabRequest();
 	const bool hasPrefabRequest =
@@ -1109,9 +1108,6 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::SNAP_POSITIONS:
 					SnapSelectedPositions();
-					break;
-				case HierarchyPanel::Action::PASTE_RESPAWN_SETTINGS:
-					PasteRespawnSettingsToSelection();
 					break;
 				case HierarchyPanel::Action::DUPLICATE_OBJECTS:
 					DuplicateSelectedObjects();
@@ -2181,12 +2177,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_SURFACE;
 		}
 
-		if (ui_.MenuItem("Paste Respawn Settings", nullptr,
-		                 objectEnabled &&
-		                     clipboard_.GetRespawnSettings() != nullptr)) {
-			action = EditorAction::PASTE_RESPAWN_SETTINGS;
-		}
-
 		if (ui_.BeginMenu("Colliders")) {
 			bool hasCollider = false;
 			bool hasMissing = false;
@@ -3119,10 +3109,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::SNAP_POSITIONS:
 		SnapSelectedPositions();
-		return;
-
-	case EditorAction::PASTE_RESPAWN_SETTINGS:
-		PasteRespawnSettingsToSelection();
 		return;
 
 	case EditorAction::PASTE_COLLIDERS:
@@ -7107,29 +7093,6 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action ==
-		    InspectorPanel::ObjectAction::COPY_RESPAWN_SETTINGS) {
-			if (!object->respawn ||
-			    !clipboard_.CopyRespawnSettings(*object->respawn)) {
-				ShowError("Could not copy invalid Respawn settings.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::PASTE_RESPAWN_SETTINGS) {
-			const auto *copied = clipboard_.GetRespawnSettings();
-
-			if (!copied ||
-			    !document_.GetHistory().SetRespawn(request.objectId, *copied)) {
-				ShowError("Could not paste Respawn settings. Copy valid "
-				          "settings first.");
-			}
-
-			return;
-		}
-
 		if (request.action == InspectorPanel::ObjectAction::COPY_COLLIDER) {
 			if (!object->collider ||
 			    !clipboard_.CopyCollider(*object->collider)) {
@@ -8371,30 +8334,6 @@ void EditorScene::PasteCollidersToSelection() {
 		Logger::Error(std::format("EditorScene::PasteCollidersToSelection: {}",
 		                          error.what()));
 		ShowError("Could not paste the Colliders. See the log for details.");
-	}
-}
-
-void EditorScene::PasteRespawnSettingsToSelection() {
-	const auto *settings = clipboard_.GetRespawnSettings();
-
-	if (!HasSelection() || !settings) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!document_.GetHistory().SetRespawnSettings(selection_.GetIds(),
-		                                               *settings)) {
-			ShowError(
-			    "Could not paste all Respawn settings. Check the selected "
-			    "objects and Respawn settings. No objects were changed.");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "EditorScene::PasteRespawnSettingsToSelection: {}", error.what()));
-		ShowError(
-		    "Could not paste the Respawn settings. See the log for details.");
 	}
 }
 

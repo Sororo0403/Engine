@@ -193,7 +193,6 @@ class EditorScene final : public IScene {
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
 		PASTE_COLLIDERS,
-		PASTE_RESPAWN_SETTINGS,
 		ALIGN_X,
 		ALIGN_Y,
 		ALIGN_Z,
@@ -621,11 +620,6 @@ class EditorScene final : public IScene {
 	/// コピーしたローカル衝突形状を全選択へ一括適用する。失敗時は全対象を保持する
 	/// </summary>
 	void PasteCollidersToSelection();
-
-	/// <summary>
-	/// コピーした復帰設定を全選択へ1操作で適用する。Transformと他のコンポーネントは保持する
-	/// </summary>
-	void PasteRespawnSettingsToSelection();
 
 	/// <summary>
 	/// 画像テクスチャの同じスロットへの割り当てを、全選択へ1回のUndo操作で適用する

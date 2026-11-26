@@ -2319,48 +2319,6 @@ bool EditorHistory::SetCamera(SceneObjectId id,
 	return true;
 }
 
-bool EditorHistory::SetRespawnSettings(std::span<const SceneObjectId> ids,
-                                       const RespawnSettings &settings) {
-	CommitEdit();
-
-	if (ids.empty() || !settings.IsValid()) {
-		return false;
-	}
-
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(ids.size());
-
-	for (const auto id : ids) {
-		const auto *object = scene_.FindObject(id);
-
-		if (!seen.insert(id).second || !object ||
-		    (object->respawn && !object->respawn->IsValid())) {
-			return false;
-		}
-
-		RespawnCommand command{id, object->respawn, settings};
-
-		if (command.HasChanges()) {
-			commands.emplace_back(std::move(command));
-		}
-	}
-
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto state = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, state, "Paste Respawn Settings");
-	return true;
-}
-
 bool EditorHistory::BeginCamera(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);

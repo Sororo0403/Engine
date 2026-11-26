@@ -306,16 +306,6 @@ class EditorHistory {
 	               std::optional<CameraComponent> value);
 
 	/// <summary>
-	/// 復帰設定を全対象へ適用し、1操作として記録する。Respawnがない物体には追加する
-	/// </summary>
-	/// <param name="ids">重複のない物体ID。Transformと他のコンポーネントは保持する</param>
-	/// <param name="settings">有効な落下高度・開始位置の使用設定・明示的な復帰位置</param>
-	/// <returns>true:全件成功または同値 false:対象・変更前後の設定が無効。失敗時は全対象を保持する</returns>
-	/// <remarks>編集中の値は先に確定する。成功時は物体参照を取得し直す</remarks>
-	bool SetRespawnSettings(std::span<const SceneObjectId> ids,
-	                        const RespawnSettings &settings);
-
-	/// <summary>
 	/// 親と追従先の開始姿勢を解決してCameraをSceneビューへ合わせ、追従オフセットも記録する。
 	/// 親・ローカル拡大率・Primary・追従速度は保持し、編集中の内容は先に確定する
 	/// </summary>

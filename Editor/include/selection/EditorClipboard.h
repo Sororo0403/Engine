@@ -101,19 +101,6 @@ class EditorClipboard {
 	const Collider *GetCollider() const;
 
 	/// <summary>
-	/// Respawnの設定をコピーする。Transformや他のコピー内容は変更しない
-	/// </summary>
-	/// <param name="settings">有効な落下高度・開始位置の使用設定・明示的な復帰位置</param>
-	/// <returns>true:コピー成功 false:無効な設定。以前の内容は保持する</returns>
-	bool CopyRespawnSettings(const RespawnSettings &settings);
-
-	/// <summary>
-	/// コピーしたRespawnの設定を取得する
-	/// </summary>
-	/// <returns>次のCopyRespawnSettings成功またはClearまで有効な値。未設定はnullptr</returns>
-	const RespawnSettings *GetRespawnSettings() const;
-
-	/// <summary>
 	/// 画像の参照を含まない、物体ごとのUV調整
 	/// </summary>
 	struct TextureUVs {
@@ -149,6 +136,5 @@ class EditorClipboard {
 	std::optional<Transform> transform_;
 	std::optional<DirectX::XMFLOAT3> worldPosition_;
 	std::optional<Collider> collider_;
-	std::optional<RespawnSettings> respawnSettings_;
 	std::optional<TextureUVs> textureUVs_;
 };

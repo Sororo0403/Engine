@@ -51,8 +51,6 @@ class InspectorPanel {
 	enum class ObjectAction {
 		NONE,
 		COPY_TRANSFORM,
-		COPY_RESPAWN_SETTINGS,
-		PASTE_RESPAWN_SETTINGS,
 		COPY_COLLIDER,
 		PASTE_COLLIDER,
 		PASTE_TRANSFORM,
@@ -172,7 +170,6 @@ class InspectorPanel {
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
 	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
-	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <param name="canPasteUv">コピー済みの有効なUVがあるか</param>
 	/// <param name="inputBindings">ゲーム設定の名前付き操作</param>
 	/// <param name="uvTargets">表示物体のUVを一括適用する選択先。空またはMesh Rendererなしの物体を含む場合は要求不可</param>
@@ -182,7 +179,6 @@ class InspectorPanel {
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
 	          AssetDatabase *assets = nullptr,
 	          bool canPasteCollider = false,
-	          bool canPasteRespawn = false,
 	          std::span<const SceneObjectId> uvTargets = {},
 	          bool canPasteUv = false,
 	          std::span<const GameActionBinding> inputBindings = {});

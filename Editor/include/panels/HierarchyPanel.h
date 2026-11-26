@@ -39,7 +39,6 @@ class HierarchyPanel {
 		CUT_OBJECTS,
 		DUPLICATE_OBJECTS,
 		PASTE_COLLIDERS,
-		PASTE_RESPAWN_SETTINGS,
 		RESET_TRANSFORMS,
 		SNAP_POSITIONS,
 		DROP_TO_GROUND,
@@ -82,12 +81,10 @@ class HierarchyPanel {
 	/// <param name="selection">Editorの選択状態</param>
 	/// <param name="editable">追加・削除などの編集要求を許可するか。falseでも選択・検索・フレーミングは許可する</param>
 	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
-	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <returns>要求された操作と入力状態</returns>
 	Result Draw(const ImGuiSystem &ui, const Scene &scene,
 	            EditorSelection &selection, bool editable = true,
-	            bool canPasteCollider = false,
-	            bool canPasteRespawn = false);
+	            bool canPasteCollider = false);
 
 	/// <summary>
 	/// 検索・並び順・表示条件・表示要求・範囲選択の基準とScene選択の除外をクリアする。選択状態は変更しない
