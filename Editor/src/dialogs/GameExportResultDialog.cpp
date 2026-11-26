@@ -1093,13 +1093,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			refreshedLog |= log_ != previous;
 		}
 		ui.SameLine();
-		ui.BeginDisabled(log_.empty());
-		if (ui.Button("Copy Log"))
-			ImGui::SetClipboardText(log_.c_str());
-		ui.EndDisabled();
-		ImGui::SetItemTooltip("Copy the current page or tail before filtering.");
-
-		ui.SameLine();
 		const auto logPath = directory_ / kGameLogPath;
 		std::error_code status;
 		ui.BeginDisabled(!std::filesystem::is_regular_file(logPath, status));
@@ -1208,14 +1201,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		const auto byLevel = filterByLevel ? FilterLogLevel(matching, run.minimumLogLevel)
 		                                   : std::string{};
 		const auto &displayedLog = filterByLevel ? byLevel : matching;
-		if (!run.logFilter.empty() || filterByLevel) {
-			ui.BeginDisabled(displayedLog.empty());
-			if (ui.Button("Copy Filtered Log") && !displayedLog.empty()) {
-				ImGui::SetClipboardText(displayedLog.c_str());
-			}
-			ui.EndDisabled();
-			ImGui::SetItemTooltip("Copy entries on this page that match the current filters.");
+		const bool filteredView = !run.logFilter.empty() || filterByLevel;
+		ui.BeginDisabled(displayedLog.empty());
+		if (ui.Button(filteredView ? "Copy Filtered Log" : "Copy Log") &&
+		    !displayedLog.empty()) {
+			ImGui::SetClipboardText(displayedLog.c_str());
 		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Copy the displayed page or tail with the current filters.");
 
 		if (!logError_.empty()) {
 			ui.Text(logError_);
