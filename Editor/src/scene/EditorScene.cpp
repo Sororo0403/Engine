@@ -1648,11 +1648,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startup).c_str());
 		}
 		if (!failedRestoredScene_.empty()) {
-			if (ui_.MenuItem("Retry Last Edited Scene", nullptr, enabled)) {
-				pendingOpenPath_ = failedRestoredScene_;
-				action = EditorAction::OPEN_PATH;
-			}
-			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedRestoredScene_).c_str());
 			if (ui_.MenuItem("Resume Current Scene Next Time", nullptr,
 			                 enabled && project_.CanUseAsStartupScene(current))) {
 				action = EditorAction::RESUME_CURRENT_SCENE;
