@@ -245,9 +245,6 @@ bool EditorScene::Update(float deltaTime) {
 	                              ? std::filesystem::path{} : playSource;
 	std::filesystem::path playScriptToEdit;
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
-	                                   !IsBusy() && playUsesEditingScene_ &&
-	                                       playSelectionActive_ &&
-	                                       playSelection_.GetCount() != 0,
 	                                   document_.GetFilePath(),
 	                                   project_.GetStartupScene(), sourceToOpen,
 	                                   canRevealPlayObject, &playScriptToEdit);
@@ -291,10 +288,6 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (useRequestedCamera) {
 		playAction = EditorPlayMode::Action::PLAY;
-	}
-
-	if (playAction == EditorPlayMode::Action::STOP_AND_SELECT && !IsBusy()) {
-		StopAndSelectEditingObjects();
 	}
 
 	if (playAction == EditorPlayMode::Action::STOP) {
@@ -7524,45 +7517,6 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
-}
-
-void EditorScene::StopAndSelectEditingObjects() {
-	if (!playUsesEditingScene_ || !playMode_.GetSession().IsInitialScene())
-		return;
-	if (!playMode_.IsPlaying() || !playSelectionActive_ || IsBusy() ||
-	    playSelection_.GetCount() == 0) {
-		return;
-	}
-
-	try {
-		const auto &runtime = playMode_.GetSession().GetScene();
-		const auto &scene = document_.GetScene();
-		const auto selected = playSelection_.GetIds();
-		std::vector<SceneObjectId> ids(selected.begin(), selected.end());
-
-		for (const auto id : ids) {
-			if (!runtime.Contains(id) || !scene.Contains(id)) {
-				ShowError(
-				    "Every selected object must exist in both the runtime "
-				    "and editing scenes. Play and the editing selection "
-				    "were kept.");
-				return;
-			}
-		}
-
-		if (!selection_.Set(std::move(ids))) {
-			ShowError("Could not select the editing objects. Play was kept.");
-			return;
-		}
-
-		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-		playMode_.Stop();
-	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "EditorScene::StopAndSelectEditingObjects: {}", error.what()));
-		ShowError("Could not select the editing objects. Play and the editing "
-		          "selection were kept. See the log for details.");
-	}
 }
 
 void EditorScene::SynchronizePlayScene() {

@@ -55,7 +55,6 @@ bool EditorPlayMode::Initialize() {
 EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
                                               const GameConfig &config,
-                                              bool canUseSelection,
                                               const std::filesystem::path &editingScenePath,
                                               const std::filesystem::path &startupScenePath,
                                               const std::filesystem::path &playSourcePath,
@@ -153,13 +152,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 				}
 
 				ImGui::EndCombo();
-			}
-
-			ui.EndDisabled();
-			ui.BeginDisabled(!canUseSelection || !session_.IsInitialScene());
-
-			if (ui.MenuItem("Stop and Select in Editing Scene", nullptr, true)) {
-				action = Action::STOP_AND_SELECT;
 			}
 
 			ui.EndDisabled();

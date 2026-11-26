@@ -687,14 +687,6 @@ void ControlsPanel::Draw() {
 	         "After a scene transition, restart from the current scene's "
 	         "entry point. Shared game data, pause and playback speed carry "
 	         "over. Restart returns to the original Play scene."},
-	        {"Game > Stop and Select in Editing Scene",
-	         "Stop Play and select the same objects in the editing Hierarchy. "
-	         "Selection order and the active object are kept. All selected "
-	         "objects must exist in both scenes; failure keeps Play and the "
-	         "editing selection. Transforms, components, history, files and "
-	         "Inspector locks are unchanged. Normal Stop keeps the selection "
-	         "from before Play. Unavailable without runtime selection or "
-	         "while another dialog is open."},
 
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "

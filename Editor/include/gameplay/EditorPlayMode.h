@@ -49,7 +49,6 @@ class EditorPlayMode {
 	/// <param name="ui">UI機能</param>
 	/// <param name="canStart">再生開始と速度変更を受け付けるか</param>
 	/// <param name="config">編集中のプレビューに使用する描画幅・高さ・照明。再生中は開始時の設定を保持する</param>
-	/// <param name="canUseSelection">再生中の選択物体を使った停止操作を許可するか</param>
 	/// <param name="editingScenePath">編集中のシーンのパス。未保存の場合は空</param>
 	/// <param name="startupScenePath">プロジェクトの起動シーンのパス。未設定の場合は空</param>
 	/// <param name="playSourcePath">停止後に編集できる実行元シーン。なければ空</param>
@@ -58,7 +57,6 @@ class EditorPlayMode {
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
 	              const GameConfig &config = GameConfig{},
-	              bool canUseSelection = false,
 	              const std::filesystem::path &editingScenePath = {},
 	              const std::filesystem::path &startupScenePath = {},
 	              const std::filesystem::path &playSourcePath = {},
