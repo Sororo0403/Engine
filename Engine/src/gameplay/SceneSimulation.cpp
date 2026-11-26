@@ -1162,17 +1162,6 @@ SceneSimulation::GetCharacterState() const {
 	                             groundObject};
 }
 
-std::optional<RigidBodyState>
-SceneSimulation::GetRigidBodyState(SceneObjectId id) const {
-	const auto *object = scene_.FindObject(id);
-	const auto *world = physics_.GetWorld();
-	return playing_ && world && object && object->rigidBody &&
-	               object->rigidBody->enabled &&
-	               SceneActivity::IsActive(scene_, id)
-	           ? world->GetState(id)
-	           : std::nullopt;
-}
-
 namespace {
 /// <summary>
 /// キーから求めた値を再生シーンのローカル座標・UIへ適用する

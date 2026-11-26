@@ -280,13 +280,6 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// 有効なRigid Bodyの現在のワールド姿勢・速度・休止状態を取得する
-	/// </summary>
-	/// <param name="id">再生用シーンの物体ID</param>
-	/// <returns>実行中の剛体状態。対象なし・無効・停止中はnullopt</returns>
-	std::optional<RigidBodyState> GetRigidBodyState(SceneObjectId id) const;
-
-	/// <summary>
 	/// Rendererから参照できる、アドレスが変わらない再生用シーンを取得する
 	/// </summary>
 	/// <returns>編集データとは独立したシーン</returns>
