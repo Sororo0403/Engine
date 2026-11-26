@@ -1654,22 +1654,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			}
 		}
 
-		const bool canSetCurrentStartup =
-		    enabled && !currentIsStartup && project_.CanUseAsStartupScene(current);
-		if (ui_.MenuItem("Set Current Scene as Startup", nullptr,
-		                 canSetCurrentStartup)) {
-			pendingOpenPath_ = current;
-			action = EditorAction::SET_STARTUP_SCENE;
-		}
-		if (enabled && !canSetCurrentStartup && !currentIsStartup &&
-		    ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled |
-		                         ImGuiHoveredFlags_ForTooltip)) {
-			ImGui::SetTooltip(
-			    "%s", project_.GetRoot().empty()
-			              ? "Open a project first."
-			              : "Save the scene in the project's scenes folder first.");
-		}
-
 		const auto &projectScenes = assets_.GetSceneTargets();
 		const bool canBrowseProjectScenes =
 		    enabled && !project_.GetRoot().empty() && !projectScenes.empty();
@@ -4727,7 +4711,7 @@ void EditorScene::UpdateDialogs() {
 					Logger::Info(std::format(
 					    "Project startup scene: {}. {}", PathUtils::ToUtf8(startup),
 					    canUseSavedScene
-					        ? "To use the newly saved scene, choose File > Set Current Scene as Startup."
+					        ? "To use the newly saved scene, select it under File > Choose Startup Scene."
 					        : "Save the new scene in the project's scenes folder to use it as startup."));
 				}
 				recentScenes_.Add(document_.GetFilePath());
@@ -6297,7 +6281,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				startupError = std::format(
 				    "Could not open the project startup scene: {}\n{}\n"
 				    "Open or save a scene in the project, then choose "
-				    "File > Set Current Scene as Startup.",
+				    "File > Choose Startup Scene.",
 				    PathUtils::ToUtf8(startup), document_.GetError());
 			}
 
