@@ -323,22 +323,6 @@ bool CollisionWorld::CanPlace(
 	return true;
 }
 
-bool CollisionWorld::FindOverlaps(const Scene &scene,
-                                  const AxisAlignedBox &body,
-                                  std::vector<SceneObjectId> &objects,
-                                  SceneObjectId ignoredObject,
-                                  const std::optional<CollisionFilter> &filter,
-                                  bool includeTriggers) {
-	if (!Valid(body) || (filter && !filter->IsValid())) {
-		return false;
-	}
-
-	WorldCollider query;
-	return QueryShape(body, query) &&
-	       FindOverlaps(scene, query, objects, ignoredObject, filter,
-	                    includeTriggers);
-}
-
 bool CollisionWorld::FindSphereOverlaps(
     const Scene &scene, const DirectX::XMFLOAT3 &center, float radius,
     std::vector<SceneObjectId> &objects, std::uint32_t layerMask,
@@ -350,19 +334,10 @@ bool CollisionWorld::FindSphereOverlaps(
 	DirectX::XMStoreFloat4x4(
 	    &matrix, DirectX::XMMatrixTranslation(center.x, center.y, center.z));
 	WorldCollider query;
-	std::string error;
-	return WorldCollider::Create(sphere, matrix, query, error) &&
-	       FindOverlaps(scene, query, objects, ignoredObject, std::nullopt,
-	                    includeTriggers, layerMask);
-}
+	if (std::string error; !WorldCollider::Create(sphere, matrix, query, error)) {
+		return false;
+	}
 
-bool CollisionWorld::FindOverlaps(const Scene &scene,
-                                  const WorldCollider &query,
-                                  std::vector<SceneObjectId> &objects,
-                                  SceneObjectId ignoredObject,
-                                  const std::optional<CollisionFilter> &filter,
-                                  bool includeTriggers,
-                                  std::uint32_t layerMask) {
 	SceneHierarchy::WorldTransforms transforms;
 
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
@@ -390,8 +365,7 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 		}
 
 		if ((layerMask & (std::uint32_t{1} << object.collider->filter.layer)) &&
-		    (includeTriggers || !object.collider->isTrigger) &&
-		    (!filter || filter->CanCollide(object.collider->filter))) {
+		    (includeTriggers || !object.collider->isTrigger)) {
 			WorldCollider geometry;
 			std::string error;
 			bool overlap = false;
@@ -547,21 +521,6 @@ bool CollisionWorld::Move(const Collider &collider,
 	       WorldCollider::Create(collider, matrix, body, error) &&
 	       CanPlace(body, collider.filter) &&
 	       MoveAlongSurfaces(body, displacement, result, collider.filter, up);
-}
-
-bool CollisionWorld::FindOverlaps(const Scene &scene, const Collider &collider,
-                                  const DirectX::XMFLOAT4X4 &matrix,
-                                  std::vector<SceneObjectId> &objects) {
-	if (collider.shape == Collider::Shape::BOX) {
-		AxisAlignedBox body;
-		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
-		       FindOverlaps(scene, body, objects, 0, collider.filter, false);
-	}
-
-	WorldCollider body;
-	std::string error;
-	return WorldCollider::Create(collider, matrix, body, error) &&
-	       FindOverlaps(scene, body, objects, 0, collider.filter, false);
 }
 
 bool CollisionWorld::Move(const AxisAlignedBox &body,

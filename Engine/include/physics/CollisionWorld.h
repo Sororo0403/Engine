@@ -68,24 +68,6 @@ class CollisionWorld {
 	         const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
 	/// <summary>
-	/// 指定したボックスと体積が重なるColliderの物体IDをシーンから検索する。
-	/// 面・辺・頂点への接触は重なりに含めず、表示状態には依存しない
-	/// </summary>
-	/// <param name="scene">衝突形状を調べるシーン。内容は変更しない</param>
-	/// <param name="body">検索する有効なワールド座標のボックス</param>
-	/// <param name="objects">成功時に置き換えるID昇順の結果。重複なし。該当なしは空</param>
-	/// <param name="ignoredObject">検索から除く物体ID。0は除外なし</param>
-	/// <param name="filter">問い合わせ元の衝突設定。未指定は幾何的な重なりを検索する</param>
-	/// <param name="includeTriggers">true:Triggerも含む幾何的な検索 false:移動を止めるColliderだけを検索</param>
-	/// <returns>true:検索成功 false:ボックスや障害物の形状が無効。失敗や例外時は結果を保持する</returns>
-	static bool
-	FindOverlaps(const Scene &scene, const AxisAlignedBox &body,
-	             std::vector<SceneObjectId> &objects,
-	             SceneObjectId ignoredObject = 0,
-	             const std::optional<CollisionFilter> &filter = std::nullopt,
-	             bool includeTriggers = true);
-
-	/// <summary>
 	/// ボックスを直線移動したとき、最初に体積が重なり始めるColliderと移動割合を調べる
 	/// </summary>
 	/// <param name="body">開始位置の有効なワールド座標のボックス</param>
@@ -155,18 +137,6 @@ class CollisionWorld {
 	          const DirectX::XMFLOAT3 &up = {0, 1, 0}) const;
 
 	/// <summary>
-	/// 指定姿勢の移動用形状と重なる有効な固体を、衝突マスクに従って列挙する
-	/// </summary>
-	/// <param name="scene">固体を取得するシーン</param>
-	/// <param name="collider">問い合わせ元の形状とマスク</param>
-	/// <param name="matrix">問い合わせ元のワールド姿勢</param>
-	/// <param name="objects">成功時だけ設定する物体ID一覧</param>
-	/// <returns>true:検索成功 false:姿勢や形状が無効</returns>
-	static bool FindOverlaps(const Scene &scene, const Collider &collider,
-	                         const DirectX::XMFLOAT4X4 &matrix,
-	                         std::vector<SceneObjectId> &objects);
-
-	/// <summary>
 	/// ワールド座標の球と重なるColliderを物体ID順に列挙する
 	/// </summary>
 	/// <param name="scene">有効なColliderを取得するシーン</param>
@@ -186,12 +156,6 @@ class CollisionWorld {
   private:
 	bool CanPlace(const WorldCollider &body,
 	              const std::optional<CollisionFilter> &filter) const;
-	static bool FindOverlaps(const Scene &scene, const WorldCollider &body,
-	                         std::vector<SceneObjectId> &objects,
-	                         SceneObjectId ignoredObject,
-	                         const std::optional<CollisionFilter> &filter,
-	                         bool includeTriggers,
-	                         std::uint32_t layerMask = UINT32_MAX);
 	/// <summary>
 	/// 実形状の面の法線で滑り方向を決め、移動を判定する
 	/// </summary>
