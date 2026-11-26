@@ -463,12 +463,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 						location += std::format(":{}", line);
 					}
 				}
-				if (ui.Button("Search This Source")) {
-					// 移動前のログも検索できるよう、ログ自身が保持するパスを使う。
-					filter_ = PathUtils::ToUtf8(selected->sourcePath);
-				}
-				ImGui::SetItemTooltip("Search for this source path in the current log filters.");
-				ui.SameLine();
 				if (ui.Button("Show Source in Explorer")) {
 					sourceActionErrorId_ = selectedId_;
 					sourceActionError_.clear();
