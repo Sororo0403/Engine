@@ -2,7 +2,6 @@
 
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
-#include "selection/EditorSelection.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -47,24 +46,4 @@ ModelUsage::FindObjects(const Scene &scene,
 	}
 
 	return result;
-}
-
-std::size_t ModelUsage::SelectObjects(const Scene &scene,
-                                      const std::filesystem::path &modelPath,
-                                      EditorSelection &selection) {
-	auto ids = FindObjects(scene, modelPath);
-	const auto active =
-	    std::find(ids.begin(), ids.end(), selection.GetActiveId());
-
-	if (active != ids.end()) {
-		std::rotate(active, active + 1, ids.end());
-	}
-
-	const auto count = ids.size();
-
-	if (!selection.Set(std::move(ids))) {
-		throw std::logic_error("ModelUsage: 選択する物体の一覧が無効です。");
-	}
-
-	return count;
 }

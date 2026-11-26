@@ -175,10 +175,7 @@ void ControlsPanel::Draw() {
 	         "dimensions, fit again or remove it. Green Scene lines show the "
 	         "transformed shape outline. Each drag is one Undo "
 	         "operation."},
-	        {"Assets > Select Instances",
-	         "Select all scene objects using the chosen model, including "
-	         "hidden objects. Also available from a model row context menu; "
-	         "reveals the active result in Hierarchy."},
+
 	        {"Assets folders / Up / Root",
 	         "Open a folder or return to its parent or the Assets root. Search "
 	         "finds files and folders across Assets. Double-click a folder "

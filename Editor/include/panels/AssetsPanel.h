@@ -117,12 +117,6 @@ class AssetsPanel {
 	const std::filesystem::path &GetGameSettingsRequest() const;
 
 	/// <summary>
-	/// このフレームに使用物体の選択を要求したモデルを取得する
-	/// </summary>
-	/// <returns>モデルの相対パス。要求なしの場合は空。次のDrawまたはClearまで有効</returns>
-	const std::filesystem::path &GetInstanceSelectionRequest() const;
-
-	/// <summary>
 	/// このフレームに再読み込みを要求したモデルを取得する
 	/// </summary>
 	/// <returns>モデルの相対パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
@@ -146,12 +140,6 @@ class AssetsPanel {
 	const std::vector<std::filesystem::path> &GetBatchReloadRequest() const {
 		return batchReloadPaths_;
 	}
-
-	/// <summary>
-	/// このフレームに使用物体の選択を要求した画像を取得する
-	/// </summary>
-	/// <returns>画像の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
-	const std::filesystem::path &GetTextureUsageSelectionRequest() const;
 
 	/// <summary>
 	/// このフレームに選択物体へ割り当てることを要求した画像を取得する
@@ -333,7 +321,6 @@ class AssetsPanel {
 	std::filesystem::path textureSelectionPath_;
 	std::filesystem::path texturePreviewPath_;
 	std::filesystem::path audioPreviewPath_;
-	std::filesystem::path textureUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
 	std::vector<std::filesystem::path> selectedItems_;
 	std::filesystem::path selectionAnchor_;
@@ -342,7 +329,6 @@ class AssetsPanel {
 	std::filesystem::path gameSettingsPath_;
 	std::filesystem::path sceneAppendPath_;
 	std::filesystem::path prefabAppendPath_;
-	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path modelReloadPath_;
 	std::filesystem::path meshReplacementPath_;
 	std::filesystem::path textureReloadPath_;

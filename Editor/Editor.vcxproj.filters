@@ -670,8 +670,6 @@
     <ClCompile Include="src\appearance\TextureSlotInspector.cpp"><Filter>src\appearance</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\TextureUsage.h"><Filter>include\assets</Filter></ClInclude>
-    <ClCompile Include="src\assets\TextureUsage.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

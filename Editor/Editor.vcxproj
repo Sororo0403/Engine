@@ -376,8 +376,6 @@ exit /b 0</Command>
     <ClCompile Include="src\appearance\TextureSlotInspector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\TextureUsage.h"></ClInclude>
-    <ClCompile Include="src\assets\TextureUsage.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

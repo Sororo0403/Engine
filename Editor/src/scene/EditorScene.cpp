@@ -8,11 +8,9 @@
 #include "assets/AssetUsage.h"
 #include "platform/windows/ShellUtils.h"
 #include "assets/ModelPlacement.h"
-#include "assets/ModelUsage.h"
 #include "assets/PrefabAsset.h"
 #include "assets/PrefabInstances.h"
 #include "assets/ScenePlacement.h"
-#include "assets/TextureUsage.h"
 #include "camera/CameraObjects.h"
 #include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
@@ -692,7 +690,6 @@ bool EditorScene::Update(float deltaTime) {
 	const auto requestedObjects = !assetsPanel_.GetPrefabAppendRequest().empty()
 	                                  ? assetsPanel_.GetPrefabAppendRequest()
 	                                  : assetsPanel_.GetSceneAppendRequest();
-	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto &requestedModelReload = checkedRequest.modelReloadPath.empty()
 	                                      ? assetsPanel_.GetModelReloadRequest()
 	                                      : checkedRequest.modelReloadPath;
@@ -703,8 +700,6 @@ bool EditorScene::Update(float deltaTime) {
 	                                        : checkedRequest.textureReloadPath;
 	const bool textureAssignment =
 	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
-	const auto requestedTextureUsers =
-	    assetsPanel_.GetTextureUsageSelectionRequest();
 
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,
@@ -1181,15 +1176,6 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedInstances.empty() && requestedModelPath.empty() &&
-		    !hasAssetDrop && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && !hasObjectRequest &&
-		    !historyRequest &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			SelectModelInstances(requestedInstances);
-		}
-
-		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedMeshReplacement.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			ReplaceSelectedMeshes(requestedMeshReplacement);
@@ -1214,24 +1200,14 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
-		    !hasCheckRequest && requestedTextureUsers.empty() &&
-		    requestedObjects.empty() && requestedInstances.empty() &&
+		    !hasCheckRequest &&
+		    requestedObjects.empty() &&
 		    requestedModelPath.empty() && !hasAssetDrop &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			AssignTextureToSelection(requestedTexture,
 			                         assetsPanel_.GetTextureSlot());
-		}
-
-		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedTextureUsers.empty() && requestedObjects.empty() &&
-		    requestedInstances.empty() && requestedModelPath.empty() &&
-		    !hasAssetDrop && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
-		    !hasObjectRequest && !historyRequest &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			SelectTextureUsers(requestedTextureUsers);
 		}
 
 		if (!IsBusy() && !requestedModelPath.empty()) {
@@ -1259,25 +1235,25 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy()) {
 			if (historyRequest && action == EditorAction::NONE &&
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
-			    requestedInstances.empty() && !hasAssetDrop &&
+			    !hasAssetDrop &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && !hasCheckRequest &&
-			    requestedTextureUsers.empty() && requestedObjects.empty() &&
+			    requestedObjects.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
 
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
-			    requestedInstances.empty() && !hasAssetDrop &&
+			    !hasAssetDrop &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && !hasCheckRequest &&
-			    requestedTextureUsers.empty() && requestedObjects.empty() &&
+			    requestedObjects.empty() &&
 			    !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -1309,7 +1285,6 @@ bool EditorScene::Update(float deltaTime) {
 	    hasCheckRequest || hasPrefabRequest || textureAssignment ||
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
-	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
 	    !requestedObjects.empty() || hasAssetDrop ||
 	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
 	    colliderFitRequest != 0 || hasObjectRequest ||
@@ -3870,42 +3845,6 @@ void EditorScene::ConfigureSelectedColliders(ColliderOperation operation) {
 		                          error.what()));
 		ShowError("Could not configure the selected colliders. See the log for "
 		          "details.");
-	}
-}
-
-void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
-	FinishEdit();
-
-	try {
-		const auto count =
-		    ModelUsage::SelectObjects(document_.GetScene(), path, selection_);
-		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-
-		if (count == 0) {
-			Logger::Info("このモデルを使用する物体はシーン内にありません。");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::SelectModelInstances: {}", error.what()));
-		ShowError("Could not select model instances. See the log for details.");
-	}
-}
-
-void EditorScene::SelectTextureUsers(const std::filesystem::path &path) {
-	FinishEdit();
-
-	try {
-		const auto count =
-		    TextureUsage::SelectObjects(document_.GetScene(), path, selection_);
-		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-
-		if (count == 0) {
-			Logger::Info("この材質を割り当てた物体はシーン内にありません。");
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::SelectTextureUsers: {}", error.what()));
-		ShowError("Could not select texture users. See the log for details.");
 	}
 }
 

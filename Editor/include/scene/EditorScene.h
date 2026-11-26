@@ -567,18 +567,6 @@ class EditorScene final : public IScene {
 	void ShowSceneView();
 
 	/// <summary>
-	/// 指定モデルを使用する物体をまとめて選択し、Hierarchyで表示する
-	/// </summary>
-	/// <param name="path">検索するモデルのパス</param>
-	void SelectModelInstances(const std::filesystem::path &path);
-
-	/// <summary>
-	/// 指定画像を明示的に割り当てた物体をまとめて選択し、Hierarchyで表示する
-	/// </summary>
-	/// <param name="path">使用物体を検索する画像ファイル</param>
-	void SelectTextureUsers(const std::filesystem::path &path);
-
-	/// <summary>
 	/// Sceneビューの位置と向きから固定Cameraを作り、選択とHierarchy表示を更新する
 	/// </summary>
 	void CreateCameraFromView();

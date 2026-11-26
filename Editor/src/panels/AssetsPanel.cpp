@@ -214,7 +214,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
-	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	recyclePaths_.clear();
 	referencePaths_.clear();
@@ -223,7 +222,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
-	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
@@ -383,7 +381,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
-	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	recyclePaths_.clear();
 	renamePath_.clear();
@@ -392,7 +389,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	pasteRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
-	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
@@ -1210,15 +1206,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					gameSettingsPath_ = assetPath;
 				}
 
-				if ((assetType == AssetType::MODEL ||
-				     assetType == AssetType::TEXTURE) &&
-				    ui.MenuItem("Select Instances", nullptr, true)) {
-					if (assetType == AssetType::MODEL) {
-						instanceSelectionPath_ = assetPath;
-					} else {
-						textureUsageSelectionPath_ = assetPath;
-					}
-				}
 				ImGui::EndPopup();
 			}
 
@@ -1512,20 +1499,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				ui.EndDisabled();
-			} else if (selectedType == AssetType::MODEL || selectedType == AssetType::TEXTURE) {
-				ui.BeginDisabled(selectedPath_.empty());
-
-				if (ui.MenuItem("Select Instances", nullptr, true)) {
-					if (selectedType == AssetType::MODEL) {
-						instanceSelectionPath_ = selectedPath_;
-					} else {
-						textureUsageSelectionPath_ = selectedPath_;
-					}
-				}
-
-				ImGui::SetItemTooltip(
-				    "Select all objects using this asset, including hidden objects.");
-				ui.EndDisabled();
 			}
 
 		}
@@ -1574,15 +1547,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	return requestedPath;
 }
 
-const std::filesystem::path &AssetsPanel::GetInstanceSelectionRequest() const {
-	return instanceSelectionPath_;
-}
-
-const std::filesystem::path &
-AssetsPanel::GetTextureUsageSelectionRequest() const {
-	return textureUsageSelectionPath_;
-}
-
 const std::filesystem::path &AssetsPanel::GetTextureSelectionRequest() const {
 	return textureSelectionPath_;
 }
@@ -1607,7 +1571,6 @@ void AssetsPanel::Clear() {
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
-	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
@@ -1629,7 +1592,6 @@ void AssetsPanel::Clear() {
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
-	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
