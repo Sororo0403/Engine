@@ -211,7 +211,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	checked_ = true;
 }
 
-std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
+std::string SceneCheckPanel::GetReport() const {
 	if (!error_.empty()) {
 		return std::format("Scene Check failed:\n{}\n", error_);
 	}
@@ -221,15 +221,8 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 	}
 
 	std::string report;
-	const auto searchPath = filteredScene ? PathUtils::FromPathSearch(filter_)
-	                                      : std::filesystem::path{};
-	std::size_t count = 0;
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
-		if (filteredScene && !MatchesFilter(issue, *filteredScene, searchPath)) {
-			continue;
-		}
-		++count;
 		report += std::format("\n{}. {}\n", i + 1, issue.message);
 		if (issue.objectId != 0) {
 			report += std::format("   Object ID: {}\n", issue.objectId);
@@ -248,11 +241,7 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 		}
 	}
 
-	const auto heading = filteredScene
-	                         ? std::format("Last Scene Check: {} of {} issue(s) match the search\n",
-	                                       count, issues_.size())
-	                         : std::format("Last Scene Check: {} issue(s)\n", count);
-	return heading + report;
+	return std::format("Last Scene Check: {} issue(s)\n", issues_.size()) + report;
 }
 
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
@@ -376,16 +365,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	    });
 	ui.Text(std::format("Showing {} of {} issue(s)", matchingCount,
 	                    issues_.size()));
-	if (!filter_.empty() && checked_ && error_.empty()) {
-		ui.SameLine();
-		ui.BeginDisabled(matchingCount == 0);
-		if (ui.Button("Copy Matching Issues")) {
-			const auto report = GetReport(&scene);
-			ImGui::SetClipboardText(report.c_str());
-		}
-		ui.EndDisabled();
-	}
-
 	if (checked_ && matchingCount == 0 && !issues_.empty()) {
 		ui.Text("No issues match the search.");
 	}
@@ -529,11 +508,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			if (missing && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled |
 			                                    ImGuiHoveredFlags_ForTooltip)) {
 				ImGui::SetTooltip("The referenced file is missing.");
-			}
-			ui.SameLine();
-			if (ui.Button("Copy Asset Path")) {
-				lastIssue_ = i;
-				ImGui::SetClipboardText(path.c_str());
 			}
 			ui.SameLine();
 			if (ui.Button(missing ? "Open Folder in Explorer" : "Show Location in Explorer")) {

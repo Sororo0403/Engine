@@ -81,9 +81,8 @@ class SceneCheckPanel {
 	/// <summary>
 	/// 最後の検証結果を、共有・記録用のUTF-8テキストとして取得する
 	/// </summary>
-	/// <param name="filteredScene">指定時は現在の検索に一致する指摘だけを含める</param>
 	/// <returns>件数、メッセージ、関連する物体IDとパス。未実行は空、検証失敗時は失敗理由</returns>
-	std::string GetReport(const Scene *filteredScene = nullptr) const;
+	std::string GetReport() const;
 
 	/// <summary>
 	/// 最後の検証結果を検索して表示する。一括操作は表示中の結果だけを対象とし、シーンは変更しない
