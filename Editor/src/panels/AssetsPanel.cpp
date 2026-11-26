@@ -939,12 +939,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					revealMessage_ = std::move(error);
 				}
 			}
-			ui.SameLine();
-			if (ui.Button("Retry Show in Assets")) {
-				revealPath_ = std::move(unavailableRevealPath_);
-				unavailableRevealPath_.clear();
-				revealMessage_.clear();
-			}
 		}
 	}
 
