@@ -714,10 +714,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					}
 					ImGui::SetItemTooltip("%s", path.c_str());
 				}
-				if (issue.field == GameExportField::STARTUP_SCENE &&
-				    !projectRoot_.empty() && ui.Button("Choose Replacement Startup Scene...")) {
-					chooseStartup = true;
-				}
 				ImGui::PopID();
 				ImGui::Spacing();
 			}
