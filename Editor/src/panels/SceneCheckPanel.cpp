@@ -521,14 +521,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 
-		if (issue.objectId != 0 || !issue.inputAction.empty() || !issue.assetPath.empty()) {
-			ui.SameLine();
-		}
-		if (ui.Button("Recheck Here")) {
-			lastIssue_ = i;
-			checkRequested_ = true;
-		}
-		ImGui::SetItemTooltip("Check the scene again and resume at this issue.");
 
 		ImGui::PopID();
 	}
