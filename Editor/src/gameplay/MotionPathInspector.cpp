@@ -10,7 +10,20 @@
 bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                SceneObject &object,
                                EditorHistory &history) const {
-	if (!object.motionPath || !ui.CollapsingHeader("Motion Path"))
+	if (!object.motionPath)
+		return false;
+	const bool open = ui.CollapsingHeader("Motion Path");
+	ImGui::SetItemTooltip("Right-click for component actions.");
+	if (ImGui::BeginPopupContextItem("MotionPathActions")) {
+		const bool reset = ui.MenuItem("Reset Motion Path");
+		const bool remove = ui.MenuItem("Remove Motion Path");
+		ImGui::EndPopup();
+		if (remove)
+			return history.SetMotionPath(id, std::nullopt);
+		if (reset)
+			return history.SetMotionPath(id, MotionPathComponent{});
+	}
+	if (!open)
 		return false;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -87,10 +100,6 @@ bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	}
 
 	ImGui::EndDisabled();
-	if (ImGui::Button("Reset Motion Path"))
-		changed |= history.SetMotionPath(id, MotionPathComponent{});
-	if (ImGui::Button("Remove Motion Path"))
-		changed |= history.SetMotionPath(id, std::nullopt);
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

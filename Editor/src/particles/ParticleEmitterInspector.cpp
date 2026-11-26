@@ -11,7 +11,20 @@ bool ParticleEmitterInspector::Draw(
     const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
     EditorHistory &history,
     std::span<const std::filesystem::path> textures) const {
-	if (!object.particleEmitter || !ui.CollapsingHeader("Particle Emitter"))
+	if (!object.particleEmitter)
+		return false;
+	const bool open = ui.CollapsingHeader("Particle Emitter");
+	ImGui::SetItemTooltip("Right-click for component actions.");
+	if (ImGui::BeginPopupContextItem("ParticleEmitterActions")) {
+		const bool reset = ui.MenuItem("Reset Particle Emitter");
+		const bool remove = ui.MenuItem("Remove Particle Emitter");
+		ImGui::EndPopup();
+		if (remove)
+			return history.SetParticleEmitter(id, std::nullopt);
+		if (reset)
+			return history.SetParticleEmitter(id, ParticleEmitterComponent{});
+	}
+	if (!open)
 		return false;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -100,10 +113,6 @@ bool ParticleEmitterInspector::Draw(
 	                        ImGuiSliderFlags_AlwaysClamp));
 	apply(ImGui::ColorEdit4("Start Color", p.colorStart.data()));
 	apply(ImGui::ColorEdit4("End Color", p.colorEnd.data()));
-	if (ui.Button("Reset Particle Emitter"))
-		changed |= history.SetParticleEmitter(id, ParticleEmitterComponent{});
-	if (ui.Button("Remove Particle Emitter"))
-		changed |= history.SetParticleEmitter(id, std::nullopt);
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
