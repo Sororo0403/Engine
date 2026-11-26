@@ -58,21 +58,6 @@ class SceneAudioPlayer {
 	/// </summary>
 	void Stop();
 
-	/// <summary>
-	/// 有効な音源を最初から手動再生する。Play on Startが無効な音源も対象にできる
-	/// </summary>
-	/// <param name="id">収集済みの有効な音源</param>
-	/// <param name="error">成功時は空、失敗時は理由</param>
-	/// <returns>true:再生開始またはデバイス復帰待ち false:未開始・対象不在・再生失敗</returns>
-	bool PlaySource(SceneObjectId id, std::string &error);
-
-	/// <summary>
-	/// 有効な音源を手動停止し、再生開始待ちも取り消す。再有効化までは自動再開しない
-	/// </summary>
-	/// <param name="id">収集済みの音源</param>
-	/// <returns>true:停止済み false:対象なし</returns>
-	bool StopSource(SceneObjectId id);
-
   private:
 	struct Entry {
 		AudioSourceComponent component;

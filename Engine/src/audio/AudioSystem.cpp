@@ -137,27 +137,6 @@ bool AudioSystem::Initialize(std::string &error) {
 	}
 }
 
-bool AudioSystem::ResetDevice(std::string &error) {
-	error.clear();
-
-	try {
-		if (!impl_->engine)
-			throw std::logic_error(
-			    "Initialize the audio system before resetting its device.");
-		StopAll();
-		++impl_->deviceRevision;
-		if (!impl_->engine->Reset())
-			throw std::runtime_error("No audio output device is available.");
-		impl_->engine->SetMasterVolume(impl_->masterVolume);
-		if (impl_->suspended)
-			impl_->engine->Suspend();
-		return true;
-	} catch (const std::exception &exception) {
-		error = exception.what();
-		return false;
-	}
-}
-
 bool AudioSystem::Update(std::string &error) {
 	error.clear();
 
@@ -169,7 +148,7 @@ bool AudioSystem::Update(std::string &error) {
 			StopAll();
 			if (impl_->engine->IsCriticalError())
 				throw std::runtime_error(
-				    "The audio output device was lost. Reset the audio device "
+				    "The audio output device was lost. Restart the application "
 				    "to resume playback.");
 			return true;
 		}

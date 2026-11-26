@@ -34,13 +34,6 @@ class AudioSystem {
 	bool Initialize(std::string &error);
 
 	/// <summary>
-	/// 全再生を破棄して出力デバイスを取得し直す。古い再生ハンドルは無効になる
-	/// </summary>
-	/// <param name="error">デバイス不在・失敗時の理由</param>
-	/// <returns>true:出力デバイスあり false:未初期化、デバイス不在、または再取得失敗</returns>
-	bool ResetDevice(std::string &error);
-
-	/// <summary>
 	/// 終了した再生を回収し、空間配置を反映する。無音状態自体はエラーにしない
 	/// </summary>
 	/// <param name="error">成功時は空、デバイス喪失などの失敗理由</param>
