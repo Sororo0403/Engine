@@ -158,14 +158,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ui.BeginDisabled(!canStart);
 
 			pickScript = scriptToEdit && ui.MenuItem("Edit Script...", nullptr, true);
-			if (const auto *path = session_.GetLoadedScenePath()) {
-				if (ui.MenuItem("Restart Current Scene", nullptr, true)) {
-					action = Action::RESTART_CURRENT_SCENE;
-				}
-				ImGui::SetItemTooltip(
-				    "Restart %s from its entry point. Shared game data is kept.",
-				    PathUtils::ToUtf8(path->filename()).c_str());
-			}
 			if (!playSourcePath.empty()) {
 				if (ui.MenuItem(canRevealPlayObject ? "Stop and Show Source Object"
 				                                  : "Stop and Open Scene", nullptr, true)) {

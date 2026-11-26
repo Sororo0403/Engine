@@ -322,11 +322,8 @@ bool EditorScene::Update(float deltaTime) {
 		StartPlay(path, useRequestedCamera ? requestedCamera : 0);
 	}
 
-	const bool restartCurrentScene =
-	    playAction == EditorPlayMode::Action::RESTART_CURRENT_SCENE;
-	if ((playAction == EditorPlayMode::Action::RESTART || restartCurrentScene) &&
-	    playMode_.IsPlaying()) {
-		RestartPlay(restartCurrentScene);
+	if (playAction == EditorPlayMode::Action::RESTART && playMode_.IsPlaying()) {
+		RestartPlay(false);
 	}
 
 	if (playAction == EditorPlayMode::Action::TOGGLE_PAUSE) {

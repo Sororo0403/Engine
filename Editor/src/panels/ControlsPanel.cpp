@@ -683,10 +683,6 @@ void ControlsPanel::Draw() {
 	         "Editor test control: scene data, movement settings, history, "
 	         "preferences and exported games are unchanged. Speed changes "
 	         "are unavailable while another dialog is open."},
-	        {"Game > Restart Current Scene",
-	         "After a scene transition, restart from the current scene's "
-	         "entry point. Shared game data, pause and playback speed carry "
-	         "over. Restart returns to the original Play scene."},
 
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "
