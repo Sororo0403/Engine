@@ -732,8 +732,6 @@
     <ClCompile Include="src\lighting\PointLightInspector.cpp"><Filter>src\lighting</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="include\audio"><UniqueIdentifier>{e70b8990-79ea-4610-9cd0-fdcb5b27110a}</UniqueIdentifier></Filter>
-    <Filter Include="src\audio"><UniqueIdentifier>{ff3133e5-923d-4617-aee1-c2b6d42ebdbc}</UniqueIdentifier></Filter>
     <ClInclude Include="include\audio\AudioInspector.h"><Filter>include\audio</Filter></ClInclude>
     <ClCompile Include="src\audio\AudioInspector.cpp"><Filter>src\audio</Filter></ClCompile>
   </ItemGroup>
@@ -744,10 +742,6 @@
     <ClCompile Include="src\dialogs\AudioImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\audio\AudioPreview.h"><Filter>include\audio</Filter></ClInclude>
-    <ClCompile Include="src\audio\AudioPreview.cpp"><Filter>src\audio</Filter></ClCompile>
-    <ClInclude Include="include\panels\AudioPreviewPanel.h"><Filter>include\panels</Filter></ClInclude>
-    <ClCompile Include="src\panels\AudioPreviewPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\lighting\SpotLightInspector.h"><Filter>include\lighting</Filter></ClInclude>

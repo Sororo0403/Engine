@@ -232,7 +232,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	audioPreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -396,7 +395,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	audioPreviewPath_.clear();
 
 	const bool focusWindow = focusRequested_ || !revealPath_.empty() ||
 	                         (directoryOpenRequested_ && assets.GetError().empty());
@@ -1281,7 +1279,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (selectedItems_.size() > 1) {
 				ui.Text(std::format("{} items selected", selectedItems_.size()));
 			}
-			if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
+			if (!selectedPath_.empty()) {
 				const auto displayPath =
 				    selectedPath_.lexically_relative(assets.GetRootDirectory());
 
@@ -1379,19 +1377,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				ui.EndDisabled();
-			} else if (selectedType == AssetType::AUDIO) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-				if (ui.MenuItem("Preview Audio", nullptr, true)) {
-					audioPreviewPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-
-				if (!selectedPath_.empty()) {
-					ui.Text(PathUtils::ToUtf8(
-					    selectedPath_.lexically_relative(assets.GetRootDirectory())));
-				}
 			}
 
 			if (selectedType == AssetType::ANIMATION_CLIP) {
@@ -1484,7 +1469,6 @@ void AssetsPanel::Clear() {
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	audioPreviewPath_.clear();
 	selectedPath_.clear();
 	selectedItems_.clear();
 	selectionAnchor_.clear();
@@ -1608,8 +1592,4 @@ const std::filesystem::path &AssetsPanel::GetGameSettingsRequest() const {
 
 bool AssetsPanel::IsAudioImportRequested() const {
 	return audioImportRequested_;
-}
-
-const std::filesystem::path &AssetsPanel::GetAudioPreviewRequest() const {
-	return audioPreviewPath_;
 }

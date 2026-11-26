@@ -444,10 +444,6 @@ exit /b 0</Command>
     <ClCompile Include="src\dialogs\AudioImportDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\audio\AudioPreview.h" />
-    <ClCompile Include="src\audio\AudioPreview.cpp" />
-    <ClInclude Include="include\panels\AudioPreviewPanel.h" />
-    <ClCompile Include="src\panels\AudioPreviewPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\lighting\SpotLightInspector.h" />

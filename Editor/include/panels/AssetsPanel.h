@@ -230,12 +230,6 @@ class AssetsPanel {
 	void FinishPaste();
 
 	/// <summary>
-	/// このフレームで試聴用ウィンドウに開くことを要求したWAVを取得する
-	/// </summary>
-	/// <returns>音声パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
-	const std::filesystem::path &GetAudioPreviewRequest() const;
-
-	/// <summary>
 	/// Assetsから画像を割り当てるスロット番号を取得する
 	/// </summary>
 	/// <returns>0以上のスロット番号。不正入力中は割り当て要求を生成しない</returns>
@@ -301,7 +295,6 @@ class AssetsPanel {
 
 	AssetType type_ = AssetType::MODEL;
 	std::filesystem::path textureSelectionPath_;
-	std::filesystem::path audioPreviewPath_;
 	std::filesystem::path selectedPath_;
 	std::vector<std::filesystem::path> selectedItems_;
 	std::filesystem::path selectionAnchor_;

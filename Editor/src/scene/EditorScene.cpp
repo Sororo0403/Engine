@@ -88,8 +88,7 @@ EditorScene::EditorScene(const EngineContext &context)
                 context.audio),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
-      sceneViewPanel_(context.render),
-      audioPreviewPanel_(context.audioClips, context.audio) {
+      sceneViewPanel_(context.render) {
 }
 
 EditorScene::~EditorScene() = default;
@@ -165,7 +164,6 @@ bool EditorScene::Initialize() {
 	pendingPlayCamera_ = 0;
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
-	audioPreviewPanel_.Clear();
 
 	// 未接続の保存先も保持し、別のフォルダへ取り込んでしまうことを防ぐ。
 	assets_ = AssetDatabase(assetSources_.GetDirectory());
@@ -672,11 +670,6 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
-	if (!wasBusy && !assetsPanel_.GetAudioPreviewRequest().empty()) {
-		audioPreviewPanel_.Open(assetsPanel_.GetAudioPreviewRequest());
-	}
-
-	audioPreviewPanel_.Draw(ui_);
 	const auto requestedTexture =
 	    assetsPanel_.IsTextureClearRequested()
 	        ? std::filesystem::path{}
@@ -1647,7 +1640,6 @@ void EditorScene::Finalize() {
 		}
 	}
 
-	audioPreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
 	playSceneReady_ = false;
@@ -4593,7 +4585,6 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 			}
 
 			if (completed != 0) {
-				audioPreviewPanel_.Clear();
 				assets_.Refresh();
 				assetsPanel_.RemoveMissingPaths();
 			}
@@ -4706,7 +4697,6 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		}
 	}
 
-	audioPreviewPanel_.Clear();
 	assets_.Refresh();
 	std::vector<std::filesystem::path> destinations;
 	destinations.reserve(moves.size());
@@ -6255,7 +6245,6 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
                             bool skipTestSave) {
 	consolePanel_.MarkPlayStart();
 	playFailureReplay_.reset();
-	audioPreviewPanel_.Stop();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
 	FinishEdit();
