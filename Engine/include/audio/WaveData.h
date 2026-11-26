@@ -26,18 +26,6 @@ struct WaveData {
 	std::size_t GetBytesPerSample() const;
 
 	/// <summary>
-	/// チャンネル全体を1組としたサンプルフレーム数を取得する
-	/// </summary>
-	/// <returns>フレーム数。形式・チャンネル数が無効な場合は0</returns>
-	std::uint64_t GetFrameCount() const;
-
-	/// <summary>
-	/// フレーム数から再生時間を秒で取得する
-	/// </summary>
-	/// <returns>秒数。サンプリング周波数が0の場合は0</returns>
-	double GetDurationSeconds() const;
-
-	/// <summary>
 	/// 周波数・チャンネル数・形式・サイズ・サンプル境界と、浮動小数点サンプルの有限性を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応、空、上限超過、途中のフレーム、または非有限</returns>

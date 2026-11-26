@@ -51,16 +51,6 @@ AudioClipHandle AudioClipManager::Create(WaveData data, std::string &error) {
 
 AudioClipHandle AudioClipManager::Load(const std::filesystem::path &path,
                                        std::string &error) {
-	return LoadFile(path, false, error);
-}
-
-AudioClipHandle AudioClipManager::Reload(const std::filesystem::path &path,
-                                         std::string &error) {
-	return LoadFile(path, true, error);
-}
-
-AudioClipHandle AudioClipManager::LoadFile(const std::filesystem::path &path,
-                                           bool reload, std::string &error) {
 	error.clear();
 
 	try {
@@ -72,7 +62,7 @@ AudioClipHandle AudioClipManager::LoadFile(const std::filesystem::path &path,
 		    PathUtils::ResolveFromExecutable(path));
 		const auto found = impl_->cache.find(key);
 
-		if (!reload && found != impl_->cache.end()) {
+		if (found != impl_->cache.end()) {
 			return found->second;
 		}
 
@@ -85,7 +75,7 @@ AudioClipHandle AudioClipManager::LoadFile(const std::filesystem::path &path,
 		auto handle = Create(std::move(data), error);
 
 		if (handle) {
-			impl_->cache.insert_or_assign(key, handle);
+			impl_->cache.emplace(key, handle);
 		}
 
 		return handle;

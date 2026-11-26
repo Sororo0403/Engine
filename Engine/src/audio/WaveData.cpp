@@ -19,17 +19,6 @@ std::size_t WaveData::GetBytesPerSample() const {
 	return 0;
 }
 
-std::uint64_t WaveData::GetFrameCount() const {
-	const auto bytes = GetBytesPerSample();
-	return bytes && (channels == 1 || channels == 2)
-	           ? samples.size() / (bytes * channels)
-	           : 0;
-}
-
-double WaveData::GetDurationSeconds() const {
-	return sampleRate ? double(GetFrameCount()) / sampleRate : 0;
-}
-
 bool WaveData::IsValid() const {
 	const auto bytes = GetBytesPerSample();
 	if (!bytes || (channels != 1 && channels != 2) || sampleRate < 8000 ||

@@ -36,30 +36,6 @@ class AudioClipHandle {
 		return data_ ? data_->channels : 0;
 	}
 
-	/// <summary>
-	/// 音声のサンプリング周波数を取得する
-	/// </summary>
-	/// <returns>1秒当たりのフレーム数。空の参照は0</returns>
-	std::uint32_t GetSampleRate() const {
-		return data_ ? data_->sampleRate : 0;
-	}
-
-	/// <summary>
-	/// 元データのサンプルフレーム数を取得する
-	/// </summary>
-	/// <returns>チャンネル全体を1組としたフレーム数。空の参照は0</returns>
-	std::uint64_t GetFrameCount() const {
-		return data_ ? data_->GetFrameCount() : 0;
-	}
-
-	/// <summary>
-	/// ループしない場合の再生時間を取得する
-	/// </summary>
-	/// <returns>秒数。空の参照は0</returns>
-	double GetDurationSeconds() const {
-		return data_ ? data_->GetDurationSeconds() : 0;
-	}
-
   private:
 	friend class AudioClipManager;
 	friend class AudioSystem;
