@@ -1,5 +1,4 @@
 #include "graphics/ui/ImGuiSystem.h"
-#include "graphics/ui/UITexture.h"
 
 #include "core/Logger.h"
 #include "graphics/render/D3D12Graphics.h"
@@ -864,52 +863,6 @@ void ImGuiSystem::Image(const RenderTexture &texture, float width,
 	}
 
 	impl_->RegisterImage(texture.GetColorResource(), width, height);
-}
-
-std::unique_ptr<UITexture>
-ImGuiSystem::LoadImageTexture(const std::filesystem::path &path) const {
-	try {
-		if (!impl_->context_ || !impl_->rendererInitialized_ ||
-		    !impl_->graphics_ || path.empty() ||
-		    path.native().find(L'\0') != std::wstring::npos) {
-			throw std::invalid_argument("ImGuiSystem::LoadImageTexture: "
-			                            "未初期化、または画像パスが無効です。");
-		}
-
-		auto texture = std::unique_ptr<UITexture>(new UITexture());
-
-		if (!texture->Load(*impl_->graphics_,
-		                   PathUtils::ResolveFromExecutable(path))) {
-			return nullptr;
-		}
-
-		return texture;
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("ImGuiSystem::LoadImageTexture: {}", error.what()));
-		return nullptr;
-	}
-}
-
-void ImGuiSystem::Image(const UITexture &texture, float width,
-                        float height) const {
-	impl_->UseFrame();
-
-	if (!std::isfinite(width) || !std::isfinite(height)) {
-		throw std::invalid_argument(
-		    "ImGuiSystem::Image: 表示サイズが無効です。");
-	}
-
-	if (width <= 0.0f || height <= 0.0f) {
-		return;
-	}
-
-	if (!texture.Uses(*impl_->graphics_) || !texture.GetResource()) {
-		throw std::logic_error(
-		    "ImGuiSystem::Image: 描画基盤が異なる、または画像が未作成です。");
-	}
-
-	impl_->RegisterImage(texture.GetResource(), width, height);
 }
 
 bool ImGuiSystem::BeginMainMenuBar() const {

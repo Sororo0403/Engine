@@ -203,9 +203,6 @@
     <ClCompile Include="src\graphics\ui\ImGuiSystem.cpp">
       <Filter>src\graphics\ui</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ui\UITexture.cpp">
-      <Filter>src\graphics\ui</Filter>
-    </ClCompile>
     <ClCompile Include="src\scene\SceneManager.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -347,9 +344,6 @@
       <Filter>include\graphics\model</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\ui\ImGuiSystem.h">
-      <Filter>include\graphics\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\graphics\ui\UITexture.h">
       <Filter>include\graphics\ui</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\IScene.h">
