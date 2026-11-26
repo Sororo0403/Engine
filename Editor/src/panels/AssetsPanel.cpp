@@ -919,15 +919,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (clipboardHasMissingItems_) {
 		ImGui::TextWrapped("Some copied or cut items are missing. "
-		                   "Restore them or remove them from the clipboard.");
-		if (ui.Button("Remove Missing Clipboard Items")) {
-			std::erase_if(clipboardItems_, IsMissingAsset);
-			clipboardHasMissingItems_ = false;
-			if (clipboardItems_.empty()) {
-				clipboardRoot_.clear();
-				clipboardCut_ = false;
-			}
-		}
+		                   "Restore them or copy or cut a new selection.");
 	}
 
 	if (!revealMessage_.empty()) {
