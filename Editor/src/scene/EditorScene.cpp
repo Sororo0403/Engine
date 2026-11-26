@@ -5613,15 +5613,12 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!errorScenePath_.empty()) {
-				if (ui_.Button("Show Play Scene Location")) {
-					ShellUtils::RevealLocationInExplorer(errorScenePath_,
-					                                     errorActionMessage_);
+				const auto path = PathUtils::ToUtf8(errorScenePath_);
+				if (errorMessage_.find(path) == std::string::npos) {
+					ImGui::TextWrapped("Play scene: %s", path.c_str());
 				}
-				ImGui::SetItemTooltip(
-				    "Show the scene file or its nearest existing folder in Explorer.");
 				std::error_code status;
 				if (std::filesystem::is_regular_file(errorScenePath_, status)) {
-					ui_.SameLine();
 					const bool playing = playMode_.IsPlaying();
 					if (ui_.Button(playing ? "Stop and Open Play Scene" : "Open Play Scene")) {
 						pendingOpenPath_ = std::move(errorScenePath_);
@@ -5637,8 +5634,8 @@ void EditorScene::UpdateDialogs() {
 						StartAction(EditorAction::OPEN_PATH, object);
 						return;
 					}
+					ui_.SameLine();
 				}
-				ui_.SameLine();
 			}
 
 			if (!failedAssetMoves_.empty()) {
