@@ -755,8 +755,18 @@ bool InspectorPanel::Draw(
 	}
 
 	std::optional<std::optional<DirectionalLightComponent>> directionalLightChange;
-	if (object->directionalLight && ui.CollapsingHeader("Directional Light")) {
-
+	bool directionalLightOpen = false;
+	if (object->directionalLight) {
+		directionalLightOpen = ui.CollapsingHeader("Directional Light");
+		ImGui::SetItemTooltip("Right-click for directional light actions.");
+		if (ImGui::BeginPopupContextItem("DirectionalLightActions")) {
+			if (ui.MenuItem("Remove Directional Light")) {
+				directionalLightChange.emplace(std::nullopt);
+			}
+			ImGui::EndPopup();
+		}
+	}
+	if (directionalLightOpen) {
 		if (ui.Button("Edit Directional Light...")) {
 			directionalLightDraft_ = *object->directionalLight;
 			ui.OpenPopup("Edit Directional Light");
@@ -781,10 +791,6 @@ bool InspectorPanel::Draw(
 			ui.EndPopup();
 		}
 
-		ui.SameLine();
-		if (ui.Button("Remove Directional Light")) {
-			directionalLightChange.emplace(std::nullopt);
-		}
 	}
 
 	changed |=
