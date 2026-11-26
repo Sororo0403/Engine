@@ -450,20 +450,15 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		ui_.BeginDisabled(IsBusy());
-		const auto stateRequest =
+		const auto stateObject =
 		    playStatePanel_.Draw(ui_, playMode_.GetSession(), playInitialScenePath_);
 		ui_.EndDisabled();
 
 		if (!IsBusy() && playMode_.IsPlaying() && playSelectionActive_ &&
-		    runtime.Contains(stateRequest.objectId)) {
+		    runtime.Contains(stateObject)) {
 			try {
-				playSelection_.SelectOnly(stateRequest.objectId);
-				playHierarchyPanel_.RequestReveal(stateRequest.objectId);
-
-				if (stateRequest.frame) {
-					playFrameRequest_ = FrameRequest::INSPECTED;
-					ShowSceneView();
-				}
+				playSelection_.SelectOnly(stateObject);
+				playHierarchyPanel_.RequestReveal(stateObject);
 			} catch (const std::exception &error) {
 				Logger::Error(std::format(
 				    "EditorScene::SelectPlayStateObject: {}", error.what()));

@@ -16,7 +16,7 @@ void PlayStatePanel::Reset() {
 	focusRequested_ = false;
 }
 
-PlayStatePanel::Request PlayStatePanel::Draw(
+SceneObjectId PlayStatePanel::Draw(
     const ImGuiSystem &ui, const EditorPlaySession &session,
     const std::filesystem::path &initialScenePath) {
 	if (!open_) {
@@ -71,21 +71,12 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 		ImGui::TextWrapped("%.*s", static_cast<int>(data.size()), data.data());
 	}
 
-	Request requested;
-	const auto select = [&](SceneObjectId id, const char *selectLabel,
-	                        const char *frameLabel) {
+	SceneObjectId requested = 0;
+	const auto select = [&](SceneObjectId id, const char *label) {
 		ui.BeginDisabled(id == 0);
-
-		if (ui.Button(selectLabel) && id != 0) {
-			requested = {id, false};
+		if (ui.Button(label) && id != 0) {
+			requested = id;
 		}
-
-		ui.SameLine();
-
-		if (ui.Button(frameLabel) && id != 0) {
-			requested = {id, true};
-		}
-
 		ui.EndDisabled();
 	};
 
@@ -113,8 +104,7 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 			ui.Text("Last Respawn: None");
 		}
 
-		select(object ? character->objectId : 0, "Select Character",
-		       "Frame Character");
+		select(object ? character->objectId : 0, "Select Character");
 
 		const auto *ground =
 		    session.GetScene().FindObject(character->groundObjectId);
@@ -129,7 +119,7 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 		}
 
 		select(hasGround ? character->groundObjectId : 0,
-		       "Select Ground Collider", "Frame Ground Collider");
+		       "Select Ground Collider");
 	} else {
 		ui.Text("Character: None");
 	}
@@ -146,8 +136,7 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 		ui.Text("Camera: Fixed View");
 	}
 
-	select(camera && camera->camera ? cameraId : 0, "Select Camera",
-	       "Frame Camera");
+	select(camera && camera->camera ? cameraId : 0, "Select Camera");
 	const auto &pose = session.GetCameraPose();
 	const auto &lens = session.GetCameraSettings();
 	vector("Position", pose.position);
@@ -165,10 +154,8 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 			    "{} (ID {})", object ? object->name : "Missing", id);
 			ui.BeginDisabled(!object);
 
-			if (ImGui::Selectable(label.c_str(), false,
-			                      ImGuiSelectableFlags_AllowDoubleClick)) {
-				requested = {
-				    id, ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)};
+			if (ImGui::Selectable(label.c_str())) {
+				requested = id;
 			}
 
 			ui.EndDisabled();

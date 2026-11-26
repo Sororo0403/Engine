@@ -1056,7 +1056,7 @@ void ControlsPanel::Draw() {
 	        {"View > Play State > Triggers",
 	         "Inspect active Trigger contacts and the latest 128 Enter/Exit "
 	         "events, including object IDs, simulation frames and game time. "
-	         "Click an object to select it; double-click to frame it. Start "
+	         "Click an object to select it. Start "
 	         "and Restart record initial overlaps at frame 0, while Pause "
 	         "retains the display and Step advances it. Stop clears events. "
 	         "Stay is available to runtime code each positive update but does "
@@ -1233,11 +1233,9 @@ void ControlsPanel::Draw() {
 	         "second. Start, Restart and Stop reset both. "
 	         "Ground Collider shows the supporting object while grounded and "
 	         "None while airborne. Select Ground Collider reveals that live "
-	         "object; Frame Ground Collider also fits it in Scene. Hidden "
-	         "Colliders are included. Select Character / Camera reveals "
-	         "the live object in Hierarchy; "
-	         "Frame also moves the Scene camera to it, including hidden or "
-	         "model-free objects. Camera selection is unavailable for a fixed "
+	         "object, including hidden Colliders. Select Character / Camera "
+	         "reveals the live object in Hierarchy. Use Frame Selected (F) "
+	         "in Scene to frame it. Camera selection is unavailable for a fixed "
 	         "view without a Primary Camera. Dialogs disable these actions. "
 	         "Simulation, editing selection, Inspector locks, scene data and "
 	         "history are unchanged."},
