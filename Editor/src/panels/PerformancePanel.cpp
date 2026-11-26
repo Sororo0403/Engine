@@ -1,8 +1,6 @@
 #include "panels/PerformancePanel.h"
 
 #include "graphics/ui/ImGuiSystem.h"
-#include "scene/Scene.h"
-#include "selection/EditorSelection.h"
 
 #include <algorithm>
 #include <format>
@@ -32,9 +30,7 @@ void PerformancePanel::Record(float deltaTime) {
 	}
 }
 
-void PerformancePanel::Draw(const ImGuiSystem &ui, const Scene &scene,
-                            const EditorSelection &selection, int width,
-                            int height) {
+void PerformancePanel::Draw(const ImGuiSystem &ui, int width, int height) {
 	if (!open_) {
 		return;
 	}
@@ -97,31 +93,6 @@ void PerformancePanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	                   "presentation. Long intervals can include loading, "
 	                   "pauses or stalls. Graph display is capped at 250 ms.");
 	ImGui::Separator();
-	ui.Text("Live scene objects");
-	std::size_t visibleModels = 0;
-	std::size_t hiddenModels = 0;
-	std::size_t emptyObjects = 0;
-
-	for (const auto &[id, object] : scene.GetObjects()) {
-		if (!object.HasMesh()) {
-			++emptyObjects;
-		} else if (object.IsRenderable()) {
-			++visibleModels;
-		} else {
-			++hiddenModels;
-		}
-	}
-
-	std::size_t selected = 0;
-
-	for (const auto id : selection.GetIds()) {
-		selected += scene.Contains(id);
-	}
-
-	ui.Text(std::format("Objects: {}    Selected: {}",
-	                    scene.GetObjects().size(), selected));
-	ui.Text(std::format("Models: {} visible / {} hidden    Empty: {}",
-	                    visibleModels, hiddenModels, emptyObjects));
 
 	if (width > 0 && height > 0) {
 		ui.Text(std::format("Scene target: {} x {}", width, height));

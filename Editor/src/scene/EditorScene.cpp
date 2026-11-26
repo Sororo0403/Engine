@@ -468,7 +468,7 @@ bool EditorScene::Update(float deltaTime) {
 
 		const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
 		performancePanel_.Draw(
-		    ui_, runtime, playSelection_,
+		    ui_,
 		    performanceTarget ? performanceTarget->GetWidth() : 0,
 		    performanceTarget ? performanceTarget->GetHeight() : 0);
 
@@ -673,7 +673,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
 	performancePanel_.Draw(
-	    ui_, scene, selection_,
+	    ui_,
 	    performanceTarget ? performanceTarget->GetWidth() : 0,
 	    performanceTarget ? performanceTarget->GetHeight() : 0);
 

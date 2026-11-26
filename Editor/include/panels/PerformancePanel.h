@@ -2,12 +2,10 @@
 
 #include "diagnostics/FrameTimingHistory.h"
 
-class EditorSelection;
 class ImGuiSystem;
-class Scene;
 
 /// <summary>
-/// フレーム間隔の推移と、現在のシーンの物体数・描画サイズを表示する
+/// フレーム間隔の推移とシーンの描画サイズを表示する
 /// </summary>
 class PerformancePanel {
   public:
@@ -28,15 +26,12 @@ class PerformancePanel {
 	void Record(float deltaTime);
 
 	/// <summary>
-	/// パネルが開いている場合に計測値と現在のシーンの情報を描画する
+	/// パネルが開いている場合に計測値とシーンの描画サイズを表示する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <param name="scene">物体数を調べるシーン</param>
-	/// <param name="selection">現在の選択。シーンに存在する物体だけを数える</param>
 	/// <param name="width">Scene描画先の幅。非表示の場合は0</param>
 	/// <param name="height">Scene描画先の高さ。非表示の場合は0</param>
-	void Draw(const ImGuiSystem &ui, const Scene &scene,
-	          const EditorSelection &selection, int width, int height);
+	void Draw(const ImGuiSystem &ui, int width, int height);
 
   private:
 	FrameTimingHistory timing_;

@@ -90,8 +90,8 @@ void ControlsPanel::Draw() {
 	        {"F / Shift + F", "Frame selected objects / all objects. Hidden "
 	                          "models are excluded."},
 	        {"View > Performance",
-	         "Inspect recent frame intervals, FPS and live scene counts. Pause "
-	         "timing to freeze samples; Clear Timing starts a fresh sample "
+	         "Inspect recent frame intervals, FPS and scene target size. Pause "
+	         "timing to freeze samples. Clear Timing starts a fresh sample "
 	         "window."},
 	        {"View > Object Markers",
 	         "Show small origin boxes for objects without models. Camera "
