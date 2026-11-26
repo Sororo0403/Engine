@@ -232,14 +232,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::Separator();
 		ui.BeginDisabled(!editable);
 
-		ui.BeginDisabled(selection.GetCount() == 0);
-
-		if (ui.MenuItem("Delete Selected", nullptr, true)) {
-			result.action = Action::DELETE_OBJECTS;
-		}
-
-		ui.EndDisabled();
-
 		ui.BeginDisabled(scenePickingDisabled_.empty() && !pickingDisabledOnly_);
 
 		if (ui.MenuItem("Enable All Scene Picking", nullptr, true) && editable) {
@@ -599,26 +591,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ui.Text(objects.empty() ? "No objects." : "No matching objects.");
 		}
 
-		if (ImGui::BeginPopupContextWindow(
-		        "HierarchyBackground", ImGuiPopupFlags_MouseButtonRight |
-		                                   ImGuiPopupFlags_NoOpenOverItems)) {
-			ui.BeginDisabled(!editable);
-
-			if (ui.MenuItem("Create Empty", nullptr, true)) {
-				result.action = Action::CREATE_EMPTY;
-			}
-
-			if (ui.MenuItem("Create Box", nullptr, true)) {
-				result.action = Action::CREATE_BOX;
-			}
-
-			if (ui.MenuItem("Camera from Scene View", nullptr, true)) {
-				result.action = Action::CREATE_CAMERA;
-			}
-
-			ui.EndDisabled();
-			ImGui::EndPopup();
-		}
 	}
 
 	ui.EndChild();

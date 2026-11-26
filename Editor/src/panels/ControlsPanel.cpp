@@ -600,8 +600,7 @@ void ControlsPanel::Draw() {
 	         "selected and revealed in Hierarchy in one Undo operation. If no "
 	         "Primary exists, the new Camera becomes Primary; otherwise the "
 	         "existing Primary is kept. Use "
-	         "Inspector > Primary to switch. Hierarchy's background menu has "
-	         "the same command."},
+	         "Inspector > Primary to switch."},
 	        {"Create > Empty / Box",
 	         "Add a normal object at the world origin and reveal it in "
 	         "Hierarchy. Box uses the built-in two-unit model with a matching "

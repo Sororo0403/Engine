@@ -1045,9 +1045,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::CREATE_BOX:
 					CreateObject(PrimitiveObjects::CreateBox());
 					break;
-				case HierarchyPanel::Action::CREATE_CAMERA:
-					CreateCameraFromView();
-					break;
 				case HierarchyPanel::Action::DELETE_OBJECTS:
 					DeleteSelectedObjects();
 					break;
