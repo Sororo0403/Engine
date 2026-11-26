@@ -747,24 +747,6 @@ void ImGuiSystem::Text(std::string_view text) const {
 	ImGui::TextUnformatted(text.data(), text.data() + text.size());
 }
 
-bool ImGuiSystem::WantsKeyboard() const {
-	if (!impl_->context_) {
-		return false;
-	}
-
-	ImGui::SetCurrentContext(impl_->context_);
-	return ImGui::GetIO().WantCaptureKeyboard;
-}
-
-bool ImGuiSystem::WantsMouse() const {
-	if (!impl_->context_) {
-		return false;
-	}
-
-	ImGui::SetCurrentContext(impl_->context_);
-	return ImGui::GetIO().WantCaptureMouse;
-}
-
 void ImGuiSystem::SetNextWindowSize(float width, float height) const {
 	impl_->UseFrame();
 

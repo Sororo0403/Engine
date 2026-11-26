@@ -281,18 +281,6 @@ class ImGuiSystem {
 	void Text(std::string_view text) const;
 
 	/// <summary>
-	/// UIがキーボード入力を使用しているか取得する
-	/// </summary>
-	/// <returns>true:UI操作を優先する false:それ以外</returns>
-	bool WantsKeyboard() const;
-
-	/// <summary>
-	/// UIがマウス入力を使用しているか取得する
-	/// </summary>
-	/// <returns>true:UI操作を優先する false:それ以外</returns>
-	bool WantsMouse() const;
-
-	/// <summary>
 	/// 次に開始するウィンドウの初期サイズを設定する
 	/// </summary>
 	/// <param name="width">幅</param>
