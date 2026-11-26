@@ -210,14 +210,6 @@ class EditorHistory {
 	              std::span<const SceneObjectId> sourceIds = {});
 
 	/// <summary>
-	/// 指定した物体を削除し、残る物体からの追従参照の解除も1操作として記録する。
-	/// 編集中の変形情報は先に確定する
-	/// </summary>
-	/// <param name="objectId">削除する物体のID</param>
-	/// <returns>true:削除成功 false:物体が存在しない</returns>
-	bool DeleteObject(SceneObjectId objectId);
-
-	/// <summary>
 	/// 選択内の最上位の物体を新しい親へ移し、1回のUndo・Redoとして記録する
 	/// </summary>
 	/// <param name="ids">重複のない選択ID。選択された祖先がある子は親と一緒に移動する</param>
@@ -226,15 +218,6 @@ class EditorHistory {
 	/// <returns>true:成功または変更なし false:対象・関係・変形が無効。失敗時は状態を保持する</returns>
 	bool SetParent(std::span<const SceneObjectId> ids, SceneObjectId parent,
 	               bool keepWorld = true);
-
-	/// <summary>
-	/// 物体を複製し、その追加を履歴へ記録する。
-	/// 編集中の変形情報は先に確定し、Primary Cameraは既存の物体を優先する。
-	/// 複製範囲外への参照は元の物体を指す
-	/// </summary>
-	/// <param name="objectId">複製元の物体ID</param>
-	/// <returns>成功:複製した物体のID 対象なし:0</returns>
-	SceneObjectId DuplicateObject(SceneObjectId objectId);
 
 	/// <summary>
 	/// 初期設定へ戻すコンポーネントの範囲

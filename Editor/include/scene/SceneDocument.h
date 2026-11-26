@@ -54,11 +54,6 @@ class SceneDocument {
 	bool IsModified() const;
 
 	/// <summary>
-	/// 履歴対象外の変更を記録し、それ以前の編集履歴をクリアする
-	/// </summary>
-	void MarkModified();
-
-	/// <summary>
 	/// 保存時に素材参照を相対化するプロジェクトのルートを指定する
 	/// </summary>
 	void SetProjectRoot(std::filesystem::path root);

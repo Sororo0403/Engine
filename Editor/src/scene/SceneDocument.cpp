@@ -60,10 +60,6 @@ bool SceneDocument::IsModified() const {
 	return history_.IsModified();
 }
 
-void SceneDocument::MarkModified() {
-	history_.Invalidate();
-}
-
 void SceneDocument::SetProjectRoot(std::filesystem::path root) {
 	projectRoot_.swap(root);
 }

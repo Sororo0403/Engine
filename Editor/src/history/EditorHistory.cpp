@@ -96,17 +96,6 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
 	return CreateObjectWithHistory(std::move(object));
 }
 
-bool EditorHistory::DeleteObject(SceneObjectId objectId) {
-	return DeleteObjects(std::span<const SceneObjectId>{&objectId, 1});
-}
-
-SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
-	auto createdIds =
-	    DuplicateObjects(std::span<const SceneObjectId>{&objectId, 1});
-
-	return createdIds.empty() ? 0 : createdIds.front();
-}
-
 bool EditorHistory::SetParent(std::span<const SceneObjectId> ids,
                               SceneObjectId parent, bool keepWorld) {
 	CommitEdit();
