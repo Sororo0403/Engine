@@ -91,8 +91,7 @@ void ControlsPanel::Draw() {
 	                          "models are excluded."},
 	        {"View > Performance",
 	         "Inspect recent frame intervals, FPS and scene target size. Pause "
-	         "timing to freeze samples. Clear Timing starts a fresh sample "
-	         "window."},
+	         "timing to freeze samples."},
 	        {"View > Object Markers",
 	         "Show small origin boxes for objects without models. Camera "
 	         "markers are cyan, Collider markers green and Empty markers "

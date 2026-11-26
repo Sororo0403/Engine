@@ -49,11 +49,6 @@ void PerformancePanel::Draw(const ImGuiSystem &ui, int width, int height) {
 	}
 
 	ui.Checkbox("Pause timing", paused_);
-	ui.SameLine();
-
-	if (ui.Button("Clear Timing")) {
-		timing_.Clear();
-	}
 
 	const auto summary = timing_.GetSummary();
 	ui.Text(std::format("Samples: {} / {} ({:.2f} s)", summary.sampleCount,
