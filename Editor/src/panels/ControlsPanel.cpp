@@ -440,8 +440,7 @@ void ControlsPanel::Draw() {
 	        {"Assets > Asset Type > Scenes",
 	         "Browse and search *.scene.json files without loading their "
 	         "contents. "
-	         "Select Open Scene, double-click a scene, or use its context "
-	         "menu. "
+	         "Select Open Scene or double-click a scene. "
 	         "Unsaved changes offer Save, Discard or Cancel before opening. "
 	         "Invalid or missing files keep the current scene. Opening is "
 	         "disabled "

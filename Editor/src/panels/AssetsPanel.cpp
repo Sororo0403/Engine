@@ -1065,19 +1065,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					recyclePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
-				if (assetType == AssetType::PREFAB &&
-				    ui.MenuItem("Add Prefab", nullptr, canEditAssets)) {
-					prefabAppendPath_ = assetPath;
-				}
-
 				if (assetType == AssetType::SCENE &&
 				    ui.MenuItem("Add Objects", nullptr, canEditAssets)) {
 					sceneAppendPath_ = assetPath;
-				}
-
-				if (assetType == AssetType::SCENE &&
-				    ui.MenuItem("Open Scene", nullptr, canEditAssets)) {
-					sceneOpenPath_ = assetPath;
 				}
 
 				if (assetType == AssetType::TEXTURE &&
