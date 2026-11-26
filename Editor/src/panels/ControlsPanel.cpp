@@ -479,7 +479,7 @@ void ControlsPanel::Draw() {
 	         "current scene unchanged. Export still requires asset files."},
 	        {"Assets > Replace Mesh of Selection",
 	         "Replace every selected object's existing Mesh with the chosen "
-	         "model in one Undo/Redo operation. Use the button or model row "
+	         "model in one Undo/Redo operation. Use the model row "
 	         "context menu. Every selected object must already have a Mesh; "
 	         "a Mesh without an assigned model is supported. Hidden objects "
 	         "and Mesh-only objects are included. Names, IDs, Transforms, "
@@ -491,7 +491,7 @@ void ControlsPanel::Draw() {
 	         "Unavailable during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Texture",
 	         "Read the selected image again even when its file time and size "
-	         "have not changed. Use the button or its context menu. Success "
+	         "have not changed. Use the asset row context menu. Success "
 	         "updates every matching image slot in Scene and Game preview, "
 	         "including hidden objects when shown and later Play sessions. "
 	         "Scene data, selection, Inspector locks and Undo history stay "
@@ -502,7 +502,7 @@ void ControlsPanel::Draw() {
 	         "during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Model",
 	         "Reload the selected model and its linked resources after editing "
-	         "files outside Editor. Use the button or its context menu. A "
+	         "files outside Editor. Use the asset row context menu. A "
 	         "successful "
 	         "reload updates every rendered instance with the same normalized "
 	         "model path, including the Game preview and later Play sessions. "

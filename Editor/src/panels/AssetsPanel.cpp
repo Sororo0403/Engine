@@ -1264,41 +1264,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				ui.Text(PathUtils::ToUtf8(displayPath));
 			}
 
-			if (selectedType == AssetType::MODEL) {
-				ui.BeginDisabled(selectedPath_.empty());
-
-				if (ui.MenuItem("Add to Scene", nullptr, true)) {
-					requestedPath = selectedPath_;
-				}
-
-				ui.BeginDisabled(!canEditAssets || !canReplaceMesh);
-
-				if (ui.MenuItem("Replace Mesh of Selection", nullptr, true)) {
-					meshReplacementPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-
-				ui.BeginDisabled(!canEditAssets);
-
-				if (ui.MenuItem("Reload Model", nullptr, true)) {
-					modelReloadPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-				ui.EndDisabled();
-			} else if (selectedType == AssetType::TEXTURE) {
-				ui.BeginDisabled(selectedPath_.empty());
-
-				ui.BeginDisabled(!canEditAssets);
-
-				if (ui.MenuItem("Reload Texture", nullptr, true)) {
-					textureReloadPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-
-				ui.EndDisabled();
+			if (selectedType == AssetType::TEXTURE) {
 				ImGui::InputInt("Texture Slot", &textureSlot_);
 
 				if (!textureSlots.empty() &&
@@ -1362,28 +1328,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Edit Script", nullptr, true))
 					scriptEditPath_ = selectedPath_;
 				ui.EndDisabled();
-			} else if (selectedType == AssetType::SCENE) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-				if (ui.MenuItem("Open Scene", nullptr, true)) {
-					sceneOpenPath_ = selectedPath_;
-				}
-
-				if (ui.MenuItem("Add Objects", nullptr, true)) {
-					sceneAppendPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
-			} else if (selectedType == AssetType::PREFAB) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-				if (ui.MenuItem("Add Prefab", nullptr, true)) {
-					prefabAppendPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
 			}
-
 		}
 		ImGui::EndPopup();
 	}
