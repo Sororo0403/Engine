@@ -813,13 +813,6 @@ bool InspectorPanel::Draw(
 	changed |= gameplayInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history, targetSelectionRequest);
 
-	const auto respawnRequest = gameplayInspector_.GetRespawnRequest();
-
-	if (respawnRequest.action == GameplayInspector::RespawnAction::MOVE_TO_POSITION) {
-		objectRequest_ = {ObjectAction::MOVE_TO_RESPAWN,
-		                  respawnRequest.objectId};
-	}
-
 	if (targetSelectionRequest != 0) {
 		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};
 	}

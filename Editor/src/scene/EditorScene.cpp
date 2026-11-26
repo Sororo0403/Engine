@@ -7067,28 +7067,6 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::MOVE_TO_RESPAWN) {
-			RespawnPreview::Geometry geometry;
-
-			if (!object->respawn || object->respawn->useStartPosition ||
-			    !respawnPreview_.BuildGeometry(document_.GetScene(),
-			                                   request.objectId, geometry) ||
-			    !geometry.canRespawn) {
-				ShowError("Choose an explicit, valid and unobstructed Respawn "
-				          "position before moving the object.",
-				          request.objectId);
-				return;
-			}
-
-			if (!document_.GetHistory().SetWorldPosition(
-			        request.objectId, object->respawn->position)) {
-				ShowError("Could not move the object to its Respawn position.",
-				          request.objectId);
-			}
-
-			return;
-		}
-
 		if (request.action == InspectorPanel::ObjectAction::COPY_COLLIDER) {
 			if (!object->collider ||
 			    !clipboard_.CopyCollider(*object->collider)) {

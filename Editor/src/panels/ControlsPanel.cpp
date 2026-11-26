@@ -1418,17 +1418,6 @@ void ControlsPanel::Draw() {
 	         "Primary, Transform and Follow Camera settings stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
 
-	        {"Inspector > Respawn > Move to Respawn Position",
-	         "Move the inspected object to its explicit world Respawn Position "
-	         "in "
-	         "one Undo/Redo operation. The parent and local rotation/scale, "
-	         "Collider and Respawn "
-	         "settings stay unchanged. A locked Inspector moves its displayed "
-	         "object. Use Start Position must be off, and the destination must "
-	         "be on the safe side of the Fall Boundary with valid Character and Collider settings "
-	         "and no blocking Collider. The travel path is not checked. "
-	         "Pending edits finish first. Already being at the destination "
-	         "adds no history. Available while editing only."},
 
 
 

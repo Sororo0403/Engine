@@ -2583,12 +2583,6 @@ bool EditorHistory::ApplyWorldPositions(
 	return true;
 }
 
-bool EditorHistory::SetWorldPosition(SceneObjectId id,
-                                     const DirectX::XMFLOAT3 &position) {
-	CommitEdit();
-	return ApplyWorldPositions({{id, position}}, "Move Object");
-}
-
 bool EditorHistory::SetTriggerActions(
     SceneObjectId id, std::optional<TriggerActionsComponent> value) {
 	CommitEdit();

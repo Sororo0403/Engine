@@ -1,5 +1,4 @@
 #include "gameplay/GameplayInspector.h"
-#include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
@@ -52,7 +51,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest) {
 	targetSelectionRequest = 0;
-	respawnRequest_ = {};
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -272,18 +270,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 
-		RespawnPreview::Geometry respawnGeometry;
-		ui.BeginDisabled(
-		    object.respawn->useStartPosition ||
-		    !RespawnPreview{}.BuildGeometry(scene, id, respawnGeometry) ||
-		    !respawnGeometry.canRespawn);
-
-		if (ui.Button("Move to Respawn Position")) {
-			respawnRequest_ = {RespawnAction::MOVE_TO_POSITION, id};
-		}
-
-		ui.EndDisabled();
-
 		if (ui.Button("Reset Respawn Settings")) {
 			const auto before = object.respawn;
 			changed |= history.ResetComponentSettings(
@@ -303,9 +289,4 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
-	respawnRequest_ = {};
-}
-
-GameplayInspector::RespawnRequest GameplayInspector::GetRespawnRequest() const {
-	return respawnRequest_;
 }
