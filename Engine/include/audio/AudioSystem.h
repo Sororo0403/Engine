@@ -83,13 +83,6 @@ class AudioSystem {
 	AudioPlaybackState GetState(AudioPlaybackHandle handle) const;
 
 	/// <summary>
-	/// 元音声の周波数で処理したフレーム数を取得する。ループでは合計、停止や無効なハンドルは0
-	/// </summary>
-	/// <param name="handle">確認する再生</param>
-	/// <returns>再生を開始してからのフレーム数。一時停止では保持する</returns>
-	std::uint64_t GetPlayedFrames(AudioPlaybackHandle handle) const;
-
-	/// <summary>
 	/// 再生位置とバッファを保持して一時停止する
 	/// </summary>
 	/// <param name="handle">この基盤の有効な再生</param>

@@ -81,13 +81,6 @@ class SceneAudioPlayer {
 	AudioPlaybackState GetState(SceneObjectId id) const;
 
 	/// <summary>
-	/// 音源の再生位置を元の周波数のフレーム数で取得する
-	/// </summary>
-	/// <param name="id">このシーンの音源</param>
-	/// <returns>処理済みフレーム数。再生なしの場合は0</returns>
-	std::uint64_t GetPlayedFrames(SceneObjectId id) const;
-
-	/// <summary>
 	/// 開始済みか確認する。無音や全音源の自然終了後も開始済みとして扱う
 	/// </summary>
 	/// <returns>true:開始済み false:停止中</returns>

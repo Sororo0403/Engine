@@ -297,15 +297,6 @@ AudioPlaybackState AudioSystem::GetState(AudioPlaybackHandle handle) const {
 	                                : AudioPlaybackState::PLAYING;
 }
 
-std::uint64_t AudioSystem::GetPlayedFrames(AudioPlaybackHandle handle) const {
-	const auto *voice = impl_->Find(handle);
-	if (!voice)
-		return 0;
-	XAUDIO2_VOICE_STATE state{};
-	voice->source->GetState(&state);
-	return state.BuffersQueued ? state.SamplesPlayed : 0;
-}
-
 bool AudioSystem::Pause(AudioPlaybackHandle handle) {
 	auto *voice = impl_->Find(handle);
 	if (!voice || GetState(handle) == AudioPlaybackState::STOPPED)

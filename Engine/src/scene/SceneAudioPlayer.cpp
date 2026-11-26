@@ -247,13 +247,6 @@ AudioPlaybackState SceneAudioPlayer::GetState(SceneObjectId id) const {
 	                               : audio_.GetState(found->second.handle);
 }
 
-std::uint64_t SceneAudioPlayer::GetPlayedFrames(SceneObjectId id) const {
-	const auto found = entries_.find(id);
-	return found == entries_.end()
-	           ? 0
-	           : audio_.GetPlayedFrames(found->second.handle);
-}
-
 bool SceneAudioPlayer::PlaySource(SceneObjectId id, std::string &error) {
 	error.clear();
 	auto found = entries_.find(id);
