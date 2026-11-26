@@ -145,17 +145,6 @@ CameraPose MakeFollowPose(const DirectX::XMFLOAT3 &target,
                           const FollowCameraSettings &settings);
 
 /// <summary>
-/// 注視点からカメラまで余裕幅を持つボックスをSweepし、静的なColliderの手前へカメラを寄せる
-/// </summary>
-/// <param name="scene">ColliderとFollow Cameraの設定を持つシーン</param>
-/// <param name="id">補正するFollow Cameraの物体ID</param>
-/// <param name="pose">補間済みの描画姿勢。成功時は位置だけ更新し、注視点・上方向は保持する</param>
-/// <returns>true:補正成功または回避無効 false:注視点の余裕幅が障害物内、形状や姿勢が無効。失敗時はposeを保持する</returns>
-/// <remarks>追従先・Character Controller・Follow CameraのColliderを除く。表示状態には依存しない</remarks>
-bool AvoidFollowObstacles(const Scene &scene, SceneObjectId id,
-                          CameraPose &pose);
-
-/// <summary>
 /// 描画姿勢をTransformの位置と回転へ反映する。拡大率は保持する
 /// </summary>
 /// <param name="pose">反映する位置・注視点・上方向</param>
@@ -192,17 +181,6 @@ bool GetInitialPose(const Scene &scene, SceneObjectId id, CameraPose &pose);
 /// <returns>true:参照を設定可能 false:物体なし、または追従先から続く参照が不在・循環</returns>
 bool CanSetFollowTarget(const Scene &scene, SceneObjectId id,
                         SceneObjectId target);
-
-/// <summary>
-/// 全Follow Cameraを検証し、親子関係と追従対象の更新順からCameraだけを列挙する
-/// </summary>
-/// <param name="scene">検証するシーン。値は変更しない</param>
-/// <param name="order">成功時に置き換えるCameraのID一覧。失敗時は保持する</param>
-/// <param name="error">不正な設定・対象・循環の失敗理由と、該当する物体の名前・ID。成功時は空</param>
-/// <param name="invalidObject">指定時は問題の物体IDを設定する。循環では循環内の1物体。成功時は0</param>
-/// <returns>true:成功 false:追従設定または依存関係が無効</returns>
-bool GetFollowOrder(const Scene &scene, std::vector<SceneObjectId> &order,
-                    std::string &error, SceneObjectId *invalidObject = nullptr);
 
 /// <summary>
 /// 位置と視線方向に合う追従オフセットを求める。元の注視距離を基準に設定範囲内の注視点を選ぶ

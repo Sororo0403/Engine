@@ -46,13 +46,6 @@ SceneCameraUtils::MakeFollowPose(const DirectX::XMFLOAT3 &target,
 	return result;
 }
 
-bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
-                                            SceneObjectId id,
-                                            CameraPose &pose) {
-	FollowObstacleCache obstacles(scene);
-	return obstacles.AvoidObstacles(id, pose);
-}
-
 const CollisionWorld *
 SceneCameraUtils::FollowObstacleCache::GetWorld(SceneObjectId target) {
 	if (active_.empty()) {
@@ -587,21 +580,6 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 		            "Parent and Follow Camera dependencies form a cycle.");
 	}
 
-	order.swap(result);
-	return true;
-}
-
-bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
-                                      std::vector<SceneObjectId> &order,
-                                      std::string &error,
-                                      SceneObjectId *invalidObject) {
-	std::vector<SceneObjectId> result;
-	if (!GetUpdateOrder(scene, result, error, invalidObject))
-		return false;
-	std::erase_if(result, [&](SceneObjectId id) {
-		return !SceneActivity::IsActive(scene, id) ||
-		       !scene.FindObject(id)->followCamera;
-	});
 	order.swap(result);
 	return true;
 }
