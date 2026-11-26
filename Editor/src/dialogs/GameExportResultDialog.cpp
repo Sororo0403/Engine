@@ -944,10 +944,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 
 	if (run.process.IsTracking()) {
 		ui.SameLine();
-		if (ui.Button("Show Running Game")) {
-			run.process.BringToForeground(error_);
-		}
-		ui.SameLine();
 		if (ui.Button("Close Running Game") && run.process.RequestClose(error_)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}

@@ -282,26 +282,6 @@ void *ShellUtils::ExecutableProcess::FindRunningWindow(std::string &error) const
 	return target.window;
 }
 
-bool ShellUtils::ExecutableProcess::BringToForeground(std::string &error) const {
-	const auto window = static_cast<HWND>(FindRunningWindow(error));
-	if (!window) {
-		return false;
-	}
-
-	if (IsIconic(window)) {
-		ShowWindowAsync(window, SW_RESTORE);
-	}
-	if (SetForegroundWindow(window)) {
-		error.clear();
-		return true;
-	}
-
-	FLASHWINFO flash{sizeof(FLASHWINFO), window, FLASHW_TRAY, 3, 0};
-	FlashWindowEx(&flash);
-	error = "Windows kept the current window in front. Switch to the game from the taskbar.";
-	return false;
-}
-
 bool ShellUtils::ExecutableProcess::RequestClose(std::string &error) const {
 	const auto window = static_cast<HWND>(FindRunningWindow(error));
 	if (!window) {
