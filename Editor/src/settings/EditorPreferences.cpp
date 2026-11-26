@@ -322,34 +322,6 @@ void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 	}
 }
 
-bool EditorPreferences::RemoveMissingProjects(const std::filesystem::path &activeRoot) {
-	const auto missing = [&](const std::filesystem::path &root) {
-		if (root.empty() ||
-		    (!activeRoot.empty() && PathUtils::IsSameFile(root, activeRoot))) {
-			return false;
-		}
-
-		std::error_code error;
-		const auto folder = std::filesystem::symlink_status(root, error);
-		if (folder.type() == std::filesystem::file_type::not_found) {
-			return true;
-		}
-		if (!std::filesystem::is_directory(folder)) {
-			return false;
-		}
-
-		return std::filesystem::symlink_status(root / L"project.json", error).type() ==
-		       std::filesystem::file_type::not_found;
-	};
-
-	const bool removed = std::erase_if(recentProjects, missing) != 0;
-	if (missing(lastProject)) {
-		lastProject.clear();
-		return true;
-	}
-	return removed;
-}
-
 void EditorPreferences::RememberGameExport(
     const std::filesystem::path &root, const std::filesystem::path &directory) {
 	if (RememberOpenedGameExport(root, directory))
@@ -462,31 +434,6 @@ std::span<const std::filesystem::path> EditorPreferences::RecentGameExports(
 		return {};
 	}
 	return found->second;
-}
-
-bool EditorPreferences::RemoveMissingGameExports(const std::filesystem::path &root) {
-	const auto key = root.lexically_normal();
-	const auto missing = [](const std::filesystem::path &directory) {
-		std::error_code error;
-		return std::filesystem::status(directory, error).type() ==
-		       std::filesystem::file_type::not_found;
-	};
-	bool changed = false;
-	if (const auto recent = recentGameExports_.find(key); recent != recentGameExports_.end()) {
-		changed = std::erase_if(recent->second, missing) != 0;
-		if (recent->second.empty())
-			recentGameExports_.erase(recent);
-	}
-	if (const auto last = lastGameExports_.find(key);
-	    last != lastGameExports_.end() && missing(last->second)) {
-		lastGameExports_.erase(last);
-		changed = true;
-	}
-	changed |= std::erase_if(exportSceneSources_, [&](const auto &entry) {
-		// 識別子があれば、履歴から消えた配布版も移動先で照合できる。
-		return entry.second.packageId.empty() && entry.first.first == key && missing(entry.first.second);
-	}) != 0;
-	return changed;
 }
 
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,

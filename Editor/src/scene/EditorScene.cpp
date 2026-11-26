@@ -1639,12 +1639,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(root).c_str());
 			}
-			ui_.Separator();
-			if (ui_.MenuItem("Remove Missing Projects") &&
-			    preferences_.RemoveMissingProjects(activeRoot)) {
-				SaveEditorSession(true);
-			}
-			ImGui::SetItemTooltip("Remove entries whose folder or project.json is missing.");
 			ui_.EndMenu();
 		}
 
@@ -1873,12 +1867,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				    : std::format("{}\n{}", PathUtils::ToUtf8(directory), problem);
 				ImGui::SetItemTooltip("%s", tooltip.c_str());
 			}
-			ui_.Separator();
-			if (ui_.MenuItem("Remove Missing Export Folders") &&
-			    preferences_.RemoveMissingGameExports(project_.GetRoot())) {
-				SaveEditorSession(true);
-			}
-			ImGui::SetItemTooltip("Remove history entries whose export folders no longer exist.");
 			ui_.EndMenu();
 		}
 
