@@ -34,13 +34,6 @@ class AssetDatabase {
 	bool RefreshProjectScenes(std::string &error);
 
 	/// <summary>
-	/// 新しい検索先の読み込み成功後だけ、検索先と一覧を切り替える
-	/// </summary>
-	/// <param name="rootDirectory">絶対パス、または実行ファイル基準の相対パス</param>
-	/// <returns>true:切り替え成功 false:検索先と一覧を保持し、失敗理由を設定する</returns>
-	bool SetRootDirectory(std::filesystem::path rootDirectory);
-
-	/// <summary>
 	/// 検索対象のフォルダを取得する
 	/// </summary>
 	/// <returns>指定した相対パス、または検索成功後に正規化した絶対パス</returns>

@@ -221,35 +221,6 @@ bool AssetDatabase::RefreshProjectScenes(std::string &error) {
 	}
 }
 
-bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
-	try {
-		AssetDatabase candidate(std::move(rootDirectory), sceneDirectory_);
-
-		if (!candidate.Refresh()) {
-			error_ = candidate.GetError();
-			return false;
-		}
-
-		rootDirectory_.swap(candidate.rootDirectory_);
-		models_.swap(candidate.models_);
-		textures_.swap(candidate.textures_);
-		materials_.swap(candidate.materials_);
-		audioClips_.swap(candidate.audioClips_);
-		scenes_.swap(candidate.scenes_);
-		projectScenes_.swap(candidate.projectScenes_);
-		scripts_.swap(candidate.scripts_);
-		animationClips_.swap(candidate.animationClips_);
-		prefabs_.swap(candidate.prefabs_);
-		gameConfigurations_.swap(candidate.gameConfigurations_);
-		directories_.swap(candidate.directories_);
-		error_.clear();
-		return true;
-	} catch (const std::exception &error) {
-		error_ = error.what();
-		return false;
-	}
-}
-
 const std::filesystem::path &AssetDatabase::GetRootDirectory() const {
 	return rootDirectory_;
 }
