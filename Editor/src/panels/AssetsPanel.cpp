@@ -1048,7 +1048,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				drawLocationMenu(assetPath);
 				ImGui::Separator();
 				drawClipboardMenu();
-				drawPaste("Paste", currentFolder());
 				ImGui::Separator();
 
 				if (ui.MenuItem("Rename...", "F2",
