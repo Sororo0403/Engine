@@ -1057,14 +1057,8 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::PASTE_COLLIDERS:
 					PasteCollidersToSelection();
 					break;
-				case HierarchyPanel::Action::SNAP_POSITIONS:
-					SnapSelectedPositions();
-					break;
 				case HierarchyPanel::Action::DUPLICATE_OBJECTS:
 					DuplicateSelectedObjects();
-					break;
-				case HierarchyPanel::Action::RESET_TRANSFORMS:
-					ResetSelectedTransforms();
 					break;
 				case HierarchyPanel::Action::DROP_TO_GROUND:
 					DropSelectionToGround();

@@ -530,14 +530,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::DELETE_OBJECTS;
 				}
 
-				if (ui.MenuItem("Reset Transform", nullptr, true)) {
-					result.action = Action::RESET_TRANSFORMS;
-				}
-
-				if (ui.MenuItem("Snap Positions to Grid", nullptr, true)) {
-					result.action = Action::SNAP_POSITIONS;
-				}
-
 				if (ui.MenuItem("Drop to Ground", "Shift+G", canGround)) {
 					result.action = Action::DROP_TO_GROUND;
 				}

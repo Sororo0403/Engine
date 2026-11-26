@@ -1333,7 +1333,7 @@ void ControlsPanel::Draw() {
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
 
-	        {"Edit / Hierarchy > Snap Positions to Grid",
+	        {"Edit > Snap Positions to Grid",
 	         "Round each selected object's world position using Scene > Snap "
 	         "Settings > Move step (X/Y/Z), even when gizmo snapping is off. "
 	         "Halfway values round away from zero. This snaps individual "
