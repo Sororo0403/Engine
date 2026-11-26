@@ -546,9 +546,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
-		if (ui.Button("Copy Error")) {
-			ImGui::SetClipboardText(error_.c_str());
-		}
 	}
 	GameExportResult result = GameExportResult::NONE;
 	if (checkResultStale_) {
@@ -699,25 +696,31 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			issueToScrollTo_.reset();
 		}
 		ImGui::EndChild();
-		if (ui.Button("Copy Details")) {
-			auto report = checkResultStale_ ? "Previous results. Run a new check to update them.\n\n" +
-			                                      checkResult_
-			                                : checkResult_;
-			for (const auto &issue : checkIssues_) {
-				AppendIssueDetails(report, issue);
-			}
-			ImGui::SetClipboardText(report.c_str());
-		}
-		ImGui::SetItemTooltip("Copy the result summary and all issues, including those hidden by search.");
 	} else if (!checkResult_.empty() && !checkResultStale_) {
 		if (ImGui::BeginChild("ExportCheckSummary",
 		                      {0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing()})) {
 			ImGui::TextWrapped("%s", checkResult_.c_str());
 		}
 		ImGui::EndChild();
-		if (ui.Button("Copy Check Results")) {
-			ImGui::SetClipboardText(checkResult_.c_str());
+	}
+
+	const bool hasReport = !checkIssues_.empty() ||
+	                       (!checkResult_.empty() && !checkResultStale_);
+	if ((!error_.empty() || hasReport) && ui.Button("Copy Diagnostics")) {
+		std::string report = error_;
+		if (hasReport) {
+			if (!report.empty()) {
+				report += "\n\n";
+			}
+			if (checkResultStale_) {
+				report += "Previous results. Run a new check to update them.\n\n";
+			}
+			report += checkResult_;
+			for (const auto &issue : checkIssues_) {
+				AppendIssueDetails(report, issue);
+			}
 		}
+		ImGui::SetClipboardText(report.c_str());
 	}
 
 	const bool exportRequested = ui.Button("Export");
