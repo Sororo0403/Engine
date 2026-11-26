@@ -53,20 +53,6 @@ std::filesystem::path AssetFolders::SuggestAvailableName(
 	}
 }
 
-std::string AssetFolders::SuggestImportName(
-    const std::filesystem::path &assetRoot, const std::filesystem::path &folder,
-    const std::string &name, bool keepExtension) {
-	const auto original = PathUtils::FromUtf8(name);
-	if (!PathUtils::IsValidFileName(original)) {
-		throw std::invalid_argument("Enter a valid import name.");
-	}
-
-	const auto stem = keepExtension ? original.stem() : original;
-	const auto extension = keepExtension ? original.extension().native() : std::wstring{};
-	return PathUtils::ToUtf8(
-	    SuggestAvailableName(Resolve(assetRoot, folder), stem.native(), extension));
-}
-
 std::filesystem::path
 AssetFolders::MakeReference(const std::filesystem::path &assetRoot,
                             const std::filesystem::path &absolutePath) {

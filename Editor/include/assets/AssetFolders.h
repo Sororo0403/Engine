@@ -12,13 +12,6 @@ std::filesystem::path SuggestAvailableName(
     const std::wstring &extension);
 
 /// <summary>
-/// 既存の項目と重ならない名前を提案する。ファイルやフォルダは作成しない
-/// </summary>
-std::string SuggestImportName(const std::filesystem::path &assetRoot,
-                              const std::filesystem::path &folder,
-                              const std::string &name, bool keepExtension);
-
-/// <summary>
 /// 検索先の指定方法に合わせ、検証済みの絶対パスをSceneで使う参照へ変換する
 /// </summary>
 /// <param name="assetRoot">検索先。絶対指定なら参照も絶対パスにする</param>

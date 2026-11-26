@@ -1,6 +1,5 @@
 #include "dialogs/AudioImportDialog.h"
 #include "assets/AssetDatabase.h"
-#include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
@@ -70,18 +69,6 @@ AudioImportResult AudioImportDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.InputText("Audio Name", name_);
-	ui.SameLine();
-	ui.BeginDisabled(name_.empty());
-	if (ui.Button("Suggest Name")) {
-		try {
-			name_ = AssetFolders::SuggestImportName(options_.assetRoot, options_.folder,
-			                                        name_, true);
-			error_.clear();
-		} catch (const std::exception &exception) {
-			error_ = exception.what();
-		}
-	}
-	ui.EndDisabled();
 	ui.EndDisabled();
 
 	if (!error_.empty()) {
