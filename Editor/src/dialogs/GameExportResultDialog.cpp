@@ -631,7 +631,6 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 		}
 	}
 	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
-	run.freshStart = freshStart;
 	auto launchError = packageSettingsError_;
 	run.launchSettings = packageSettings_;
 	if (freshStart) {
@@ -704,7 +703,6 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	std::string error;
 	if (!run.process.Poll(exitCode, error)) {
 		run.status = std::move(error);
-		run.restartRequested = false;
 		run.process.Reset();
 		return false;
 	}
@@ -712,12 +710,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 		return false;
 
 	run.process.Reset();
-	const bool restart = std::exchange(run.restartRequested, false);
 	if (*exitCode == 0) {
-		if (restart) {
-			jumpToLatest = StartGame(run.freshStart);
-			return jumpToLatest;
-		}
 		run.status = "Game exited normally.";
 		if (run.showLog)
 			RefreshLog();
@@ -956,16 +949,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		ui.SameLine();
 		if (ui.Button("Close Running Game") && run.process.RequestClose(error_)) {
-			run.restartRequested = false;
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
-		ui.BeginDisabled(run.restartRequested);
-		if (ui.Button("Restart Game") && run.process.RequestClose(error_)) {
-			run.restartRequested = true;
-			run.status = "Waiting for the game to exit before restarting.";
-		}
-		ui.EndDisabled();
-		ImGui::SetItemTooltip("Start the game again after it exits normally.");
 	}
 
 	ui.SameLine();
@@ -987,9 +972,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	GameExportResultAction action = GameExportResultAction::NONE;
 	if (close || newExport || !requestedSourceScene_.empty() || reload ||
 	    !requestedExport_.empty() || !requestedInputAction_.empty()) {
-		if (std::exchange(run.restartRequested, false)) {
-			run.status = "Requested game exit. Waiting for the process to finish.";
-		}
 		action = close ? GameExportResultAction::CLOSE
 		               : newExport ? GameExportResultAction::NEW_EXPORT
 		               : !requestedSourceScene_.empty() ? GameExportResultAction::OPEN_SOURCE_SCENE

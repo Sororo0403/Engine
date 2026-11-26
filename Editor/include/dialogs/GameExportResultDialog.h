@@ -138,8 +138,6 @@ class GameExportResultDialog {
 		LogLevel minimumLogLevel = LogLevel::LOG_INFO;
 		bool showLogBeginning = false;
 		bool launchFailed = false;
-		bool restartRequested = false;
-		bool freshStart = false;
 	};
 
 	/// <summary>
