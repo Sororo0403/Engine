@@ -113,7 +113,6 @@ class GameExportResultDialog {
 		};
 		ShellUtils::ExecutableProcess process;
 		std::string status;
-		std::string launchSettings;
 		std::string crashError;
 		std::string failedInputAction;
 		std::filesystem::path startupScenePath;

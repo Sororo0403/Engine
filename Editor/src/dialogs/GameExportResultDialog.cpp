@@ -632,10 +632,6 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 	}
 	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
 	auto launchError = packageSettingsError_;
-	run.launchSettings = packageSettings_;
-	if (freshStart) {
-		run.launchSettings += "\nSave data: Disabled for this run";
-	}
 	run.crashError.clear();
 	run.failedInputAction.clear();
 	run.startupScenePath.clear();
@@ -976,49 +972,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ShellUtils::RevealLocationInExplorer(run.testSavePath, error_);
 		}
 		ImGui::SetItemTooltip("%s", path.c_str());
-	}
-
-	if (!run.status.empty() && ui.Button("Copy Run Report")) {
-		auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
-		if (!run.launchSettings.empty()) {
-			report += run.launchSettings + "\n";
-		}
-		report += run.status + "\n";
-		if (!run.launchFailurePath.empty()) {
-			report += "Startup error path: " + PathUtils::ToUtf8(run.launchFailurePath) + "\n";
-		}
-		if (!run.destinationFailurePath.empty()) {
-			report += "Destination scene error path: " + PathUtils::ToUtf8(run.destinationFailurePath) + "\n";
-		}
-		if (!run.runningSceneFailurePath.empty()) {
-			report += "Running scene error path: " + PathUtils::ToUtf8(run.runningSceneFailurePath) + "\n";
-		}
-		if (!run.testSavePath.empty()) {
-			report += "Editor test save path: " + PathUtils::ToUtf8(run.testSavePath) + "\n";
-		}
-		if (!run.launchFailed) {
-			RefreshLog();
-			refreshedLog = true;
-			// 全ログには過去の実行で出た同じ診断も含まれるため、今回のエラーを明示する。
-			if (!run.crashError.empty() &&
-			    (!run.sinceLaunchOnly || log_.find(run.crashError) == std::string::npos)) {
-				report += "\nLast error before abnormal exit:\n";
-				report += run.crashError + "\n";
-			}
-			if (!logError_.empty()) {
-				report += logError_ + "\n";
-			} else if (!log_.empty()) {
-				report += run.sinceLaunchOnly ? "\nGame log since Run Game"
-				                              : "\nGame log";
-				if (logTruncated_) {
-					report += !run.showLogBeginning ? " (tail)"
-					          : run.logPageOffset == 0 ? " (beginning)" : " (page)";
-				}
-				report += ":\n";
-				report += log_;
-			}
-		}
-		ImGui::SetClipboardText(report.c_str());
 	}
 
 	if (run.showLog) {
