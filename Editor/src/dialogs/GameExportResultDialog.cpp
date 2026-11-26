@@ -1117,16 +1117,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
-		ui.BeginDisabled(log_.empty());
-		if (ui.Button("Jump to Latest")) {
-			if (run.showLogBeginning) {
-				run.showLogBeginning = false;
-				RefreshLog();
-			}
-			jumpToLatest = true;
-			jumpToBeginning = false;
-		}
-		ui.EndDisabled();
 		if (run.showLogBeginning) {
 			ui.BeginDisabled(run.earlierLogPages.empty());
 			if (ui.Button("Previous Page") && !run.earlierLogPages.empty()) {
