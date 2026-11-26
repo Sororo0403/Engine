@@ -4208,12 +4208,6 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		                 : "External references or items that could not be checked:");
 		ui_.InputText("Search References", assetReferenceFilter_);
 		ImGui::SetItemTooltip("Search reference details or paste a source path.");
-		ui_.SameLine();
-		ui_.BeginDisabled(assetReferenceFilter_.empty());
-		if (ui_.Button("Clear Search")) {
-			assetReferenceFilter_.clear();
-		}
-		ui_.EndDisabled();
 		const auto searchPath = PathUtils::FromPathSearch(assetReferenceFilter_);
 		const auto matches = [&](const AssetUsage::Reference &source) {
 			return source.message.find(assetReferenceFilter_) != std::string::npos ||

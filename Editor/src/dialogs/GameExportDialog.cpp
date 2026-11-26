@@ -553,18 +553,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	}
 	if (!checkIssues_.empty()) {
 		if (ui.InputText("Search Issues", issueFilter_)) {
-			selectedIssue_.reset();
-			issueToScrollTo_ = 0;
-			issuePage_ = 0;
-		}
-		ui.SameLine();
-		ui.BeginDisabled(issueFilter_.empty());
-		if (ui.Button("Clear Search")) {
-			issueFilter_.clear();
+			if (!issueFilter_.empty()) {
+				selectedIssue_.reset();
+			}
 			issueToScrollTo_ = selectedIssue_.value_or(0);
 			issuePage_ = 0;
 		}
-		ui.EndDisabled();
 		const auto searchPath = PathUtils::FromPathSearch(issueFilter_);
 		std::vector<std::size_t> matching;
 		for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
@@ -607,7 +601,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
 		if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
 			if (matching.empty()) {
-				ui.Text("No issues match the search. Clear Search to see all issues.");
+				ui.Text("No issues match the search. Empty the search field to see all issues.");
 			}
 			const auto first = issuePage_ * kIssuesPerPage;
 			const auto end = (std::min)(first + kIssuesPerPage, matching.size());
