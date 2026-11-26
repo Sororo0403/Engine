@@ -1069,27 +1069,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::DROP_TO_GROUND:
 					DropSelectionToGround();
 					break;
-				case HierarchyPanel::Action::DROP_TO_SURFACE:
-					DropSelectionToSurface();
-					break;
-				case HierarchyPanel::Action::ALIGN_X:
-					AlignSelection(AlignmentAxis::X);
-					break;
-				case HierarchyPanel::Action::ALIGN_Y:
-					AlignSelection(AlignmentAxis::Y);
-					break;
-				case HierarchyPanel::Action::ALIGN_Z:
-					AlignSelection(AlignmentAxis::Z);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_X:
-					DistributeSelection(AlignmentAxis::X);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_Y:
-					DistributeSelection(AlignmentAxis::Y);
-					break;
-				case HierarchyPanel::Action::DISTRIBUTE_Z:
-					DistributeSelection(AlignmentAxis::Z);
-					break;
 				case HierarchyPanel::Action::RENAME_OBJECT:
 					if (HasSingleSelection()) {
 						inspectorPanel_.RequestRename(selection_.GetActiveId());

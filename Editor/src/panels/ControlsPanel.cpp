@@ -320,7 +320,7 @@ void ControlsPanel::Draw() {
 	         "model bounds. Empty and hidden objects move with the group; "
 	         "relative positions are preserved."},
 	        {"Align X / Y / Z to Active",
-	         "Use Edit or the Hierarchy menu to align selected origins to the "
+	         "Use Edit to align selected origins to the "
 	         "active object's world coordinate on one axis. Other axes, "
 	         "rotation and scale stay unchanged."},
 
@@ -620,8 +620,7 @@ void ControlsPanel::Draw() {
 	         "Box, Sphere and Capsule surfaces, with a tiny clearance. All "
 	         "selected "
 	         "objects need colliders. No surface or an existing overlap leaves "
-	         "them unchanged. The action supports Undo/Redo; Hierarchy's "
-	         "context menu has the same command. Drop to Ground still aligns "
+	         "them unchanged. The action supports Undo/Redo. Drop to Ground still aligns "
 	         "visible model bounds to Y=0."},
 
 	        {"Edit > Colliders",

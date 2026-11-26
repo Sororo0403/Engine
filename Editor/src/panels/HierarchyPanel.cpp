@@ -2,7 +2,6 @@
 #include "scene/SceneActivity.h"
 
 #include "graphics/ui/ImGuiSystem.h"
-#include "physics/ColliderPlacement.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "selection/EditorSelection.h"
@@ -541,42 +540,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 				if (ui.MenuItem("Drop to Ground", "Shift+G", canGround)) {
 					result.action = Action::DROP_TO_GROUND;
-				}
-
-				if (ui.MenuItem("Drop Colliders to Surface", nullptr,
-				                ColliderPlacement::CanDrop(
-				                    scene, selection.GetIds()))) {
-					result.action = Action::DROP_TO_SURFACE;
-				}
-
-				if (ui.MenuItem("Align X to Active", nullptr,
-				                selection.GetCount() > 1)) {
-					result.action = Action::ALIGN_X;
-				}
-
-				if (ui.MenuItem("Align Y to Active", nullptr,
-				                selection.GetCount() > 1)) {
-					result.action = Action::ALIGN_Y;
-				}
-
-				if (ui.MenuItem("Align Z to Active", nullptr,
-				                selection.GetCount() > 1)) {
-					result.action = Action::ALIGN_Z;
-				}
-
-				if (ui.MenuItem("Distribute X", nullptr,
-				                selection.GetCount() > 2)) {
-					result.action = Action::DISTRIBUTE_X;
-				}
-
-				if (ui.MenuItem("Distribute Y", nullptr,
-				                selection.GetCount() > 2)) {
-					result.action = Action::DISTRIBUTE_Y;
-				}
-
-				if (ui.MenuItem("Distribute Z", nullptr,
-				                selection.GetCount() > 2)) {
-					result.action = Action::DISTRIBUTE_Z;
 				}
 
 				ui.EndDisabled();
