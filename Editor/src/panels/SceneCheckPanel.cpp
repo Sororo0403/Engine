@@ -10,7 +10,6 @@
 #include <format>
 #include <imgui.h>
 #include <iterator>
-#include <set>
 #include <string_view>
 
 void SceneCheckPanel::Show() {
@@ -369,14 +368,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	Request requested;
-	const auto objects = GetIssueObjects(scene, searchPath);
-	ui.BeginDisabled(objects.empty());
-
-	if (ui.Button("Select Listed Issue Objects")) {
-		requested.objectIds = objects;
-	}
-
-	ui.EndDisabled();
 
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
@@ -398,7 +389,8 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			if (ui.Button("Select Object")) {
 				lastIssue_ = i;
-				requested = {{issue.objectId}};
+				requested = {};
+				requested.objectId = issue.objectId;
 			}
 
 			ui.EndDisabled();
@@ -520,20 +512,4 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	ImGui::End();
 	return requested;
-}
-
-std::vector<SceneObjectId>
-SceneCheckPanel::GetIssueObjects(const Scene &scene,
-                                const std::filesystem::path &searchPath) const {
-	std::vector<SceneObjectId> ids;
-	std::set<SceneObjectId> seen;
-
-	for (const auto &issue : issues_) {
-		if (MatchesFilter(issue, scene, searchPath) && scene.Contains(issue.objectId) &&
-		    seen.insert(issue.objectId).second) {
-			ids.push_back(issue.objectId);
-		}
-	}
-
-	return ids;
 }

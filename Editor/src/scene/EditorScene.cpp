@@ -553,17 +553,17 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, scene, cameraController_.GetPose(), exportConfig_.actions,
 	    history.GetCurrentStateId());
 	const bool hasCheckRequest =
-	    !checkedRequest.objectIds.empty() || !checkedRequest.scenePath.empty();
+	    checkedRequest.objectId != 0 || !checkedRequest.scenePath.empty();
 	SceneObjectId sceneOpenObject = 0;
 
 	if (!wasBusy && !checkedRequest.assetPath.empty()) {
 		assetsPanel_.RequestReveal(checkedRequest.assetPath);
 	}
 
-	if (!wasBusy && !checkedRequest.objectIds.empty()) {
+	if (!wasBusy && checkedRequest.objectId != 0) {
 		FinishEdit();
 
-		if (selection_.Set(std::move(checkedRequest.objectIds))) {
+		if (selection_.SelectOnly(checkedRequest.objectId)) {
 			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 		}
 	}

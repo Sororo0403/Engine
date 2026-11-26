@@ -20,7 +20,7 @@ class SceneCheckPanel {
 	/// 描画後に実行する、問題のある物体や素材を表示する要求
 	/// </summary>
 	struct Request {
-		std::vector<SceneObjectId> objectIds;
+		SceneObjectId objectId = 0;
 		std::filesystem::path assetPath;
 		std::filesystem::path scriptPath;
 		std::string scriptDiagnostic;
@@ -106,14 +106,6 @@ class SceneCheckPanel {
 	bool MatchesFilter(const SceneValidationIssue &issue,
 	                   const Scene &scene,
 	                   const std::filesystem::path &searchPath) const;
-
-	/// <summary>
-	/// 検索に一致する検証結果から、現在も存在する物体を重複せず列挙する
-	/// </summary>
-	/// <param name="scene">削除済みの物体を除くための現在のシーン</param>
-	/// <returns>検証結果に現れる順の物体ID。物体を指さない問題は除く</returns>
-	std::vector<SceneObjectId> GetIssueObjects(
-	    const Scene &scene, const std::filesystem::path &searchPath) const;
 
 	std::vector<SceneValidationIssue> issues_;
 	std::vector<GameActionBinding> checkedBindings_;
