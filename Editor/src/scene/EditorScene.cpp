@@ -7118,28 +7118,15 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN ||
-		    request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
+		if (request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
 			std::array<DirectX::XMFLOAT3, 8> corners;
-			const bool respawn =
-			    request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN;
-			const bool ready =
-			    respawn
-			        ? RespawnPreview::GetFrameBounds(document_.GetScene(),
-			                                         request.objectId, corners)
-			        : ColliderBounds::GetFrameBounds(document_.GetScene(),
-			                                         request.objectId, corners);
-
-			if (!ready) {
-				ShowError(
-				    respawn ? "Could not determine the respawn frame bounds."
-				            : "Could not determine the collider frame bounds.");
+			if (!ColliderBounds::GetFrameBounds(document_.GetScene(), request.objectId, corners)) {
+				ShowError("Could not determine the collider frame bounds.");
 				return;
 			}
 
 			frameObject_ = request.objectId;
-			frameRequest_ =
-			    respawn ? FrameRequest::RESPAWN : FrameRequest::COLLIDER;
+			frameRequest_ = FrameRequest::COLLIDER;
 			// ドックの別タブにある場合も、次のフレームでSceneの描画サイズを取得する。
 			ShowSceneView();
 			return;
@@ -7587,19 +7574,9 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
 
-	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER) {
+	if (request == FrameRequest::COLLIDER) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
-		bool ready = false;
-
-		if (const auto *object = scene.FindObject(frameObject_)) {
-			ready = request == FrameRequest::RESPAWN
-			            ? RespawnPreview::GetFrameBounds(scene, frameObject_,
-			                                             corners)
-			            : ColliderBounds::GetFrameBounds(scene, frameObject_,
-			                                             corners);
-		}
-
-		if (!ready) {
+		if (!ColliderBounds::GetFrameBounds(scene, frameObject_, corners)) {
 			return false;
 		}
 

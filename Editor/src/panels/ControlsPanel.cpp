@@ -1387,14 +1387,6 @@ void ControlsPanel::Draw() {
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
 
-	        {"Inspector > Respawn > Frame Respawn",
-	         "Bring the recovery position and its collider into Scene view "
-	         "without changing the scene, selection, Inspector lock or Undo "
-	         "history. The inspected object is used even when Inspector is "
-	         "locked. Invalid or missing colliders frame the position marker; "
-	         "blocked positions can still be inspected. Fall Boundary is not "
-	         "included in the view bounds. The command also works with "
-	         "Respawn Guides hidden and opens the Scene tab if necessary."},
 
 	        {"Selected Respawn in Scene",
 	         "The cross marks the recovery position and the wire box shows "

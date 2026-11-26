@@ -230,7 +230,6 @@ class EditorScene final : public IScene {
 		SELECTED,
 		ISSUES,
 		ALL,
-		RESPAWN,
 		COLLIDER,
 		INSPECTED,
 	};

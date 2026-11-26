@@ -824,11 +824,6 @@ bool InspectorPanel::Draw(
 		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};
 	}
 
-	if (const auto frameId = gameplayInspector_.GetRespawnFrameRequest();
-	    frameId != 0) {
-		objectRequest_ = {ObjectAction::FRAME_RESPAWN, frameId};
-	}
-
 	ui.Separator();
 
 	const auto componentScope = std::to_string(inspectedObjectId);
