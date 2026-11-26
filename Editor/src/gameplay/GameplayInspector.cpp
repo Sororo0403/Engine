@@ -51,11 +51,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest,
-                             bool canPasteTransform, bool canPasteCharacter,
-                             bool canPasteFollow, bool canPasteRespawn) {
+                             bool canPasteTransform, bool canPasteRespawn) {
 	targetSelectionRequest = 0;
-	characterRequest_ = {};
-	followRequest_ = {};
 	respawnRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
@@ -109,22 +106,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      "%.3f");
 		field("Step Height", &CharacterSettings::stepHeight,
 		      CharacterSettings::kMaximumStepHeight, 0.0f, 0.005f, "%.3f");
-
-		ui.BeginDisabled(!object.character->IsValid());
-
-		if (ui.Button("Copy Character Settings")) {
-			characterRequest_ = {CharacterAction::COPY, id};
-		}
-
-		ui.EndDisabled();
-		ui.SameLine();
-		ui.BeginDisabled(!canPasteCharacter);
-
-		if (ui.Button("Paste Character Settings")) {
-			characterRequest_ = {CharacterAction::PASTE, id};
-		}
-
-		ui.EndDisabled();
 
 		if (ui.Button("Reset Character Settings")) {
 			const auto before = object.character;
@@ -238,22 +219,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			    "Maximum Distance", &OrbitCameraSettings::maximumDistance,
 			    0.05f, object.followCamera->orbit.minimumDistance, 10000);
 		}
-
-		ui.BeginDisabled(!object.followCamera->IsValid());
-
-		if (ui.Button("Copy Follow Settings")) {
-			followRequest_ = {FollowAction::COPY, id};
-		}
-
-		ui.EndDisabled();
-		ui.SameLine();
-		ui.BeginDisabled(!canPasteFollow);
-
-		if (ui.Button("Paste Follow Settings")) {
-			followRequest_ = {FollowAction::PASTE, id};
-		}
-
-		ui.EndDisabled();
 
 		if (ui.Button("Reset Follow Settings")) {
 			const auto before = object.followCamera;
@@ -375,20 +340,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
-	followRequest_ = {};
 	respawnRequest_ = {};
-	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
-}
-
-GameplayInspector::CharacterRequest
-GameplayInspector::GetCharacterRequest() const {
-	return characterRequest_;
-}
-
-GameplayInspector::FollowRequest GameplayInspector::GetFollowRequest() const {
-	return followRequest_;
 }
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {

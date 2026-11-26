@@ -53,10 +53,6 @@ class InspectorPanel {
 		COPY_TRANSFORM,
 		COPY_RESPAWN_SETTINGS,
 		PASTE_RESPAWN_SETTINGS,
-		COPY_FOLLOW_SETTINGS,
-		PASTE_FOLLOW_SETTINGS,
-		COPY_CHARACTER_SETTINGS,
-		PASTE_CHARACTER_SETTINGS,
 		COPY_COLLIDER,
 		PASTE_COLLIDER,
 		PASTE_TRANSFORM,
@@ -176,8 +172,6 @@ class InspectorPanel {
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
 	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
-	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
-	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
 	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <param name="canPasteUv">コピー済みの有効なUVがあるか</param>
 	/// <param name="inputBindings">ゲーム設定の名前付き操作</param>
@@ -188,7 +182,6 @@ class InspectorPanel {
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
 	          AssetDatabase *assets = nullptr,
 	          bool canPasteCollider = false,
-	          bool canPasteCharacter = false, bool canPasteFollow = false,
 	          bool canPasteRespawn = false,
 	          std::span<const SceneObjectId> uvTargets = {},
 	          bool canPasteUv = false,

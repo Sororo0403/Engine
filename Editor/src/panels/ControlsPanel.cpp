@@ -1472,18 +1472,7 @@ void ControlsPanel::Draw() {
 	         "respawn placement before Play. The copy survives New and Open. "
 	         "Unavailable during Play or modal operations. Paste Respawn "
 	         "Position still uses the separate Transform copy."},
-	        {"Inspector > Copy / Paste Follow Settings",
-	         "Copy Camera Offset, Look Offset and Follow Smoothing. Pasting "
-	         "keeps the destination Follow Camera target, Camera lens, Primary "
-	         "flag, Transform and other components. Add Component > Paste "
-	         "Follow "
-	         "Settings adds a missing Follow Camera with no target; choose its "
-	         "target and add a Camera before Play. The source target is never "
-	         "copied. Each paste is one Undo/Redo; identical values add no "
-	         "history. The copy is independent of other clipboards and "
-	         "survives "
-	         "New/Open. Inspector locks and selection are preserved. Pending "
-	         "edits finish first. Editing is unavailable during Play."},
+
 
 
 
@@ -1508,19 +1497,7 @@ void ControlsPanel::Draw() {
 	         "does not enable double jumping. Edits support Undo, copying, "
 	         "scene saving and game export. Play still requires a Collider "
 	         "for a Character Controller."},
-	        {"Inspector > Copy / Paste Character Settings",
-	         "Copy movement speed, jump speed, gravity, terminal speed and "
-	         "jump grace, "
-	         "then paste onto the inspected Character Controller. Add "
-	         "Component "
-	         "> Paste Character Settings adds a missing controller. Transform, "
-	         "Collider, Camera and Respawn settings stay unchanged; a Collider "
-	         "is still required for Play. Each paste is one Undo/Redo; "
-	         "identical "
-	         "settings add no history. The copy is independent of other "
-	         "clipboards and survives New/Open. Inspector locks are respected "
-	         "and selection is kept. Pending edits finish first. Editing is "
-	         "unavailable during Play."},
+
 	        {"Inspector > Reset Character / Follow / Respawn Settings",
 	         "Reset this component to defaults in one Undo operation. "
 	         "Follow Camera keeps its target; offsets and smoothing reset. "

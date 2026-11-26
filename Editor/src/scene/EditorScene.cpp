@@ -631,8 +631,6 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, scene, selection_.GetActiveId(), history,
 	    clipboard_.GetTransform() != nullptr, &models_, &assets_,
 	    clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetCharacterSettings() != nullptr,
-	    clipboard_.GetFollowSettings() != nullptr,
 	    clipboard_.GetRespawnSettings() != nullptr, selection_.GetIds(),
 	    clipboard_.GetTextureUVs() != nullptr, exportConfig_.actions);
 	const auto prefabRequest = inspectorPanel_.GetPrefabRequest();
@@ -7127,61 +7125,6 @@ void EditorScene::ApplyInspectorRequest(
 			    !document_.GetHistory().SetRespawn(request.objectId, *copied)) {
 				ShowError("Could not paste Respawn settings. Copy valid "
 				          "settings first.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::COPY_FOLLOW_SETTINGS) {
-			if (!object->followCamera ||
-			    !clipboard_.CopyFollowSettings(*object->followCamera)) {
-				ShowError("Could not copy invalid Follow Camera settings.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::PASTE_FOLLOW_SETTINGS) {
-			const auto *copied = clipboard_.GetFollowSettings();
-
-			if (!copied) {
-				ShowError("Copy valid Follow Camera settings before pasting.");
-				return;
-			}
-
-			auto value = *copied;
-			value.target =
-			    object->followCamera ? object->followCamera->target : 0;
-
-			if (!document_.GetHistory().SetFollowCamera(request.objectId,
-			                                            value)) {
-				ShowError("Could not paste Follow Camera settings.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::COPY_CHARACTER_SETTINGS) {
-			if (!object->character ||
-			    !clipboard_.CopyCharacterSettings(*object->character)) {
-				ShowError(
-				    "Could not copy invalid Character Controller settings.");
-			}
-
-			return;
-		}
-
-		if (request.action ==
-		    InspectorPanel::ObjectAction::PASTE_CHARACTER_SETTINGS) {
-			const auto *copied = clipboard_.GetCharacterSettings();
-
-			if (!copied || !document_.GetHistory().SetCharacter(
-			                   request.objectId, *copied)) {
-				ShowError("Could not paste Character Controller settings. Copy "
-				          "valid settings first.");
 			}
 
 			return;

@@ -147,35 +147,6 @@ const Collider *EditorClipboard::GetCollider() const {
 	return collider_ ? &*collider_ : nullptr;
 }
 
-bool EditorClipboard::CopyCharacterSettings(const CharacterSettings &settings) {
-	if (!settings.IsValid()) {
-		return false;
-	}
-
-	characterSettings_ = settings;
-	return true;
-}
-
-const CharacterSettings *EditorClipboard::GetCharacterSettings() const {
-	return characterSettings_ ? &*characterSettings_ : nullptr;
-}
-
-bool EditorClipboard::CopyFollowSettings(const FollowCameraSettings &settings) {
-	if (!settings.IsValid()) {
-		return false;
-	}
-
-	// 別シーンで同じIDが使われても、元の追従対象を参照させない。
-	auto value = settings;
-	value.target = 0;
-	followSettings_ = value;
-	return true;
-}
-
-const FollowCameraSettings *EditorClipboard::GetFollowSettings() const {
-	return followSettings_ ? &*followSettings_ : nullptr;
-}
-
 bool EditorClipboard::CopyRespawnSettings(const RespawnSettings &settings) {
 	if (!settings.IsValid()) {
 		return false;
@@ -214,8 +185,6 @@ void EditorClipboard::Clear() {
 	transform_.reset();
 	worldPosition_.reset();
 	collider_.reset();
-	characterSettings_.reset();
-	followSettings_.reset();
 	respawnSettings_.reset();
 	textureUVs_.reset();
 }

@@ -199,7 +199,7 @@ bool InspectorPanel::Draw(
     const ImGuiSystem &ui, Scene &scene, SceneObjectId selectedObjectId,
     EditorHistory &history, bool canPasteTransform, ModelManager *models,
     AssetDatabase *assets, bool canPasteCollider,
-    bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
+    bool canPasteRespawn,
     std::span<const SceneObjectId> uvTargets, bool canPasteUv,
     std::span<const GameActionBinding> inputBindings) {
 	objectRequest_ = {};
@@ -813,28 +813,7 @@ bool InspectorPanel::Draw(
 	SceneObjectId targetSelectionRequest = 0;
 	changed |= gameplayInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history, targetSelectionRequest,
-	    canPasteTransform, canPasteCharacter, canPasteFollow, canPasteRespawn);
-
-	const auto characterRequest = gameplayInspector_.GetCharacterRequest();
-
-	if (characterRequest.action == GameplayInspector::CharacterAction::COPY) {
-		objectRequest_ = {ObjectAction::COPY_CHARACTER_SETTINGS,
-		                  characterRequest.objectId};
-	} else if (characterRequest.action ==
-	           GameplayInspector::CharacterAction::PASTE) {
-		objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
-		                  characterRequest.objectId};
-	}
-
-	const auto followRequest = gameplayInspector_.GetFollowRequest();
-
-	if (followRequest.action == GameplayInspector::FollowAction::COPY) {
-		objectRequest_ = {ObjectAction::COPY_FOLLOW_SETTINGS,
-		                  followRequest.objectId};
-	} else if (followRequest.action == GameplayInspector::FollowAction::PASTE) {
-		objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
-		                  followRequest.objectId};
-	}
+	    canPasteTransform, canPasteRespawn);
 
 	const auto respawnRequest = gameplayInspector_.GetRespawnRequest();
 
@@ -975,12 +954,6 @@ bool InspectorPanel::Draw(
 			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
 		}
 
-		if (componentItem("Paste Character Settings",
-		                  canPasteCharacter && !object->character)) {
-			objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
-			                  inspectedObjectId};
-		}
-
 		if (componentItem("Camera", !object->camera)) {
 			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
 		}
@@ -989,12 +962,6 @@ bool InspectorPanel::Draw(
 		if (componentItem("Follow Camera", !object->followCamera)) {
 			changed |= history.SetFollowCamera(inspectedObjectId,
 			                                   FollowCameraSettings{});
-		}
-
-		if (componentItem("Paste Follow Settings",
-		                  canPasteFollow && !object->followCamera)) {
-			objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
-			                  inspectedObjectId};
 		}
 
 		if (componentItem("Animation Player", !object->animationClip)) {
