@@ -575,32 +575,6 @@ bool RigidBodyWorld::AddImpulse(SceneObjectId id,
 	}
 }
 
-bool RigidBodyWorld::SetVelocity(SceneObjectId id,
-                                 const DirectX::XMFLOAT3 &linear,
-                                 const DirectX::XMFLOAT3 &angular,
-                                 std::string &error) {
-	try {
-		RigidBodySettings limits;
-		limits.linearVelocity = linear;
-		limits.angularVelocity = angular;
-		if (!impl_ || !impl_->bodies.contains(id) || !limits.IsValid())
-			throw std::runtime_error("Velocity requires an existing moving "
-			                         "body and supported finite vectors.");
-		const auto &[body, index] = impl_->bodies.at(id);
-		if (Motion(impl_->descriptions[index]) == JPH::EMotionType::Static)
-			throw std::runtime_error("Static bodies do not have velocity.");
-		auto next = impl_.use_count() == 1 ? impl_ : impl_->Clone();
-		next->system.GetBodyInterface().SetLinearAndAngularVelocity(
-		    body, Vector(linear), Vector(angular));
-		impl_ = std::move(next);
-		error.clear();
-		return true;
-	} catch (const std::exception &exception) {
-		error = exception.what();
-		return false;
-	}
-}
-
 namespace {
 /// <summary>
 /// 問い合わせ用の箱を、正の半径と中心へ変換する

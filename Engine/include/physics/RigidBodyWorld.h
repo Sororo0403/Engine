@@ -81,17 +81,6 @@ class RigidBodyWorld {
 	                std::string &error);
 
 	/// <summary>
-	/// 動的・Kinematicな物体の速度を設定する
-	/// </summary>
-	/// <param name="id">静的でない物体ID</param>
-	/// <param name="linear">長さ500m/s以下のワールド並進速度</param>
-	/// <param name="angular">長さ100rad/s以下のワールド角速度</param>
-	/// <param name="error">成功時は空、失敗時は理由</param>
-	/// <returns>true:成功 false:対象や速度が無効</returns>
-	bool SetVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &linear,
-	                 const DirectX::XMFLOAT3 &angular, std::string &error);
-
-	/// <summary>
 	/// 他方の速度を保持し、並進速度だけを設定する
 	/// </summary>
 	/// <param name="id">静的でない物体ID</param>
