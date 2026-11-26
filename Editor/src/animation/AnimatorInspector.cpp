@@ -11,7 +11,20 @@
 bool AnimatorInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                              SceneObject &object, EditorHistory &history,
                              ModelManager *models) const {
-	if (!object.animator || !ui.CollapsingHeader("Animator"))
+	if (!object.animator)
+		return false;
+	const bool open = ui.CollapsingHeader("Animator");
+	ImGui::SetItemTooltip("Right-click for animator actions.");
+	if (ImGui::BeginPopupContextItem("AnimatorActions")) {
+		const bool reset = ui.MenuItem("Reset Animator");
+		const bool remove = ui.MenuItem("Remove Animator");
+		ImGui::EndPopup();
+		if (remove)
+			return history.SetAnimator(id, std::nullopt);
+		if (reset)
+			return history.SetAnimator(id, AnimatorComponent{});
+	}
+	if (!open)
 		return false;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -78,10 +91,6 @@ bool AnimatorInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			ui.Text(std::format("Clip Duration: {:.2f} s", at->duration));
 	}
 
-	if (ui.Button("Reset Animator"))
-		changed |= history.SetAnimator(id, AnimatorComponent{});
-	if (ui.Button("Remove Animator"))
-		changed |= history.SetAnimator(id, std::nullopt);
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

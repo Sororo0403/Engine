@@ -12,8 +12,20 @@
 bool TransformAnimationInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                        SceneObject &object,
                                        EditorHistory &history) const {
-	if (!object.transformAnimation ||
-	    !ui.CollapsingHeader("Transform Animation"))
+	if (!object.transformAnimation)
+		return false;
+	const bool open = ui.CollapsingHeader("Transform Animation");
+	ImGui::SetItemTooltip("Right-click for transform animation actions.");
+	if (ImGui::BeginPopupContextItem("TransformAnimationActions")) {
+		const bool reset = ui.MenuItem("Reset Transform Animation");
+		const bool remove = ui.MenuItem("Remove Transform Animation");
+		ImGui::EndPopup();
+		if (remove)
+			return history.SetTransformAnimation(id, std::nullopt);
+		if (reset)
+			return history.SetTransformAnimation(id, TransformAnimationComponent{});
+	}
+	if (!open)
 		return false;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -137,11 +149,6 @@ bool TransformAnimationInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	}
 
 	ui.EndDisabled();
-	if (ui.Button("Reset Transform Animation"))
-		changed |=
-		    history.SetTransformAnimation(id, TransformAnimationComponent{});
-	if (ui.Button("Remove Transform Animation"))
-		changed |= history.SetTransformAnimation(id, std::nullopt);
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
