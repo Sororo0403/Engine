@@ -962,11 +962,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	if (!run.testSavePath.empty()) {
-		const auto path = PathUtils::ToUtf8(run.testSavePath);
-		if (ui.Button("Show Test Save Location")) {
-			ShellUtils::RevealLocationInExplorer(run.testSavePath, error_);
-		}
-		ImGui::SetItemTooltip("%s", path.c_str());
+		ImGui::TextWrapped("Test save: %s", PathUtils::ToUtf8(run.testSavePath).c_str());
 	}
 
 	if (run.showLog) {
