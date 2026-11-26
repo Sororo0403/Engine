@@ -1281,18 +1281,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 				ui.EndDisabled();
 			}
-
-			if (selectedType == AssetType::ANIMATION_CLIP) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-				if (ui.MenuItem("Edit Animation Clip", nullptr, true))
-					clipEditPath_ = selectedPath_;
-				ui.EndDisabled();
-			} else if (selectedType == AssetType::SCRIPT) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-				if (ui.MenuItem("Edit Script", nullptr, true))
-					scriptEditPath_ = selectedPath_;
-				ui.EndDisabled();
-			}
 		}
 		ImGui::EndPopup();
 	}
