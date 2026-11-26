@@ -46,25 +46,25 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	ui.Text(PathUtils::ToUtf8(options_.source));
-	ui.Text("Source Folder");
-	ui.Text(PathUtils::ToUtf8(options_.sourceRoot));
-	const auto parent = options_.sourceRoot.parent_path();
-	ui.BeginDisabled(options_.source.empty() || parent.empty() ||
-	                 parent == options_.sourceRoot);
-	if (ui.Button("Use Parent Source Folder")) {
-		options_.sourceRoot = parent;
-		error_.clear();
+	if (!options_.source.empty()) {
+		const auto sourceLabel = PathUtils::ToUtf8(options_.sourceRoot);
+		if (ImGui::BeginCombo("Source Folder", sourceLabel.c_str())) {
+			auto folder = options_.source.parent_path();
+			while (!folder.empty()) {
+				const auto label = PathUtils::ToUtf8(folder);
+				if (ui.Selectable(label.c_str(), folder == options_.sourceRoot)) {
+					options_.sourceRoot = folder;
+					error_.clear();
+				}
+				auto parent = folder.parent_path();
+				if (parent == folder) {
+					break;
+				}
+				folder = std::move(parent);
+			}
+			ImGui::EndCombo();
+		}
 	}
-
-	ui.EndDisabled();
-	ui.SameLine();
-	const auto modelFolder = options_.source.parent_path();
-	ui.BeginDisabled(options_.source.empty() || options_.sourceRoot == modelFolder);
-	if (ui.Button("Reset Source Folder")) {
-		options_.sourceRoot = modelFolder;
-		error_.clear();
-	}
-	ui.EndDisabled();
 
 	const auto preview = options_.folder.empty()
 	                         ? std::string("Root")
