@@ -1749,15 +1749,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 
 		const auto recent = recentScenes_.GetPaths();
-		const auto *previous = FindPreviousScene();
-		if (ui_.MenuItem("Open Previous Scene", "Ctrl+Shift+O",
-		                 enabled && previous)) {
-			action = EditorAction::OPEN_PREVIOUS_SCENE;
-		}
-		if (previous) {
-			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(*previous).c_str());
-		}
-
 		ui_.BeginDisabled(!enabled || recent.empty());
 
 		if (ui_.BeginMenu("Open Recent")) {
@@ -2459,10 +2450,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		return shift ? EditorAction::SAVE_AS : EditorAction::SAVE;
 	}
 
-	if (keyboard.IsPressed(Key::O)) {
-		if (shift && !alt) {
-			return EditorAction::OPEN_PREVIOUS_SCENE;
-		}
+	if (!shift && keyboard.IsPressed(Key::O)) {
 		return EditorAction::OPEN;
 	}
 
@@ -2471,20 +2459,6 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	}
 
 	return EditorAction::NONE;
-}
-
-const std::filesystem::path *EditorScene::FindPreviousScene() const {
-	const auto &current = document_.GetFilePath();
-	const bool projectOpen = !project_.GetRoot().empty();
-	for (const auto &path : recentScenes_.GetPaths()) {
-		std::error_code status;
-		if ((current.empty() || !PathUtils::IsSameFile(path, current)) &&
-		    (projectOpen ? project_.CanUseAsStartupScene(path)
-		                 : std::filesystem::is_regular_file(path, status))) {
-			return &path;
-		}
-	}
-	return nullptr;
 }
 
 void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
@@ -2496,7 +2470,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::OPEN_PATH ||
 	      action == EditorAction::OPEN_SCENE_CHECK_REFERENCE ||
 	      action == EditorAction::BROWSE_LAST_EDITED_SCENE ||
-	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
 	      action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
@@ -2518,14 +2491,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	FinishEdit();
 
 	switch (action) {
-	case EditorAction::OPEN_PREVIOUS_SCENE:
-		if (const auto *path = FindPreviousScene()) {
-			pendingOpenPath_ = *path;
-			pendingOpenObject_ = 0;
-			pendingAction_ = EditorAction::OPEN_PATH;
-			ConfirmSceneChanges();
-		}
-		return;
 	case EditorAction::RESUME_CURRENT_SCENE:
 		if (!failedRestoredScene_.empty() &&
 		    project_.CanUseAsStartupScene(document_.GetFilePath())) {

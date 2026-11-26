@@ -208,7 +208,6 @@ class EditorScene final : public IScene {
 		OPEN_PLAY_SOURCE,
 		BROWSE_LAST_EDITED_SCENE,
 		RESUME_CURRENT_SCENE,
-		OPEN_PREVIOUS_SCENE,
 		OPEN_EXPORT_ISSUE,
 		SAVE_SELECTION,
 		RECOVER_SCENE,
@@ -305,11 +304,6 @@ class EditorScene final : public IScene {
 	/// <param name="objectPanelFocused">HierarchyかSceneにフォーカスがあるか</param>
 	/// <returns>要求された操作</returns>
 	EditorAction ReadShortcut(bool objectPanelFocused) const;
-
-	/// <summary>
-	/// 現在のシーンを除いた直近のシーンファイルを取得する。候補がなければnullptr
-	/// </summary>
-	const std::filesystem::path *FindPreviousScene() const;
 
 	/// <summary>
 	/// 編集操作を開始する
