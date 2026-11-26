@@ -164,7 +164,7 @@ class GameExportResultDialog {
 	/// </summary>
 	bool OpenLogAtError(ErrorSearch search, bool reportMissing = true);
 
-	enum class MatchSearch { FIRST, PREVIOUS, NEXT, LATEST };
+	enum class MatchSearch { FIRST, PREVIOUS, NEXT };
 
 	/// <summary>
 	/// 選択中の実行範囲で検索語またはシーンの準備完了に一致する行へ移動する

@@ -493,17 +493,15 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 	const bool next = direction == MatchSearch::NEXT;
 	const bool previous = direction == MatchSearch::PREVIOUS;
-	const bool latest = direction == MatchSearch::LATEST;
 	const bool relativeSearch = next || previous;
 	auto &run = runs_.at(directory_);
 	if (relativeSearch && !run.lastMatch) {
 		return false;
 	}
-	auto query = relativeSearch ? run.lastMatch->query : latest ? std::string{} : run.logFilter;
-	const bool sceneLoad = query.empty();
+	auto query = relativeSearch ? run.lastMatch->query : run.logFilter;
 	const auto searchPath = PathUtils::FromPathSearch(query);
 	const auto minimumLevel = relativeSearch ? run.lastMatch->minimumLevel
-	                                        : sceneLoad ? LogLevel::LOG_INFO : run.minimumLogLevel;
+	                                        : run.minimumLogLevel;
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
 	if (end < 0) {
@@ -538,14 +536,7 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 		}
 		auto match = std::string_view::npos;
 		if ((!next || relative > anchor) && entryLevel >= minimumLevel) {
-			if (sceneLoad) {
-				const auto prefix = LogLevelPrefix(line);
-				if (prefix.starts_with(kStartupReady) || prefix.starts_with(kDestinationReady)) {
-					match = 0;
-				}
-			} else {
-				match = FindLogText(line, query, searchPath);
-			}
+			match = FindLogText(line, query, searchPath);
 		}
 		if (match != std::string_view::npos) {
 			// 見出しから開くと一致行がページ外になる場合は、一致行を優先する。
@@ -566,7 +557,7 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 			}
 			displayLevel = fits ? minimumLevel : LogLevel::LOG_INFO;
 			found = GameRun::LogMatch{query, relative, entryOffset, minimumLevel, entryLevel};
-			if (!previous && !latest) {
+			if (!previous) {
 				break;
 			}
 		}
@@ -583,7 +574,6 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 	error_ = input.bad() ? "Could not search the game log."
 	         : previous  ? "No earlier matching lines in the selected log range."
 	         : next      ? "No later matching lines in the selected log range."
-	         : sceneLoad ? "No scene loads were recorded in the selected log range."
 	                               : "No matching lines in the selected log range.";
 	return false;
 }
@@ -1202,15 +1192,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		ImGui::SetItemTooltip("Find the latest error across the selected log range.");
 		ui.EndDisabled();
-		ui.SameLine();
-		if (ui.Button("Latest Scene Load")) {
-			const bool found = FindLogMatch(MatchSearch::LATEST);
-			jumpToBeginning |= found;
-			if (found) {
-				jumpToLatest = false;
-			}
-		}
-		ImGui::SetItemTooltip("Find the latest startup or destination scene in the selected log range.");
 		if (run.showLogBeginning && !log_.empty()) {
 			if (ui.Button("Previous Log Error")) {
 				jumpToBeginning |= OpenLogAtError(ErrorSearch::PREVIOUS);
