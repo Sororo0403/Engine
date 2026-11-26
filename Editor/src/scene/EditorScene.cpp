@@ -1666,9 +1666,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::OPEN_PATH;
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedRestoredScene_).c_str());
-			if (ui_.MenuItem("Locate Last Edited Scene...", nullptr, enabled)) {
-				action = EditorAction::BROWSE_LAST_EDITED_SCENE;
-			}
 			if (ui_.MenuItem("Resume Current Scene Next Time", nullptr,
 			                 enabled && project_.CanUseAsStartupScene(current))) {
 				action = EditorAction::RESUME_CURRENT_SCENE;
