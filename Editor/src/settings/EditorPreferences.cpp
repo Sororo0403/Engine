@@ -593,7 +593,6 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 		EditorPreferences loaded;
 		loaded.showGrid = json.at("showGrid").get<bool>();
-		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
 		loaded.searchProjectScenes = json.value("searchProjectScenes", false);
 		loaded.showObjectMarkers = json.value("showObjectMarkers", true);
 
@@ -1190,7 +1189,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"rigidBodyGravity", gameExport.rigidBodyGravity},
 		      {"cameraRelativeMovement", gameExport.cameraRelativeMovement}}},
 		    {"showGrid", showGrid},
-		    {"showSelectionBounds", showSelectionBounds},
 		    {"searchProjectScenes", searchProjectScenes},
 		    {"showObjectMarkers", showObjectMarkers},
 		    {"colliderDisplay",
@@ -1272,7 +1270,6 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.cameraRelativeMovement ==
 	           other.gameExport.cameraRelativeMovement &&
 	       showGrid == other.showGrid &&
-	       showSelectionBounds == other.showSelectionBounds &&
 	       searchProjectScenes == other.searchProjectScenes &&
 	       showObjectMarkers == other.showObjectMarkers &&
 	       snapping == other.snapping && operation == other.operation &&

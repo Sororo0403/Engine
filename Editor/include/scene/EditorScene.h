@@ -919,7 +919,6 @@ class EditorScene final : public IScene {
 	// パネルの再表示で発生する自動フォーカスの後に、メニューの要求先へ移す。
 	const char *windowFocusRequest_ = nullptr;
 	bool showGrid_ = true;
-	bool showSelectionBounds_ = true;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;

@@ -25,7 +25,6 @@ class EditorPreferences {
 	// Editorのローカル設定に保存するプロジェクト別の配布下書き。
 	std::map<std::filesystem::path, GameExportDraft> gameExportDrafts;
 	bool showGrid = true;
-	bool showSelectionBounds = true;
 	bool searchProjectScenes = false;
 	bool showObjectMarkers = true;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;

@@ -124,7 +124,6 @@ bool EditorScene::Initialize() {
 
 	showGrid_ = preferences_.showGrid;
 	sceneGrid_.SetSettings(preferences_.grid);
-	showSelectionBounds_ = preferences_.showSelectionBounds;
 	showObjectMarkers_ = preferences_.showObjectMarkers;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
@@ -1471,7 +1470,7 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
-		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
+		if (!selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
 			return false;
@@ -1524,7 +1523,6 @@ void EditorScene::Finalize() {
 	if (canSavePreferences_) {
 		auto current = preferences_;
 		current.showGrid = showGrid_;
-		current.showSelectionBounds = showSelectionBounds_;
 		current.showObjectMarkers = showObjectMarkers_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
@@ -2211,8 +2209,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			gridSettingsRequested_ = true;
 		}
 
-		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
-		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());
 
@@ -7551,11 +7547,9 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		return false;
 	}
 
-	if (showSelectionBounds_) {
-		for (const auto id : playSelection_.GetIds()) {
-			if (!selectionBounds_.Update(playSceneRenderer_, id)) {
-				return false;
-			}
+	for (const auto id : playSelection_.GetIds()) {
+		if (!selectionBounds_.Update(playSceneRenderer_, id)) {
+			return false;
 		}
 	}
 

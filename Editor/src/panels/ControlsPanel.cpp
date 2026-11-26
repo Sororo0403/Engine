@@ -2158,7 +2158,7 @@ void ControlsPanel::Draw() {
 	         "return value is true if more than 256 objects matched. Use the "
 	         "list to apply area effects or detect nearby targets. Queries see "
 	         "earlier script edits and share the physics API call budget."},
-	        {"View menu", "Show or hide the grid and selection bounds, or "
+	        {"View menu", "Show or hide the grid, or "
 	                      "reset the dock layout."},
 	    });
 
