@@ -396,14 +396,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 			                             ? retryScript : selected->sourcePath;
 			const bool isLua = PathUtils::HasExtension(selected->sourcePath, ".lua");
 			const bool hasLuaDiagnostic = isLua && selected->level == LogLevel::LOG_ERROR;
-			if (ui.Button("Copy Message")) {
-				std::string text;
-				AppendClipboardMessage(text, selected->message);
-				ImGui::SetClipboardText(text.c_str());
-			}
-
 			if (isLua) {
-				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
 					request.path = sourcePath;
@@ -420,7 +413,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 
 			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
 				if (failedScene) {
-					ui.SameLine();
 					if (ui.Button(failedScene->empty() ? "Select Failed Object" : "Open Failed Scene")) {
 						request.logId = selected->id;
 						request.openFailedScene = true;
@@ -430,7 +422,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 					}
 				}
 				if (!retryInput.empty()) {
-					ui.SameLine();
 					if (ui.Button("Edit Input Binding")) {
 						request.logId = selected->id;
 						request.editInput = true;
@@ -438,7 +429,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 					ImGui::SetItemTooltip("Edit the input binding for %.*s.",
 					                      static_cast<int>(retryInput.size()), retryInput.data());
 				}
-				ui.SameLine();
 				if (ui.Button("Play Scene Again")) {
 					request.logId = selected->id;
 					request.retryPlay = true;
@@ -457,7 +447,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				}
 			}
 
-			ui.SameLine();
 			ui.Text(std::format("[{}] {}", selected->timestamp,
 			                    LevelName(selected->level)));
 			if (found == entries_.end()) {
@@ -474,10 +463,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 						location += std::format(":{}", line);
 					}
 				}
-				if (ui.Button("Copy Source Location")) {
-					ImGui::SetClipboardText(location.c_str());
-				}
-				ui.SameLine();
 				if (ui.Button("Search This Source")) {
 					// 移動前のログも検索できるよう、ログ自身が保持するパスを使う。
 					filter_ = PathUtils::ToUtf8(selected->sourcePath);

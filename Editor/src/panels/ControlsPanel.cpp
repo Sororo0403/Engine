@@ -1497,8 +1497,8 @@ void ControlsPanel::Draw() {
 	        {"View > History", "Inspect operations, current and saved states. "
 	                           "Click a state to undo or redo to that point."},
 	        {"View > Console",
-	         "Filter recent logs by level or text, read details, copy a "
-	         "message or copy all matching logs with timestamps and levels. "
+	         "Filter recent logs by level or text, read details, or copy "
+	         "all matching logs with timestamps and levels. "
 	         "Latest Play Run shows messages from the most recent Play or "
 	         "Restart attempt onward. "
 	         "Clear Console resets recent messages while file output is kept."},
