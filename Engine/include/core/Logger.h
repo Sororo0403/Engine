@@ -80,14 +80,9 @@ class Logger {
 	static std::uint64_t GetEntryBoundary();
 
 	/// <summary>
-	/// 試遊の最初のエラーを記録し始め、開始時点のログ識別子を返す
+	/// 試遊のエラーを記録し始め、開始時点のログ識別子を返す
 	/// </summary>
 	static std::uint64_t BeginPlayLog();
-
-	/// <summary>
-	/// 直近の試遊で最初に出たエラーを取得する。ログ一覧の保持上限とは独立する
-	/// </summary>
-	static std::optional<LogEntry> GetFirstPlayError();
 
 	/// <summary>
 	/// 直近の試遊で最後に出たエラーを取得する。ログ一覧の保持上限とは独立する
@@ -112,7 +107,6 @@ class Logger {
 	inline static std::ofstream logFile_;
 	inline static std::mutex mutex_;
 	inline static std::deque<LogEntry> entries_;
-	inline static std::optional<LogEntry> firstPlayError_;
 	inline static std::optional<LogEntry> latestPlayError_;
 	inline static std::optional<LogEntry> playFailure_;
 	inline static bool capturePlayError_ = false;

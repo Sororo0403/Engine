@@ -166,13 +166,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	}
 	auto searchPath = PathUtils::FromPathSearch(filter_);
 	Logger::ReadEntries(revision_, entries_);
-	const auto firstPlayError = Logger::GetFirstPlayError();
 	const auto latestPlayError = Logger::GetLatestPlayError();
 	const auto playFailure = Logger::GetPlayFailure();
-	ui.BeginDisabled(!firstPlayError);
-	const bool clickedFirstPlayError = ui.Button("First Play Error");
-	ui.EndDisabled();
-	ui.SameLine();
 	ImGui::BeginDisabled(!latestPlayError);
 	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
 	ImGui::EndDisabled();
@@ -188,8 +183,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		const auto found = std::ranges::find(entries_, requested, &LogEntry::id);
 		if (found != entries_.end()) {
 			jumpError = &*found;
-		} else if (firstPlayError && firstPlayError->id == requested) {
-			jumpError = &*firstPlayError;
 		} else if (latestPlayError && latestPlayError->id == requested) {
 			jumpError = &*latestPlayError;
 		} else if (playFailure && playFailure->id == requested) {
@@ -201,8 +194,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		}
 	} else if (clickedLatestPlayError && latestPlayError) {
 		jumpError = &*latestPlayError;
-	} else if (clickedFirstPlayError && firstPlayError) {
-		jumpError = &*firstPlayError;
 	} else if (clickedPlayFailure) {
 		jumpError = &*playFailure;
 	}
@@ -368,9 +359,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	    });
 
 	const LogEntry *selected = found != entries_.end() ? &*found : nullptr;
-	if (!selected && firstPlayError && firstPlayError->id == selectedId_) {
-		selected = &*firstPlayError;
-	} else if (!selected && latestPlayError && latestPlayError->id == selectedId_) {
+	if (!selected && latestPlayError && latestPlayError->id == selectedId_) {
 		selected = &*latestPlayError;
 	} else if (!selected && playFailure && playFailure->id == selectedId_) {
 		selected = &*playFailure;
