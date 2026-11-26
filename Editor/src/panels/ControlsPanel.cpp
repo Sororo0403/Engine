@@ -1323,9 +1323,6 @@ void ControlsPanel::Draw() {
 	         "preserved. Follow Camera needs a target, a view not straight up "
 	         "or down, and offsets within its allowed range."},
 
-	        {"View > Camera Guides",
-	         "Toggle the frustums of selected cameras in the Scene view. This "
-	         "setting is saved for the next Editor session."},
 	        {"Selected Camera in Scene",
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "

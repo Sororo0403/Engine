@@ -26,7 +26,6 @@ class EditorPreferences {
 	std::map<std::filesystem::path, GameExportDraft> gameExportDrafts;
 	bool showGrid = true;
 	bool showSelectionBounds = true;
-	bool showCameraGuides = true;
 	bool maximizeGameOnPlay = false;
 	bool startPlayPaused = false;
 	bool searchProjectScenes = false;

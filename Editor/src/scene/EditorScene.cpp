@@ -125,7 +125,6 @@ bool EditorScene::Initialize() {
 	showGrid_ = preferences_.showGrid;
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
-	showCameraGuides_ = preferences_.showCameraGuides;
 	playMode_.SetMaximizeOnPlay(preferences_.maximizeGameOnPlay);
 	playMode_.SetStartPaused(preferences_.startPlayPaused);
 	showObjectMarkers_ = preferences_.showObjectMarkers;
@@ -1474,8 +1473,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	for (const SceneObjectId id : selection_.GetIds()) {
-		if (showCameraGuides_ &&
-		    !cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
+		if (!cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
 		                           exportConfig_.height)) {
 			Logger::Error(
 			    "EditorScene: カメラの撮影範囲を登録できませんでした。");
@@ -1536,7 +1534,6 @@ void EditorScene::Finalize() {
 		auto current = preferences_;
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
-		current.showCameraGuides = showCameraGuides_;
 		current.maximizeGameOnPlay = playMode_.GetMaximizeOnPlay();
 		current.startPlayPaused = playMode_.GetStartPaused();
 		current.showObjectMarkers = showObjectMarkers_;
@@ -2226,8 +2223,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
-		                !IsBusy());
-		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());

@@ -920,7 +920,6 @@ class EditorScene final : public IScene {
 	const char *windowFocusRequest_ = nullptr;
 	bool showGrid_ = true;
 	bool showSelectionBounds_ = true;
-	bool showCameraGuides_ = true;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
