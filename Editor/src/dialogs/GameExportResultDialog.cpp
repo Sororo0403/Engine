@@ -1078,10 +1078,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Follow new messages while the log is at the bottom.");
-		if (ui.Button("Refresh Log")) {
-			RefreshLog();
-			refreshedLog = true;
-		}
 		if (run.process.IsTracking() &&
 		    std::chrono::steady_clock::now() >= nextLogRefresh_) {
 			const auto previous = std::move(log_);
