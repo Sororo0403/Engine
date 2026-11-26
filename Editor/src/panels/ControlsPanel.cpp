@@ -673,17 +673,6 @@ void ControlsPanel::Draw() {
 	         "confirming unsaved changes. Save Copy keeps the active "
 	         "destination and its comparison baseline."},
 
-	        {"Game > Playback Speed",
-	         "Slow Play to 0.1x, 0.25x or 0.5x, or return to 1x. Movement, "
-	         "gravity and camera following use the same scaled game time. "
-	         "Pause freezes the simulation; Step always advances 1/60 second "
-	         "at any speed. Restart preserves speed and pause but clears a "
-	         "pending Step. Stop and a new Play reset speed to 1x. Long real "
-	         "frames are capped at 0.1 second before scaling. This is an "
-	         "Editor test control: scene data, movement settings, history, "
-	         "preferences and exported games are unchanged. Speed changes "
-	         "are unavailable while another dialog is open."},
-
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "
 	         "original material and texture by an RGB color. White restores "
@@ -1221,7 +1210,7 @@ void ControlsPanel::Draw() {
 	         "Expand Game across the Editor work area during Play. The "
 	         "original dock arrangement and render resolution are kept. "
 	         "Restore Layout returns to the panels without restarting or "
-	         "changing Pause, playback speed or selection. Stop and Escape "
+	         "changing Pause or selection. Stop and Escape "
 	         "restore the normal layout. Restart keeps the expanded view. "
 	         "Play shortcuts remain available; other panels are hidden until "
 	         "the layout is restored. Opening a panel, Grid Settings or Help, "
@@ -1239,11 +1228,11 @@ void ControlsPanel::Draw() {
 	         "panel is read-only and can be opened during Play. Pause freezes "
 	         "the values; Step shows the next simulated frame. Stop clears "
 	         "the live display. Simulated Time accumulates only successful "
-	         "game updates after speed scaling and the frame-time cap. "
+	         "game updates after the frame-time cap. "
 	         "Simulation Frames counts positive-time updates, not rendered "
 	         "frames or internal physics ticks. Pause and zero-time updates "
 	         "do not advance these values; Step adds one frame and 1/60 "
-	         "second at any speed. Start, Restart and Stop reset both. "
+	         "second. Start, Restart and Stop reset both. "
 	         "Ground Collider shows the supporting object while grounded and "
 	         "None while airborne. Select Ground Collider reveals that live "
 	         "object; Frame Ground Collider also fits it in Scene. Hidden "

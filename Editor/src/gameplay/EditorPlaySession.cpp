@@ -117,9 +117,7 @@ bool EditorPlaySession::Restart(std::string &error, bool currentScene,
 		initialSceneRevision_ = simulation_.GetSceneRevision();
 	}
 	const bool paused = clock_.IsPaused();
-	const auto speed = clock_.GetTimeScale();
 	clock_.Reset();
-	clock_.SetTimeScale(speed);
 
 	if (paused) {
 		clock_.TogglePause();
@@ -157,14 +155,6 @@ void EditorPlaySession::RequestStep() {
 	if (IsPlaying()) {
 		clock_.RequestStep();
 	}
-}
-
-bool EditorPlaySession::SetTimeScale(float scale) {
-	return IsPlaying() && clock_.SetTimeScale(scale);
-}
-
-float EditorPlaySession::GetTimeScale() const {
-	return clock_.GetTimeScale();
 }
 
 double EditorPlaySession::GetElapsedSeconds() const {

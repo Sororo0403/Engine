@@ -138,24 +138,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		bool pickScript = false;
 		if (ImGui::BeginPopup("GameOptions")) {
 			ui.BeginDisabled(!canStart);
-			ImGui::SetNextItemWidth(110.0f);
-			const auto speedLabel = std::format("{:g}x", session_.GetTimeScale());
-
-			if (ImGui::BeginCombo("Playback Speed", speedLabel.c_str())) {
-				for (const float speed : {0.1f, 0.25f, 0.5f, 1.0f}) {
-					const auto label = std::format("{:g}x", speed);
-
-					if (ui.Selectable(label.c_str(),
-					                  session_.GetTimeScale() == speed)) {
-						session_.SetTimeScale(speed);
-					}
-				}
-
-				ImGui::EndCombo();
-			}
-
-			ui.EndDisabled();
-			ui.BeginDisabled(!canStart);
 
 			pickScript = scriptToEdit && ui.MenuItem("Edit Script...", nullptr, true);
 			if (!playSourcePath.empty()) {

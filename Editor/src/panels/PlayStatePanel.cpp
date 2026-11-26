@@ -69,10 +69,10 @@ PlayStatePanel::Request PlayStatePanel::Draw(
 		data = "{}";
 	if (ui.Button("Copy Summary")) {
 		const auto text = std::format(
-		    "Scene: {}\n{}\n{}\n{}\nPlayback Speed: {:g}x\n{}\n"
+		    "Scene: {}\n{}\n{}\n{}\n{}\n"
 		    "Shared Script Data:\n{}",
 		    scenePath.empty() ? sceneName : PathUtils::ToUtf8(scenePath),
-		    status, time, frames, session.GetTimeScale(), messages,
+		    status, time, frames, messages,
 		    data);
 		ImGui::SetClipboardText(text.c_str());
 	}

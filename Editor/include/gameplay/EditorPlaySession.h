@@ -145,22 +145,9 @@ class EditorPlaySession {
 	void RequestStep();
 
 	/// <summary>
-	/// 再生中の速度を変更する。ゲーム設定と、一時停止・Stepの状態は保持する
-	/// </summary>
-	/// <param name="scale">有限な0.1倍から1倍までの速度</param>
-	/// <returns>true:設定成功 false:停止中、または値が無効</returns>
-	bool SetTimeScale(float scale);
-
-	/// <summary>
-	/// 現在の再生速度を取得する。停止中は1倍を返す
-	/// </summary>
-	/// <returns>実時間に掛ける倍率</returns>
-	float GetTimeScale() const;
-
-	/// <summary>
 	/// 再生シーンの更新に成功したゲーム時間を累積して取得する
 	/// </summary>
-	/// <returns>速度倍率とフレーム上限を反映した秒数。Start・Restart・Stopで0に戻る</returns>
+	/// <returns>フレーム上限を反映した秒数。Start・Restart・Stopで0に戻る</returns>
 	double GetElapsedSeconds() const;
 
 	/// <summary>
