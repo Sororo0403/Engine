@@ -41,12 +41,6 @@ class SceneManager {
 	void Draw() const;
 
 	/// <summary>
-	/// 初期化済みのシーンを保持しているか取得する
-	/// </summary>
-	/// <returns>true:シーンあり false:シーンなし</returns>
-	bool HasScene() const;
-
-	/// <summary>
 	/// 現在のシーンと切り替え予約を解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();

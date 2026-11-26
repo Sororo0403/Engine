@@ -154,16 +154,6 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// 再生用の根と子孫を削除し、参照・物理・UI・スクリプト状態を同期する
-	/// </summary>
-	/// <param name="roots">存在する根のID。重複と親子の同時指定を許可する</param>
-	/// <param name="error">成功時は空、失敗時は理由</param>
-	/// <returns>true:成功 false:停止中・指定なし・不正な候補。失敗時は全状態を保持する</returns>
-	/// <remarks>編集シーンとSceneRevisionは変更しない。GPU完了後に呼び、描画・音声は所有側の次の更新で同期する</remarks>
-	bool DestroyObjects(std::span<const SceneObjectId> roots,
-	                    std::string &error);
-
-	/// <summary>
 	/// 宣言されたPrefab素材を、候補の確定前に準備する処理
 	/// </summary>
 	using PreparePrefabResources = std::function<bool(
