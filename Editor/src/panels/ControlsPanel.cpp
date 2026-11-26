@@ -180,7 +180,6 @@ void ControlsPanel::Draw() {
 	         "Open a folder or return to its parent or the Assets root. Search "
 	         "finds files and folders across Assets. Double-click a folder "
 	         "result to open it, then use Back to Search to return. "
-	         "Current Folder Only includes the open folder's subfolders. "
 	         "Enable All Asset Types to search "
 	         "models, textures, scenes and other files together."},
 	        {"Click / Ctrl + click",

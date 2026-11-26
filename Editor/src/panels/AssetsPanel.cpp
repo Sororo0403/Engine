@@ -169,7 +169,7 @@ std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults(bool includeF
 		return std::nullopt;
 	}
 	return ResultView{filter_, displayedResults_, selectedItems_, currentDirectory_,
-	                  selectionAnchor_, type_, searchAllTypes_, searchCurrentFolderOnly_};
+	                  selectionAnchor_, type_, searchAllTypes_};
 }
 
 void AssetsPanel::RemoveMissingPaths() {
@@ -659,11 +659,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	bool scopeChanged = false;
 	if (!filter_.empty()) {
 		scopeChanged = ui.Checkbox("All Asset Types", searchAllTypes_);
-		if (!currentDirectory_.empty()) {
-			ui.SameLine();
-			scopeChanged |= ui.Checkbox("Current Folder Only", searchCurrentFolderOnly_);
-			ImGui::SetItemTooltip("Search the current folder and its subfolders.");
-		}
 	}
 	if (searchChanged || scopeChanged) {
 		displayedResults_.clear();
@@ -690,7 +685,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				RestoreDirectory(std::move(previous->directory), assets);
 				filter_ = std::move(previous->search);
 				searchAllTypes_ = previous->allTypes;
-				searchCurrentFolderOnly_ = previous->currentFolderOnly;
 				displayedResults_ = std::move(previous->results);
 				selectedItems_ = std::move(previous->selection);
 				selectionAnchor_ = std::move(previous->anchor);
@@ -736,9 +730,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	    std::pair{AssetType::SCRIPT, &assets.GetScripts()},
 	    std::pair{AssetType::ANIMATION_CLIP, &assets.GetAnimationClips()},
 	    std::pair{AssetType::GAME_SETTINGS, &assets.GetGameConfigurations()}};
-	const auto searchPrefix = searchCurrentFolderOnly_ && !currentDirectory_.empty()
-	                              ? currentDirectory_.generic_wstring() + L"/"
-	                              : std::wstring{};
 	const auto inResults = [&](const std::filesystem::path &path) {
 		return std::ranges::find(displayedResults_, path) != displayedResults_.end();
 	};
@@ -751,22 +742,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			return relative.parent_path() == currentDirectory_;
 		}
 		const auto text = relative.generic_wstring();
-		if (!searchPrefix.empty() &&
-		    (text.size() <= searchPrefix.size() ||
-		     CompareStringOrdinal(text.data(), static_cast<int>(searchPrefix.size()),
-		                          searchPrefix.data(), static_cast<int>(searchPrefix.size()),
-		                          TRUE) != CSTR_EQUAL)) {
-			return false;
-		}
 		if (absoluteSearch) {
 			const auto absolute = PathUtils::ResolveFromExecutable(path).generic_wstring();
 			return CompareStringOrdinal(absolute.c_str(), -1, search.c_str(), -1,
 			                            TRUE) == CSTR_EQUAL;
 		}
-		const auto queryPath = std::wstring_view(text).substr(searchPrefix.size());
 		return !search.empty() &&
-		       FindStringOrdinal(FIND_FROMSTART, queryPath.data(),
-		                         static_cast<int>(queryPath.size()), search.c_str(),
+		       FindStringOrdinal(FIND_FROMSTART, text.data(),
+		                         static_cast<int>(text.size()), search.c_str(),
 		                         static_cast<int>(search.size()), TRUE) >= 0;
 	};
 	std::vector<std::filesystem::path> visible;
