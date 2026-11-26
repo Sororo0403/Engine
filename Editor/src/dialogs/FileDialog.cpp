@@ -1,6 +1,5 @@
 #include "dialogs/FileDialog.h"
 
-#include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
@@ -65,20 +64,6 @@ void CheckDialogResult(HRESULT result) {
 	}
 }
 
-/// <summary>
-/// 保存先と同じフォルダで、ファイル種別を保った空き名を探す
-/// </summary>
-std::filesystem::path SuggestSaveName(const std::filesystem::path &path) {
-	auto stem = path.stem();
-	auto suffix = path.extension().native();
-	if (PathUtils::HasExtension(stem, ".scene") ||
-	    PathUtils::HasExtension(stem, ".settings")) {
-		suffix = stem.extension().native() + suffix;
-		stem = stem.stem();
-	}
-
-	return AssetFolders::SuggestAvailableName(path.parent_path(), stem.native(), suffix);
-}
 } // namespace
 
 void FileDialog::Show(FileDialogMode mode,
@@ -356,16 +341,6 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (ui.Button("Back")) {
 			destinationExists_ = false;
 		}
-		ui.SameLine();
-		if (ui.Button("Suggest Name")) {
-			try {
-				fileName_ = PathUtils::ToUtf8(SuggestSaveName(selectedPath_));
-				error_.clear();
-				destinationExists_ = false;
-			} catch (const std::exception &error) {
-				error_ = error.what();
-			}
-		}
 		if (!error_.empty()) {
 			ImGui::TextWrapped("%s", error_.c_str());
 		}
@@ -587,24 +562,6 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				                                     failedProjectLocationError_);
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedProject_).c_str());
-			std::error_code saveStatus;
-			if ((filter_ == FileDialogFilter::SCENE || filter_ == FileDialogFilter::GAME_CONFIG) &&
-			    mode_ != FileDialogMode::OPEN &&
-			    mode_ != FileDialogMode::SELECT_DIRECTORY &&
-			    std::filesystem::exists(std::filesystem::symlink_status(failedProject_, saveStatus))) {
-				ui.SameLine();
-				if (ui.Button("Suggest Name")) {
-					try {
-						const auto path = failedProject_.parent_path() / SuggestSaveName(failedProject_);
-						fileName_ = PathUtils::ToUtf8(path);
-						failedProject_.clear();
-						failedProjectLocationError_.clear();
-						error_.clear();
-					} catch (const std::exception &error) {
-						failedProjectLocationError_ = error.what();
-					}
-				}
-			}
 			if (choosingProject) {
 				ui.SameLine();
 				if (ui.Button("Retry Failed Project")) {
