@@ -5345,8 +5345,9 @@ void EditorScene::UpdateDialogs() {
 
 			if (!project_.GetRoot().empty() &&
 			    !project_.Save(settings, project_.GetStartupScene(), error)) {
-				gameSettingsDialog_.Reopen("Could not save Game Settings: " + error,
-				                           project_.GetRoot() / L"project.json");
+				gameSettingsDialog_.Reopen(
+				    "Could not save Game Settings: " + error + "\n" +
+				    PathUtils::ToUtf8(project_.GetRoot() / L"project.json"));
 				return;
 			}
 

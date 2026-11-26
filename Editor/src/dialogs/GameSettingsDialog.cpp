@@ -2,7 +2,6 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
-#include "platform/windows/ShellUtils.h"
 
 #include <algorithm>
 #include <exception>
@@ -30,8 +29,6 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	settingsId_ = config.settingsId;
 	persistentScriptKeys_ = config.persistentScriptKeys;
 	error_.clear();
-	failedProjectFile_.clear();
-	locationError_.clear();
 	source_.clear();
 	lastSavedPath_.clear();
 	destination_ = directory / L"Game.settings.json";
@@ -40,10 +37,8 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	selecting_ = false;
 }
 
-void GameSettingsDialog::Reopen(std::string error, std::filesystem::path projectFile) {
+void GameSettingsDialog::Reopen(std::string error) {
 	error_ = std::move(error);
-	failedProjectFile_ = std::move(projectFile);
-	locationError_.clear();
 	opening_ = true;
 }
 
@@ -363,12 +358,6 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 			settingsId_ = config_.settingsId;
 			persistentScriptKeys_ = config_.persistentScriptKeys;
 		}
-	}
-	if (!failedProjectFile_.empty() && ui.Button("Show Project Location")) {
-		ShellUtils::RevealLocationInExplorer(failedProjectFile_, locationError_);
-	}
-	if (!locationError_.empty()) {
-		ImGui::TextWrapped("%s", locationError_.c_str());
 	}
 	const bool apply = ui.Button(retryPlay ? "Apply and Retry Play" : "Apply");
 	ui.SameLine();
