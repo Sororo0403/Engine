@@ -569,11 +569,6 @@ bool EditorScene::Update(float deltaTime) {
 			if (checkedRequest.inspect) {
 				inspectorPanel_.RequestInspect(selection_.GetActiveId());
 			}
-
-			if (checkedRequest.frame) {
-				frameRequest_ = FrameRequest::ISSUES;
-				ShowSceneView();
-			}
 		}
 	}
 
@@ -7330,8 +7325,7 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	DirectX::XMFLOAT3 minimum{};
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
-	const bool includeHidden =
-	    request == FrameRequest::ISSUES || request == FrameRequest::INSPECTED;
+	const bool includeHidden = request == FrameRequest::INSPECTED;
 	const bool selectedOnly =
 	    request == FrameRequest::SELECTED || includeHidden;
 

@@ -223,7 +223,6 @@ class EditorScene final : public IScene {
 	enum class FrameRequest {
 		NONE,
 		SELECTED,
-		ISSUES,
 		ALL,
 		COLLIDER,
 		INSPECTED,

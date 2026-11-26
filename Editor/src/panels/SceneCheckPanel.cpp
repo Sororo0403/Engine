@@ -377,12 +377,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		requested.objectIds = objects;
 	}
 
-	ui.SameLine();
-
-	if (ui.Button("Frame Listed Issue Objects")) {
-		requested = {objects, true};
-	}
-
 	ui.EndDisabled();
 
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
@@ -405,21 +399,14 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			if (ui.Button("Select Object")) {
 				lastIssue_ = i;
-				requested = {{issue.objectId}, false};
-			}
-
-			ui.SameLine();
-
-			if (ui.Button("Frame Object")) {
-				lastIssue_ = i;
-				requested = {{issue.objectId}, true};
+				requested = {{issue.objectId}};
 			}
 
 			ui.SameLine();
 
 			if (ui.Button("Inspect Object")) {
 				lastIssue_ = i;
-				requested = {{issue.objectId}, false, true};
+				requested = {{issue.objectId}, true};
 			}
 
 			ui.EndDisabled();
