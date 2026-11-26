@@ -21,7 +21,6 @@ class SceneCheckPanel {
 	/// </summary>
 	struct Request {
 		std::vector<SceneObjectId> objectIds;
-		bool inspect = false;
 		std::filesystem::path assetPath;
 		std::filesystem::path scriptPath;
 		std::string scriptDiagnostic;

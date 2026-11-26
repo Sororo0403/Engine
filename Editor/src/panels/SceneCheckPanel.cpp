@@ -401,13 +401,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				requested = {{issue.objectId}};
 			}
 
-			ui.SameLine();
-
-			if (ui.Button("Inspect Object")) {
-				lastIssue_ = i;
-				requested = {{issue.objectId}, true};
-			}
-
 			ui.EndDisabled();
 		}
 

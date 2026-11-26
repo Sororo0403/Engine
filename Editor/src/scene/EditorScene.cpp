@@ -565,10 +565,6 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (selection_.Set(std::move(checkedRequest.objectIds))) {
 			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
-
-			if (checkedRequest.inspect) {
-				inspectorPanel_.RequestInspect(selection_.GetActiveId());
-			}
 		}
 	}
 
