@@ -2,6 +2,7 @@
 #include "scene/SceneActivity.h"
 
 #include "math/MathUtils.h"
+#include "physics/ColliderBounds.h"
 #include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
@@ -91,17 +92,6 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 
 	geometry = result;
 	return true;
-}
-
-bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
-	if (object.parentId != 0 || !object.respawn || !object.respawn->IsValid()) {
-		return false;
-	}
-
-	const auto position = object.respawn->useStartPosition
-	                          ? object.transform.translation
-	                          : object.respawn->position;
-	return BuildLines(*object.respawn, position, lines);
 }
 
 bool RespawnPreview::BuildLines(const Scene &scene, SceneObjectId id,

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/render/DebugLine.h"
-#include "physics/ColliderBounds.h"
 #include "scene/SceneObjectId.h"
 #include <array>
 #include <optional>
@@ -9,7 +8,6 @@
 
 class Scene;
 class SceneRenderer;
-struct SceneObject;
 struct RespawnSettings;
 
 /// <summary>
@@ -17,6 +15,17 @@ struct RespawnSettings;
 /// </summary>
 class RespawnPreview {
   public:
+	/// <summary>
+	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
+	/// </summary>
+	/// <param name="renderer">更新済みのScene描画先</param>
+	/// <param name="scene">編集シーン。値は変更しない</param>
+	/// <param name="id">表示する物体のID</param>
+	/// <returns>true:登録成功または表示対象なし false:線の登録失敗</returns>
+	bool Update(SceneRenderer &renderer, const Scene &scene,
+	            SceneObjectId id) const;
+
+  private:
 	using Lines = std::array<DebugLine, 10>;
 
 	/// <summary>
@@ -41,24 +50,6 @@ class RespawnPreview {
 	                   Geometry &geometry) const;
 
 	/// <summary>
-	/// 復帰位置の十字と、判定高度の局所的な水平面をワールド座標で組み立てる
-	/// </summary>
-	/// <param name="object">親を持たない物体。親付きはscene・idのオーバーロードを使用する</param>
-	/// <param name="lines">成功時に置き換える線。対象なしまたは無効な場合は保持する</param>
-	/// <returns>true:作成成功 false:復帰設定なし、または設定・位置が無効</returns>
-	bool BuildLines(const SceneObject &object, Lines &lines) const;
-
-	/// <summary>
-	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
-	/// </summary>
-	/// <param name="renderer">更新済みのScene描画先</param>
-	/// <param name="scene">編集シーン。値は変更しない</param>
-	/// <param name="id">表示する物体のID</param>
-	/// <returns>true:登録成功または表示対象なし false:線の登録失敗</returns>
-	bool Update(SceneRenderer &renderer, const Scene &scene,
-	            SceneObjectId id) const;
-
-	/// <summary>
 	/// 親子合成後のワールド開始位置を使い、復帰位置と落下高度の線を作る
 	/// </summary>
 	/// <param name="scene">変更しない編集シーン</param>
@@ -67,7 +58,6 @@ class RespawnPreview {
 	/// <returns>true:成功 false:物体・関係・設定が無効</returns>
 	bool BuildLines(const Scene &scene, SceneObjectId id, Lines &lines) const;
 
-  private:
 	/// <summary>
 	/// ワールド位置と復帰設定から、原点の十字と落下判定面を組み立てる
 	/// </summary>
