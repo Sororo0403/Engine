@@ -395,12 +395,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\ModelUsage.h">
-      <Filter>include\assets</Filter>
-    </ClInclude>
-    <ClCompile Include="src\assets\ModelUsage.cpp">
-      <Filter>src\assets</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dialogs\SceneRecoveryDialog.h">

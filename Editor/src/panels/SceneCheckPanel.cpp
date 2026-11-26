@@ -1,6 +1,5 @@
 #include "panels/SceneCheckPanel.h"
 #include "animation/AnimationClipAsset.h"
-#include "assets/ModelUsage.h"
 #include "assets/SceneAssetValidation.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -436,22 +435,10 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			const auto matchesAsset = [&](const std::filesystem::path &reference) {
 				return validPath(reference) && PathUtils::IsSameFile(issue.assetPath, reference);
 			};
-			// モデル本体の診断だけを対象にし、依存ファイルの診断からは選択しない。
+			// モデル本体の診断と依存ファイルの診断で、再読み込みするパスを分ける。
 			const bool isReferencedModel =
 			    object && object->HasMesh() && PathUtils::IsModelFile(issue.assetPath) &&
 			    matchesAsset(object->mesh->modelPath);
-			if (isReferencedModel && ui.Button("Select All Using This Model")) {
-				try {
-					auto users = ModelUsage::FindObjects(scene, issue.assetPath);
-					if (!users.empty()) {
-						lastIssue_ = i;
-						requested = {std::move(users)};
-						assetActionError_.clear();
-					}
-				} catch (const std::exception &error) {
-					assetActionError_ = error.what();
-				}
-			}
 			const bool isReferencedTexture =
 			    object && PathUtils::IsImageFile(issue.assetPath) &&
 			    ((object->image && matchesAsset(object->image->texture)) ||

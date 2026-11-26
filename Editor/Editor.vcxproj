@@ -256,8 +256,6 @@ exit /b 0</Command>
     <ClCompile Include="src\panels\PerformancePanel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\ModelUsage.h" />
-    <ClCompile Include="src\assets\ModelUsage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dialogs\SceneRecoveryDialog.h" />
