@@ -181,11 +181,6 @@ void Logger::ClearEntries() {
 	++revision_;
 }
 
-std::uint64_t Logger::GetEntryBoundary() {
-	const std::scoped_lock lock(mutex_);
-	return revision_;
-}
-
 std::uint64_t Logger::BeginPlayLog() {
 	const std::scoped_lock lock(mutex_);
 	latestPlayError_.reset();

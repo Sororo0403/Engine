@@ -75,11 +75,6 @@ class Logger {
 	                        std::vector<LogEntry> &entries);
 
 	/// <summary>
-	/// 現在までのログと、この後のログを分ける識別子を取得する
-	/// </summary>
-	static std::uint64_t GetEntryBoundary();
-
-	/// <summary>
 	/// 試遊のエラーを記録し始め、開始時点のログ識別子を返す
 	/// </summary>
 	static std::uint64_t BeginPlayLog();

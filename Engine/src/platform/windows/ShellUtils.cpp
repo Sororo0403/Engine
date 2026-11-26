@@ -215,20 +215,6 @@ bool ShellUtils::RecycleAsset(const std::filesystem::path &path,
 	}
 }
 
-bool ShellUtils::RunExecutable(const std::filesystem::path &path,
-                               std::string &error,
-                               WindowVisibility visibility) {
-	try {
-		if (const auto process = OpenExecutable(path, visibility))
-			CloseHandle(process);
-		error.clear();
-		return true;
-	} catch (const std::exception &exception) {
-		error = exception.what();
-		return false;
-	}
-}
-
 ShellUtils::ExecutableProcess::~ExecutableProcess() {
 	Reset();
 }
