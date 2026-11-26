@@ -21,8 +21,6 @@ namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 constexpr std::streamoff kLogPageBytes = 64 * 1024;
-constexpr std::string_view kStartupReady = " [INFO] Startup scene ready: ";
-constexpr std::string_view kDestinationReady = " [INFO] Destination scene ready: ";
 constexpr std::string_view kStartupPrepareError = " [ERROR] Could not prepare startup scene: ";
 constexpr std::string_view kDestinationLoadError = " [ERROR] Could not load destination scene: ";
 constexpr std::string_view kSourceObjectPrefix = "Source object ID: ";
@@ -1202,31 +1200,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 				jumpToLatest = false;
 			}
 			ImGui::SetItemTooltip("Return to the log position and filters from before the jump.");
-		}
-		if (run.showLogBeginning) {
-			if (canOpenSource && run.sinceLaunchOnly && run.logStart &&
-			    run.launchedPackageId == run.sourcePackageId && run.lastMatch &&
-			    run.lastMatch->query.empty() && run.lastMatch->entryOffset == run.logPageOffset) {
-				const auto heading = LogLevelPrefix(std::string_view(log_).substr(0, log_.find_first_of("\r\n")));
-				for (const auto prefix : {kStartupReady, kDestinationReady}) {
-					if (!heading.starts_with(prefix)) {
-						continue;
-					}
-					const auto target = ResolveLogScene(directory_, heading.substr(prefix.size()));
-					std::error_code rootError;
-					const auto root = std::filesystem::canonical(directory_, rootError);
-					if (target.empty() || rootError) {
-						break;
-					}
-					const auto source = std::ranges::find_if(run.sceneSources, [&](const auto &scene) {
-						return PathUtils::IsSameFile(root / scene.packagedPath, target);
-					});
-					if (source != run.sceneSources.end() && ui.Button("Open Logged Scene in Editor")) {
-						openSource(source->sourcePath);
-					}
-					break;
-				}
-			}
 		}
 		const auto filtered = run.logFilter.empty() ? std::string{}
 		                                           : FilterLogEntries(log_, run.logFilter);
