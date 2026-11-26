@@ -834,10 +834,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ShellUtils::RevealLocationInExplorer(failedRuntimeScene, error_);
 		}
 		ImGui::SetItemTooltip("%s", path.c_str());
-		ui.SameLine();
-		if (ui.Button(destinationFailed ? "Copy Destination Scene Path" : "Copy Running Scene Path")) {
-			ImGui::SetClipboardText(path.c_str());
-		}
 	}
 
 	requestedSourceScene_.clear();
