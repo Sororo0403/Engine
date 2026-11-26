@@ -453,18 +453,14 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 						requested.textureReloadPath = issue.assetPath;
 				}
 			}
-			ui.BeginDisabled(missing);
-			if (ui.Button("Show in Assets")) {
-				lastIssue_ = i;
-				requested = {};
-				requested.assetPath = issue.assetPath;
+			if (!missing) {
+				if (ui.Button("Show in Assets")) {
+					lastIssue_ = i;
+					requested = {};
+					requested.assetPath = issue.assetPath;
+				}
+				ui.SameLine();
 			}
-			ui.EndDisabled();
-			if (missing && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled |
-			                                    ImGuiHoveredFlags_ForTooltip)) {
-				ImGui::SetTooltip("The referenced file is missing.");
-			}
-			ui.SameLine();
 			if (ui.Button(missing ? "Open Folder in Explorer" : "Show Location in Explorer")) {
 				lastIssue_ = i;
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
