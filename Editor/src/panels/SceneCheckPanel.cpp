@@ -344,15 +344,11 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	if (ui.InputText("Search Issues", filter_)) {
 		issueToRestore_.reset();
-		lastIssue_.reset();
-		scrollToIssue_.reset();
-	}
-	ui.SameLine();
-
-	if (ui.Button("Clear Search")) {
-		filter_.clear();
-		if (lastIssue_) {
+		if (filter_.empty()) {
 			scrollToIssue_ = lastIssue_;
+		} else {
+			lastIssue_.reset();
+			scrollToIssue_.reset();
 		}
 	}
 

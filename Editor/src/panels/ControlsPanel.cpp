@@ -1132,7 +1132,7 @@ void ControlsPanel::Draw() {
 	         "Inspector locks. Unlock Inspector to view the selected object. "
 	         "Use F in Scene to frame the selection. Search Issues filters by "
 	         "message, current object name or ID "
-	         "(case-sensitive); Clear Search restores all results. Copy "
+	         "(case-sensitive). Empty the search field to show all results. Copy "
 	         "Results always includes all results. "
 	         "Results describe the last check: use Check "
 	         "Scene "
