@@ -70,7 +70,7 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		initialSceneRevision_ = simulation_.GetSceneRevision();
 		initialFallback_ = fallbackPose;
 		initialScriptData_ = std::move(initialScriptData);
-		clock_.Reset();
+		clock_.Start();
 		elapsedSeconds_ = 0.0;
 		simulationFrameCount_ = 0;
 		firstFrame_ = true;
@@ -117,10 +117,9 @@ bool EditorPlaySession::Restart(std::string &error, bool currentScene,
 		initialSceneRevision_ = simulation_.GetSceneRevision();
 	}
 	const bool paused = clock_.IsPaused();
-	clock_.Reset();
+	clock_.Start(paused);
 
 	if (paused) {
-		clock_.TogglePause();
 		simulation_.CancelUIInput();
 	}
 
@@ -138,7 +137,7 @@ void EditorPlaySession::Stop() {
 	initialSceneRevision_ = 0;
 	initialFallback_ = {};
 	initialScriptData_.clear();
-	clock_.Reset();
+	clock_.Stop();
 	elapsedSeconds_ = 0.0;
 	simulationFrameCount_ = 0;
 	firstFrame_ = false;
@@ -146,15 +145,11 @@ void EditorPlaySession::Stop() {
 }
 
 void EditorPlaySession::TogglePause() {
-	if (IsPlaying()) {
-		clock_.TogglePause();
-	}
+	clock_.TogglePause();
 }
 
 void EditorPlaySession::RequestStep() {
-	if (IsPlaying()) {
-		clock_.RequestStep();
-	}
+	clock_.RequestStep();
 }
 
 double EditorPlaySession::GetElapsedSeconds() const {

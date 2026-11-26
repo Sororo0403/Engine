@@ -9,65 +9,92 @@
 /// </summary>
 class PlaybackClock {
   public:
-	/// <summary>
-	/// 一時停止と未処理のフレーム実行を解除する
-	/// </summary>
-	void Reset() {
-		paused_ = false;
+	// Stop and Start also discard any queued single-frame advance.
+	void Stop() {
+		state_ = &stopped_;
 		stepRequested_ = false;
 	}
 
-	/// <summary>
-	/// 一時停止と再開を切り替える。切り替え時は未処理のフレーム実行を破棄する
-	/// </summary>
+	void Start(bool paused = false) {
+		state_ = paused ? static_cast<const State *>(&paused_) : &playing_;
+		stepRequested_ = false;
+	}
+
 	void TogglePause() {
-		paused_ = !paused_;
-		stepRequested_ = false;
+		state_ = &state_->TogglePause(*this);
 	}
 
-	/// <summary>
-	/// 一時停止中に1フレーム実行を予約する。同じ更新までの重複要求はまとめる
-	/// </summary>
 	void RequestStep() {
-		if (paused_) {
-			stepRequested_ = true;
-		}
+		state_->RequestStep(*this);
 	}
 
-	/// <summary>
-	/// 一時停止しているか取得する
-	/// </summary>
-	/// <returns>true:一時停止 false:通常再生</returns>
 	bool IsPaused() const {
-		return paused_;
+		return state_ == &paused_;
 	}
 
-	/// <summary>
-	/// 今回進めるゲーム時間を取得し、予約した1フレーム実行を消費する
-	/// </summary>
-	/// <param name="seconds">実フレームの経過秒数</param>
-	/// <returns>通常時は実時間を0.1秒で制限した値。Stepは1/60秒。一時停止中や無効な入力はnullopt</returns>
 	std::optional<float> Advance(float seconds) {
 		if (!std::isfinite(seconds) || seconds < 0) {
 			return std::nullopt;
 		}
 
-		if (!paused_) {
-			return (std::min)(seconds, kMaximumFrameSeconds);
-		}
-
-		if (!stepRequested_) {
-			return std::nullopt;
-		}
-
-		stepRequested_ = false;
-		return kStepSeconds;
+		return state_->Advance(*this, seconds);
 	}
 
 	static constexpr float kStepSeconds = 1.0f / 60.0f;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 
   private:
-	bool paused_ = false;
+	// States are immutable. The queued step belongs to each clock instance.
+	struct State {
+		virtual ~State() = default;
+		virtual const State &TogglePause(PlaybackClock &) const {
+			return *this;
+		}
+		virtual void RequestStep(PlaybackClock &) const {}
+		virtual std::optional<float> Advance(PlaybackClock &, float) const = 0;
+	};
+
+	struct StoppedState final : State {
+		std::optional<float> Advance(PlaybackClock &, float) const override {
+			return std::nullopt;
+		}
+	};
+
+	struct PlayingState final : State {
+		const State &TogglePause(PlaybackClock &clock) const override {
+			clock.stepRequested_ = false;
+			return paused_;
+		}
+
+		std::optional<float> Advance(PlaybackClock &, float seconds) const override {
+			return (std::min)(seconds, kMaximumFrameSeconds);
+		}
+	};
+
+	struct PausedState final : State {
+		const State &TogglePause(PlaybackClock &clock) const override {
+			clock.stepRequested_ = false;
+			return playing_;
+		}
+
+		void RequestStep(PlaybackClock &clock) const override {
+			clock.stepRequested_ = true;
+		}
+
+		std::optional<float> Advance(PlaybackClock &clock, float) const override {
+			if (!clock.stepRequested_) {
+				return std::nullopt;
+			}
+
+			clock.stepRequested_ = false;
+			return kStepSeconds;
+		}
+	};
+
+	inline static const StoppedState stopped_;
+	inline static const PlayingState playing_;
+	inline static const PausedState paused_;
+
+	const State *state_ = &stopped_;
 	bool stepRequested_ = false;
 };
