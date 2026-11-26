@@ -26,7 +26,6 @@ class EditorPreferences {
 	std::map<std::filesystem::path, GameExportDraft> gameExportDrafts;
 	bool showGrid = true;
 	bool showSelectionBounds = true;
-	bool maximizeGameOnPlay = false;
 	bool searchProjectScenes = false;
 	bool showObjectMarkers = true;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;

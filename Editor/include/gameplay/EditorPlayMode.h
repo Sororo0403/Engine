@@ -200,22 +200,6 @@ class EditorPlayMode {
 	void RestoreLayout();
 
 	/// <summary>
-	/// 次の新規PlayでGameを自動拡大するか設定する。現在の再生・配置とRestartには影響しない
-	/// </summary>
-	/// <param name="enabled">true:新規Playの次の描画から拡大 false:通常の配置で開始</param>
-	void SetMaximizeOnPlay(bool enabled) {
-		maximizeOnPlay_ = enabled;
-	}
-
-	/// <summary>
-	/// 新規Play時の自動拡大設定を取得する
-	/// </summary>
-	/// <returns>true:自動拡大が有効 false:無効</returns>
-	bool GetMaximizeOnPlay() const {
-		return maximizeOnPlay_;
-	}
-
-	/// <summary>
 	/// Gameだけを作業領域へ拡大して表示しているか取得する。描画解像度とドック配置は変更しない
 	/// </summary>
 	/// <returns>true:再生中の拡大表示 false:通常の配置</returns>
@@ -255,6 +239,5 @@ class EditorPlayMode {
 	bool previewFrame_ = false;
 	bool maximized_ = false;
 	bool maximizeRequested_ = false;
-	bool maximizeOnPlay_ = false;
 	bool loadTestSave_ = false;
 };
