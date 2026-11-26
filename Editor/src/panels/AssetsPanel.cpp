@@ -1071,12 +1071,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				if (assetType == AssetType::TEXTURE &&
-				    ui.MenuItem("Assign Texture to Selection", nullptr,
-				                canSetTexture && textureSlot_ >= 0)) {
-					textureSelectionPath_ = assetPath;
-				}
-
-				if (assetType == AssetType::TEXTURE &&
 				    selectedItems_.size() == 1 &&
 				    ui.MenuItem("Reload Texture", nullptr, canEditAssets)) {
 					textureReloadPath_ = assetPath;
