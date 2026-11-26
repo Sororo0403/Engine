@@ -125,7 +125,6 @@
     <ClInclude Include="include\settings\RecentScenes.h" />
     <ClInclude Include="include\history\EditorHistory.h" />
     <ClInclude Include="include\panels\AssetsPanel.h" />
-    <ClInclude Include="include\panels\TexturePreviewPanel.h" />
     <ClInclude Include="include\panels\ControlsPanel.h" />
     <ClInclude Include="include\panels\HistoryPanel.h" />
     <ClInclude Include="include\panels\ConsolePanel.h" />
@@ -183,7 +182,6 @@
     <ClCompile Include="src\history\ScenePatchCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
-    <ClCompile Include="src\panels\TexturePreviewPanel.cpp" />
     <ClCompile Include="src\panels\ControlsPanel.cpp" />
     <ClCompile Include="src\panels\HistoryPanel.cpp" />
     <ClCompile Include="src\panels\ConsolePanel.cpp" />

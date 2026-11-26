@@ -232,7 +232,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -397,7 +396,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 
 	const bool focusWindow = focusRequested_ || !revealPath_.empty() ||
@@ -962,7 +960,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto primaryPath = selectedPath_;
 	const auto primaryType = selectedType;
 	const bool hasPrimaryAction = !primaryPath.empty() &&
-	    (primaryType == AssetType::MODEL || primaryType == AssetType::TEXTURE ||
+	    (primaryType == AssetType::MODEL ||
 	     (canEditAssets && (primaryType == AssetType::SCENE || primaryType == AssetType::PREFAB)));
 	const bool drawEntries = ui.BeginChild(
 	    "AssetEntries", 0.0f, hasPrimaryAction ? -ImGui::GetFrameHeightWithSpacing() : 0.0f);
@@ -1250,10 +1248,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (ui.Button("Add to Scene"))
 				requestedPath = primaryPath;
 			break;
-		case AssetType::TEXTURE:
-			if (ui.Button("Preview Image"))
-				texturePreviewPath_ = primaryPath;
-			break;
 		case AssetType::SCENE:
 			if (ui.Button("Open Scene"))
 				sceneOpenPath_ = primaryPath;
@@ -1319,10 +1313,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				ui.EndDisabled();
 			} else if (selectedType == AssetType::TEXTURE) {
 				ui.BeginDisabled(selectedPath_.empty());
-
-				if (ui.MenuItem("Preview Image", nullptr, true)) {
-					texturePreviewPath_ = selectedPath_;
-				}
 
 				ui.BeginDisabled(!canEditAssets);
 
@@ -1469,10 +1459,6 @@ const std::filesystem::path &AssetsPanel::GetTextureSelectionRequest() const {
 	return textureSelectionPath_;
 }
 
-const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
-	return texturePreviewPath_;
-}
-
 void AssetsPanel::Clear() {
 	exportCheckRequested_ = false;
 	recyclePaths_.clear();
@@ -1498,7 +1484,6 @@ void AssetsPanel::Clear() {
 	scriptEditPath_.clear();
 	clipEditPath_.clear();
 	clipCreateRequested_ = false;
-	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	selectedPath_.clear();
 	selectedItems_.clear();

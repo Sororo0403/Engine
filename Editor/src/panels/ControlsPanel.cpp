@@ -508,7 +508,7 @@ void ControlsPanel::Draw() {
 	         "unchanged. Failed reloads keep the last valid texture; fix the "
 	         "file and retry. Ordinary file changes still reload "
 	         "automatically. "
-	         "A successful reload also refreshes the same image in Image Preview. Unavailable "
+	         "Unavailable "
 	         "during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Model",
 	         "Reload the selected model and its linked resources after editing "
@@ -586,11 +586,8 @@ void ControlsPanel::Draw() {
 	         "Clear Texture Slot returns that slot on all selected renderers "
 	         "to white without selecting an image. Other slots are preserved. "
 	         "One Undo restores the entire assignment or clear operation. "
-	         "Repeated clears of an empty slot add no history. Select "
-	         "Instances finds "
-	         "explicit users, including hidden objects and unused slots. "
-	         "Preview Image opens the image independently. These actions are "
-	         "blocked during Play and modal operations."},
+		         "Repeated clears of an empty slot add no history. These actions are "
+         "blocked during Play and modal operations."},
 
 	        {"Assets > Add to Scene",
 	         "Place the selected model at the world origin."},
@@ -738,19 +735,6 @@ void ControlsPanel::Draw() {
 	         "specific frame. Unavailable without runtime selection or while "
 	         "another dialog is open."},
 
-	        {"Assets > Textures > Preview Image",
-	         "Open the selected image in Image Preview without changing any "
-	         "texture slot. Only one image is loaded, with pixel dimensions "
-	         "and "
-	         "aspect preserved as the window resizes. Reload Preview reads "
-	         "external edits; Close Preview or the window close button "
-	         "releases the image. A failed reload keeps the last valid preview "
-	         "of that image and reports an error. Uses "
-	         "PNG, JPEG, BMP, TIFF and GIF images. Scene selection, "
-	         "texture assignments and history stay unchanged. The window can "
-	         "be "
-	         "docked independently. Hidden during Play; new requests and "
-	         "reloads are blocked by modal operations."},
 
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "

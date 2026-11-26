@@ -39,7 +39,6 @@
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneCheckPanel.h"
 #include "panels/SceneViewPanel.h"
-#include "panels/TexturePreviewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "physics/ColliderPlacement.h"
 #include "scene/IScene.h"
@@ -966,7 +965,6 @@ class EditorScene final : public IScene {
 	AssetDatabase assets_{L"resources/editor"};
 	AssetSources assetSources_;
 	AssetsPanel assetsPanel_;
-	TexturePreviewPanel texturePreviewPanel_;
 	AudioPreviewPanel audioPreviewPanel_;
 
 	EditorSelection selection_;

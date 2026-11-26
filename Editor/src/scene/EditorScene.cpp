@@ -672,12 +672,6 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
-	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
-		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
-	}
-
-	texturePreviewPanel_.Draw(ui_);
-
 	if (!wasBusy && !assetsPanel_.GetAudioPreviewRequest().empty()) {
 		audioPreviewPanel_.Open(assetsPanel_.GetAudioPreviewRequest());
 	}
@@ -1653,7 +1647,6 @@ void EditorScene::Finalize() {
 		}
 	}
 
-	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
@@ -4600,7 +4593,6 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 			}
 
 			if (completed != 0) {
-				texturePreviewPanel_.Clear();
 				audioPreviewPanel_.Clear();
 				assets_.Refresh();
 				assetsPanel_.RemoveMissingPaths();
@@ -4714,7 +4706,6 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		}
 	}
 
-	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
 	assets_.Refresh();
 	std::vector<std::filesystem::path> destinations;
@@ -6602,7 +6593,6 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		suspendedRecyclePaths_.clear();
 		assetsPanel_.RestoreDirectory(
 		    preferences_.LastProjectAssetFolder(project_.GetRoot(), previousProjectRoot), assets_);
-		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
 		const auto missing = std::exchange(missingRecentProject_, std::filesystem::path{});
@@ -7199,7 +7189,6 @@ void EditorScene::ReloadAssets(std::span<const std::filesystem::path> paths) {
 		try {
 			if (PathUtils::IsImageFile(path)) {
 				if (materials_.ReloadTexture(path)) {
-					texturePreviewPanel_.RequestReload(path);
 					if (renderer_.ReloadCanvasImage(path, error) &&
 					    playMode_.ReloadCanvasImage(path, error)) {
 						continue;
