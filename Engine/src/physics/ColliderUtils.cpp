@@ -77,19 +77,6 @@ bool ColliderUtils::FitToPoints(std::span<const DirectX::XMFLOAT3> points,
 	return true;
 }
 
-bool ColliderUtils::GetWorldBounds(const Collider &collider,
-                                   const Transform &transform,
-                                   AxisAlignedBox &bounds) {
-	if (!IsValid(collider) || !TransformUtils::IsValid(transform)) {
-		return false;
-	}
-
-	DirectX::XMFLOAT4X4 world;
-	DirectX::XMStoreFloat4x4(&world,
-	                         TransformUtils::MakeWorldMatrix(transform));
-	return GetWorldBounds(collider, world, bounds);
-}
-
 bool ColliderUtils::GetWorldBounds(const Collider &collider, const Scene &scene,
                                    SceneObjectId id, AxisAlignedBox &bounds) {
 	SceneWorldTransform world;

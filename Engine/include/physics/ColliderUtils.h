@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/Transform.h"
 #include "physics/AxisAlignedBox.h"
 #include "physics/Collider.h"
 #include "scene/SceneObjectId.h"
@@ -27,16 +26,6 @@ bool IsValid(const Collider &collider);
 /// <returns>true:成功 false:頂点なし、または値が無効。失敗時は出力を保持する</returns>
 bool FitToPoints(std::span<const DirectX::XMFLOAT3> points, Collider &collider,
                  float minimumHalfExtent = 0.001f);
-
-/// <summary>
-/// 回転・拡縮・移動を反映し、形状を囲むワールド座標のボックスを作る
-/// </summary>
-/// <param name="collider">ローカル座標の衝突形状</param>
-/// <param name="transform">物体の変形情報</param>
-/// <param name="bounds">成功時に設定するワールド座標のボックス</param>
-/// <returns>true:成功 false:設定が無効、または有効な大きさを表現できない。失敗時は出力を保持する</returns>
-bool GetWorldBounds(const Collider &collider, const Transform &transform,
-                    AxisAlignedBox &bounds);
 
 /// <summary>
 /// 親子合成した形状の外接AABBを作る。箱はせん断に、球・カプセルは一様拡縮に対応する
