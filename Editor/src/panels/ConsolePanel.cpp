@@ -142,8 +142,6 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	ImGui::Checkbox("Collapse Repeats", &collapseRepeated_);
 	ImGui::SetItemTooltip("Group consecutive messages with the same level, text and source.");
-	ui.SameLine();
-	const bool jumpToLatest = ui.Button("Jump to Latest");
 
 	ImGui::Checkbox("Info", &showInfo_);
 	ui.SameLine();
@@ -290,7 +288,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		const bool followLatest = autoScroll_ &&
 		                          (scrollRequested_ ||
 		                           (wasAtBottom && lastVisible != lastVisibleId_));
-		const bool scrollToLatest = !jumpToSelection && (jumpToLatest || followLatest);
+		const bool scrollToLatest = !jumpToSelection && followLatest;
 		if (rows.empty()) {
 			ui.Text("No matching messages.");
 		}
