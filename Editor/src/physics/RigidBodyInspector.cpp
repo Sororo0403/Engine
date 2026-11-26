@@ -9,7 +9,17 @@
 bool RigidBodyInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                               SceneObject &object,
                               EditorHistory &history) const {
-	if (!object.rigidBody || !ui.CollapsingHeader("Rigid Body"))
+	if (!object.rigidBody)
+		return false;
+	const bool open = ui.CollapsingHeader("Rigid Body");
+	ImGui::SetItemTooltip("Right-click for rigid body actions.");
+	if (ImGui::BeginPopupContextItem("RigidBodyActions")) {
+		const bool remove = ui.MenuItem("Remove Rigid Body");
+		ImGui::EndPopup();
+		if (remove)
+			return history.SetRigidBody(id, std::nullopt);
+	}
+	if (!open)
 		return false;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -55,8 +65,6 @@ bool RigidBodyInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	flag(ui.Checkbox("Freeze Rotation X", value.freezeRotation[0]));
 	flag(ui.Checkbox("Freeze Rotation Y", value.freezeRotation[1]));
 	flag(ui.Checkbox("Freeze Rotation Z", value.freezeRotation[2]));
-	if (ui.Button("Remove Rigid Body"))
-		changed |= history.SetRigidBody(id, std::nullopt);
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

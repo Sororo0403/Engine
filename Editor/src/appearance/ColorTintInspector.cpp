@@ -18,7 +18,20 @@ bool ColorTintInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	ImGui::PushID("ColorTintInspector");
 	bool changed = false;
 
-	if (ui.CollapsingHeader("Color Tint")) {
+	const bool open = ui.CollapsingHeader("Color Tint");
+	ImGui::SetItemTooltip("Right-click for color tint actions.");
+	if (ImGui::BeginPopupContextItem("ColorTintActions")) {
+		if (ui.MenuItem("Reset Color")) {
+			const auto before = object.colorTint;
+			changed = history.SetColorTint(id, ColorTint{}) &&
+			          object.colorTint != before;
+		}
+		if (ui.MenuItem("Remove Color Tint")) {
+			changed = history.SetColorTint(id, std::nullopt);
+		}
+		ImGui::EndPopup();
+	}
+	if (open && object.colorTint) {
 		auto edited = *object.colorTint;
 		const bool valueChanged = ui.ColorEdit3("Color", edited.color);
 		const bool begin =
@@ -35,15 +48,6 @@ bool ColorTintInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			history.CommitEdit();
 		}
 
-		if (ui.Button("Reset Color")) {
-			const auto before = object.colorTint;
-			changed |= history.SetColorTint(id, ColorTint{}) &&
-			           object.colorTint != before;
-		}
-
-		if (ui.Button("Remove Color Tint")) {
-			changed |= history.SetColorTint(id, std::nullopt);
-		}
 	}
 
 	ImGui::PopID();
