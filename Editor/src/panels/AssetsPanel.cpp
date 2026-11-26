@@ -374,7 +374,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                   bool canCreatePrefab, bool canReturnToExport) {
 	refreshed_ = false;
 	exportCheckRequested_ = false;
-	batchReloadPaths_.clear();
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
 	gameSettingsPath_.clear();
@@ -804,19 +803,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto isSelected = [&](const std::filesystem::path &path) {
 		return std::ranges::find(selectedItems_, path) != selectedItems_.end();
 	};
-	const auto hasSelectedFolder = [&] {
-		return std::ranges::any_of(selectedItems_, [&](const auto &path) {
-			return std::ranges::binary_search(directories, path);
-		});
-	};
-	const auto canBatchReload = [&] {
-		return hasSelectedFolder() ||
-		       (selectedItems_.size() > 1 &&
-		        std::ranges::any_of(selectedItems_, [](const auto &path) {
-			        return PathUtils::IsModelFile(path) || PathUtils::IsImageFile(path);
-		        }));
-	};
-	bool batchReloadRequested = false;
 	auto selectedType = type_;
 	const auto syncSingle = [&] {
 		selectedPath_.clear();
@@ -1032,9 +1018,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(directory);
 				drawLocationMenu(directory);
-				if (ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
-					batchReloadRequested = true;
-				}
 				if (canManageFiles) {
 					ImGui::Separator();
 					drawClipboardMenu();
@@ -1156,11 +1139,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				    ui.MenuItem("Assign Texture to Selection", nullptr,
 				                canSetTexture && textureSlot_ >= 0)) {
 					textureSelectionPath_ = assetPath;
-				}
-
-				if (canBatchReload() &&
-				    ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
-					batchReloadRequested = true;
 				}
 
 				if (assetType == AssetType::TEXTURE &&
@@ -1309,15 +1287,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (selectedItems_.size() > 1) {
 				ui.Text(std::format("{} items selected", selectedItems_.size()));
 			}
-			if (canBatchReload()) {
-				ui.BeginDisabled(!canEditAssets);
-				if (ui.MenuItem("Reload Selected Models and Textures", nullptr, true)) {
-					batchReloadRequested = true;
-				}
-				ui.EndDisabled();
-				ImGui::SetItemTooltip("Refresh Assets before reloading models and textures, including selected subfolders.");
-			}
-
 			if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
 				const auto displayPath =
 				    selectedPath_.lexically_relative(assets.GetRootDirectory());
@@ -1490,35 +1459,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                           : std::vector<std::filesystem::path>{std::move(draggedPath)};
 		moveRequest_.directory = std::move(dropDirectory);
 	}
-	if (batchReloadRequested) {
-		const std::set<std::filesystem::path> selected(selectedItems_.begin(), selectedItems_.end());
-		// 素材一覧への参照を使い終えてから、外部で追加・削除されたファイルを反映する。
-		if (refresh()) {
-			const auto collect = [&](const auto &paths) {
-				for (const auto &path : paths) {
-					for (auto candidate = path; candidate != assets.GetRootDirectory();) {
-						if (selected.contains(candidate)) {
-							batchReloadPaths_.push_back(path);
-							break;
-						}
-						auto parent = candidate.parent_path();
-						if (parent.empty() || parent == candidate) {
-							break;
-						}
-						candidate = std::move(parent);
-					}
-				}
-			};
-			collect(assets.GetModels());
-			collect(assets.GetTextures());
-			if (batchReloadPaths_.empty()) {
-				revealMessage_ = "No models or textures remain in the selection.";
-			}
-		} else {
-			revealMessage_ = "Could not refresh Assets. The selected files were not reloaded.";
-		}
-	}
-	if (refreshRequested && !batchReloadRequested)
+	if (refreshRequested)
 		refresh();
 	ui.EndWindow();
 	return requestedPath;
@@ -1534,7 +1475,6 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 
 void AssetsPanel::Clear() {
 	exportCheckRequested_ = false;
-	batchReloadPaths_.clear();
 	recyclePaths_.clear();
 	referencePaths_.clear();
 	renamePath_.clear();

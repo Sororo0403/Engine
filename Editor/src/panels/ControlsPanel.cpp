@@ -527,11 +527,7 @@ void ControlsPanel::Draw() {
 	         "only updates the Assets list. Reload is blocked during Play, "
 	         "modal "
 	         "operations and Scene gestures."},
-	        {"Assets > Reload Selected Models and Textures",
-	         "Select several files or select a folder. Refresh the Assets list "
-	         "and reload the models and textures, including those in selected "
-	         "subfolders. If some files fail, use the error list to find them "
-	         "and Retry Failed Reloads after fixing them."},
+
 	        {"Assets > Import Model",
 	         "Choose a GLB, glTF or OBJ model, an Assets destination and a new "
 	         "model folder name. Import copies the model and referenced "

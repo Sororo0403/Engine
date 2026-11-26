@@ -1189,12 +1189,6 @@ bool EditorScene::Update(float deltaTime) {
 			ReloadAssets(std::span(&requestedTextureReload, 1));
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE &&
-		    !assetsPanel_.GetBatchReloadRequest().empty() &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			ReloadAssets(assetsPanel_.GetBatchReloadRequest());
-		}
-
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
 		    !hasCheckRequest &&
 		    requestedObjects.empty() &&
