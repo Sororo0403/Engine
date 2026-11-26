@@ -630,7 +630,7 @@ bool EditorScene::Update(float deltaTime) {
 		                            return object && object->mesh &&
 		                                   object->mesh->IsValid();
 	                            }),
-	    textureSlots, selection_.GetCount() == 1, !wasBusy && CanReturnToExportCheck());
+	    textureSlots, selection_.GetCount() == 1);
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
@@ -1152,9 +1152,6 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
-	if (!IsBusy() && action == EditorAction::NONE && assetsPanel_.DidRequestExportCheck()) {
-		StartAction(EditorAction::RETURN_TO_EXPORT_CHECK);
-	}
 	UpdateDialogs();
 
 	// 消えた物体だけを除き、残っている選択は維持する

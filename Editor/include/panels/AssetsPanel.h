@@ -67,19 +67,13 @@ class AssetsPanel {
 	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
 	/// <param name="textureSlots">選択物体の材質名と使用状況。番号選択の補助に使い、空でも手入力は可能</param>
 	/// <param name="canCreatePrefab">単独選択の階層をPrefabとして作成できるか</param>
-	/// <param name="canReturnToExport">配布前チェックへ戻る操作を表示するか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path
 	Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	     bool canSetTexture = false, bool canEditAssets = false,
 	     bool canReplaceMesh = false,
 	     std::span<const TextureSlotChoice> textureSlots = {},
-	     bool canCreatePrefab = false, bool canReturnToExport = false);
-
-	/// <summary>
-	/// このフレームに配布前チェックへ戻る操作が選ばれたかを返す
-	/// </summary>
-	bool DidRequestExportCheck() const { return exportCheckRequested_; }
+	     bool canCreatePrefab = false);
 
 	/// <summary>
 	/// このフレームに開くことを要求したシーンを取得する。保存確認と読み込みは呼び出し側で行う
@@ -340,7 +334,6 @@ class AssetsPanel {
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
 	bool refreshed_ = false;
-	bool exportCheckRequested_ = false;
 	bool scriptCreateRequested_ = false;
 	std::filesystem::path scriptEditPath_, clipEditPath_;
 	bool clipCreateRequested_ = false;
