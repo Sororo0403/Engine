@@ -494,11 +494,6 @@ bool RenderWorld::SetColorTint(RenderObjectHandle handle,
 	return true;
 }
 
-ColorTint RenderWorld::GetColorTint(RenderObjectHandle handle) const {
-	const Impl &impl = *impl_;
-	return impl.GetObject(handle).tint_;
-}
-
 MaterialData &RenderWorld::GetMaterial(RenderObjectHandle handle,
                                        std::size_t materialIndex) {
 	auto &object = impl_->GetObject(handle);

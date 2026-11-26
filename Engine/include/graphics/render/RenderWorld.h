@@ -134,13 +134,6 @@ class RenderWorld {
 	bool SetColorTint(RenderObjectHandle handle, const ColorTint &tint);
 
 	/// <summary>
-	/// 物体に保持している色の設定を取得する。無効なハンドルの場合は例外を送出する
-	/// </summary>
-	/// <param name="handle">このワールドの描画物体</param>
-	/// <returns>現在の色の設定</returns>
-	ColorTint GetColorTint(RenderObjectHandle handle) const;
-
-	/// <summary>
 	/// 編集用の材質情報を取得する。無効なハンドルや材質番号の場合は例外を送出する
 	/// </summary>
 	/// <param name="handle">物体のハンドル</param>
