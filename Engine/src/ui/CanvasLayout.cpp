@@ -57,7 +57,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 			current = id;
 			const auto &object = *scene.FindObject(id);
 			auto context =
-			    object.parentId ? contexts.at(object.parentId) : Context{};
+			    object.GetParentId() ? contexts.at(object.GetParentId()) : Context{};
 			context.visible &= object.active;
 
 			if (!context.visible) {

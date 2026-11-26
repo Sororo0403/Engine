@@ -31,7 +31,7 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 		std::map<SceneObjectId, SceneObjectId> removed;
 		for (auto id : order)
 			if (requested.contains(id) ||
-			    removed.contains(scene.FindObject(id)->parentId))
+			    removed.contains(scene.FindObject(id)->GetParentId()))
 				removed.emplace(id, 0);
 		if (!scene.ApplyTransaction([&](Scene &working) {
 			    auto objects = working.GetObjects();

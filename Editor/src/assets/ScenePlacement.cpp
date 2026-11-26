@@ -170,7 +170,7 @@ bool ScenePlacement::Place(Scene &objects, const Scene &target, const Ray &ray,
 		for (const auto &[id, data] : working.GetObjects()) {
 			auto *object = working.FindObject(id);
 
-			if (object->parentId == 0) {
+			if (object->GetParentId() == 0) {
 				auto &position = object->transform.translation;
 				position = {position.x + delta.x, position.y + delta.y,
 				            position.z + delta.z};

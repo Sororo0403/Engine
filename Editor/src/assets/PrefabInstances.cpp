@@ -54,7 +54,7 @@ SceneObjectId RootOf(const Scene &source) {
 			    "Unpack nested Prefabs before saving this asset.");
 		}
 
-		if (!object.parentId) {
+		if (!object.GetParentId()) {
 			if (root) {
 				throw std::runtime_error("A Prefab must have one root.");
 			}
@@ -141,11 +141,10 @@ void Align(Scene &scene, SceneObjectId root,
 /// <param name="id">JSONへ保持するID</param>
 /// <returns>親の存在に依存しない物体データ</returns>
 Json ObjectData(SceneObject value, SceneObjectId id) {
-	const auto parent = value.parentId;
-	value.parentId = 0;
+	const auto parent = value.GetParentId();
 	value.prefabLink.reset();
 	Scene single;
-	single.ReplaceObjects({{1, std::move(value)}});
+	single.ReplaceObjects({{1, SceneObject{std::move(value), 0}}});
 	auto object = Document(single).at("objects").at(0);
 	object["id"] = id;
 	object["parent"] = parent;
@@ -160,12 +159,11 @@ Json ObjectData(SceneObject value, SceneObjectId id) {
 /// <param name="map">元IDから配置先IDへの対応。0は配置から削除済み</param>
 /// <returns>配置先のIDを使う物体データ</returns>
 Json Mapped(SceneObject source, SceneObjectId id, const IdMap &map) {
-	if (source.parentId) {
-		source.parentId = map.at(source.parentId);
-	}
-
+	const auto parent = source.GetParentId();
 	SceneObjectReferences::Remap(source, map);
-	return ObjectData(std::move(source), map.at(id));
+	auto object = ObjectData(std::move(source), map.at(id));
+	object["parent"] = parent ? map.at(parent) : 0;
+	return object;
 }
 
 /// <summary>
@@ -321,7 +319,7 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 			continue;
 		}
 
-		const auto parent = next.FindObject(source)->parentId;
+		const auto parent = next.FindObject(source)->GetParentId();
 
 		if (parent && !eligible.contains(parent)) {
 			continue;
@@ -395,7 +393,7 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 		}
 
 		if (source == link.source) {
-			merged["parent"] = originalRoot.parentId;
+			merged["parent"] = originalRoot.GetParentId();
 			merged["transform"] =
 			    ObjectData(originalRoot, root).at("transform");
 		}
@@ -568,9 +566,8 @@ PrefabInstances::Instantiate(const std::filesystem::path &asset,
 			    IdMap map;
 
 			    for (const auto &[source, object] : placed.GetObjects()) {
-				    auto initial = object;
-				    initial.parentId = 0;
-				    const auto id = candidate.CreateObject(std::move(initial));
+				    const auto id =
+				        candidate.CreateObject(SceneObject{object, 0});
 				    map[source] = id;
 				    ids.push_back(id);
 			    }
@@ -578,16 +575,16 @@ PrefabInstances::Instantiate(const std::filesystem::path &asset,
 			    const auto root = map.at(sourceRoot);
 
 			    for (const auto &[source, value] : placed.GetObjects()) {
-				    auto object = value;
-
-				    if (object.parentId) {
-					    object.parentId = map.at(object.parentId);
-				    }
+				    const auto id = map.at(source);
+				    auto &object = *candidate.FindObject(id);
+				    const auto parent = value.GetParentId();
 
 				    SceneObjectReferences::Remap(object, map);
 				    object.prefabLink =
 				        PrefabLinkComponent{root, source, {}, {}, {}};
-				    *candidate.FindObject(map.at(source)) = std::move(object);
+				    if (parent && !SceneHierarchy::SetParent(candidate, id,
+				                                             map.at(parent), false))
+					    return false;
 			    }
 
 			    auto &link = *candidate.FindObject(root)->prefabLink;
@@ -756,7 +753,7 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 			}
 
 			const auto source = inverse.at(id);
-			object.parentId = id == root ? 0 : inverse.at(object.parentId);
+			const auto parent = id == root ? 0 : inverse.at(object.GetParentId());
 			SceneObjectReferences::Remap(object, inverse);
 
 			if (id == root) {
@@ -782,7 +779,7 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 				respawn.threshold -= respawn.Coordinate(retained ? anchor : world.GetPosition());
 			}
 
-			objects.emplace(source, std::move(object));
+			objects.try_emplace(source, std::move(object), parent);
 		}
 
 		Scene source;

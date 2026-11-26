@@ -71,8 +71,8 @@ void Collect(const Scene &scene, const SceneActivity::States &active,
 			    "or Follow Camera; Motion Path and Transform Animation require "
 			    "Is Kinematic.");
 		// 非一様な親の下で回転すると、ローカルSRTでは剛体の姿勢を保てない。
-		for (auto parent = o.parentId; parent;
-		     parent = scene.FindObject(parent)->parentId) {
+		for (auto parent = o.GetParentId(); parent;
+		     parent = scene.FindObject(parent)->GetParentId()) {
 			const auto &scale = scene.FindObject(parent)->transform.scale;
 			const float largest = (std::max)({scale.x, scale.y, scale.z});
 			if (scale.x <= 0 || scale.y <= 0 || scale.z <= 0 ||
@@ -102,8 +102,8 @@ void Collect(const Scene &scene, const SceneActivity::States &active,
 		bool path = bool(o.motionPath) || bool(o.transformAnimation),
 		     character = bool(o.character), belowCharacter = false;
 		bool belowRigid = false;
-		for (auto parent = o.parentId; parent;
-		     parent = scene.FindObject(parent)->parentId) {
+		for (auto parent = o.GetParentId(); parent;
+		     parent = scene.FindObject(parent)->GetParentId()) {
 			const auto &ancestor = *scene.FindObject(parent);
 			path |= bool(ancestor.motionPath) ||
 			        bool(ancestor.transformAnimation) ||

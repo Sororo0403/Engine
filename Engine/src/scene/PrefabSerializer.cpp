@@ -32,7 +32,7 @@ SceneObjectId ValidateHierarchy(const Scene &scene) {
 
 		ids.push_back(id);
 
-		if (!object.parentId) {
+		if (!object.GetParentId()) {
 			if (root) {
 				throw std::runtime_error(
 				    "A Prefab must have exactly one root object.");

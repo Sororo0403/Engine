@@ -238,14 +238,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 	// 外部から選ばれた子を表示するときは、祖先の折りたたみを解除する。
 	if (scrollToId_ != 0) {
-		auto parent = scene.FindObject(scrollToId_)->parentId;
+		auto parent = scene.FindObject(scrollToId_)->GetParentId();
 		for (std::size_t count = 0;
 		     parent != 0 && count < scene.GetObjects().size(); ++count) {
 			collapsed_.erase(parent);
 			const auto *object = scene.FindObject(parent);
 			if (!object)
 				break;
-			parent = object->parentId;
+			parent = object->GetParentId();
 		}
 	}
 
@@ -281,8 +281,8 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		for (const auto &[id, object] : objects) {
 			(void)id;
-			if (object.parentId)
-				hasChildren.insert(object.parentId);
+			if (object.GetParentId())
+				hasChildren.insert(object.GetParentId());
 		}
 
 		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
@@ -316,14 +316,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			float indent = 0;
 
 			if (!filtered) {
-				auto parent = object.parentId;
+				auto parent = object.GetParentId();
 				for (std::size_t depth = 0;
 				     parent != 0 && depth < objects.size(); ++depth) {
 					const auto *ancestor = scene.FindObject(parent);
 					if (!ancestor)
 						break;
 					indent += ImGui::GetStyle().IndentSpacing;
-					parent = ancestor->parentId;
+					parent = ancestor->GetParentId();
 				}
 			}
 
@@ -411,7 +411,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 
 				if (ui.MenuItem("Unparent (Keep World)", nullptr,
-				                editable && object.parentId != 0)) {
+				                editable && object.GetParentId() != 0)) {
 					result.action = Action::REPARENT_OBJECTS;
 					result.parentObjects.assign(selection.GetIds().begin(),
 					                            selection.GetIds().end());
@@ -420,7 +420,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 
 				if (ui.MenuItem("Unparent (Keep Local)", nullptr,
-				                editable && object.parentId != 0)) {
+				                editable && object.GetParentId() != 0)) {
 					result.action = Action::REPARENT_OBJECTS;
 					result.parentObjects.assign(selection.GetIds().begin(),
 					                            selection.GetIds().end());
@@ -655,7 +655,7 @@ HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 	std::map<SceneObjectId, std::vector<SceneObjectId>> children;
 
 	for (const auto id : ids)
-		children[scene.FindObject(id)->parentId].push_back(id);
+		children[scene.FindObject(id)->GetParentId()].push_back(id);
 
 	std::vector<SceneObjectId> stack(children[0].rbegin(), children[0].rend());
 	std::vector<SceneObjectId> result;

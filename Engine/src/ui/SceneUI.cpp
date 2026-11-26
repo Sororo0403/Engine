@@ -78,7 +78,7 @@ Hit PointerHit(const Scene &scene, std::span<const UIElement> elements,
 				return {true, id};
 			if (id == i->canvas)
 				break;
-			id = candidate.parentId;
+			id = candidate.GetParentId();
 		}
 
 		return {true, 0};
@@ -120,7 +120,7 @@ void SceneUI::Synchronize(const Scene &scene,
 		const auto *element = Element(elements, pressed_);
 		const auto *object = scene.FindObject(pressed_);
 		if (!Usable(scene, elements, last_, pressed_) ||
-		    object->parentId != pressedParent_ ||
+		    object->GetParentId() != pressedParent_ ||
 		    element->canvas != pressedCanvas_ ||
 		    !SameRect(element->rect, pressedRect_) ||
 		    element->transform != pressedTransform_)
@@ -225,7 +225,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 			if (Usable(scene, elements, input, hit.button)) {
 				next.pressed_ = hit.button;
 				next.selected_ = hit.button;
-				next.pressedParent_ = scene.FindObject(hit.button)->parentId;
+				next.pressedParent_ = scene.FindObject(hit.button)->GetParentId();
 				const auto &element = *Element(elements, hit.button);
 				next.pressedRect_ = element.rect;
 				next.pressedTransform_ = element.transform;

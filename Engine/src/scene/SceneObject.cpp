@@ -2,8 +2,15 @@
 #include "math/TransformUtils.h"
 #include "scene/ObjectTag.h"
 
+#include <utility>
+
 bool SceneObject::IsValidTag(std::string_view tag) {
 	return ObjectTag::IsValid(tag);
+}
+
+SceneObject::SceneObject(SceneObject object, SceneObjectId parent)
+    : SceneObject(std::move(object)) {
+	parentId_ = parent;
 }
 
 bool SceneObject::operator==(const SceneObject &other) const {
@@ -13,7 +20,7 @@ bool SceneObject::operator==(const SceneObject &other) const {
 
 bool SceneObject::HasSameSimulationSettings(const SceneObject &other) const {
 	return name == other.name && tag == other.tag && active == other.active &&
-	       parentId == other.parentId &&
+	       parentId_ == other.parentId_ &&
 	       TransformUtils::AreEqual(transform, other.transform) &&
 	       mesh == other.mesh && collider == other.collider &&
 	       rigidBody == other.rigidBody && character == other.character &&

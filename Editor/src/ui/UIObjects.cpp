@@ -1,7 +1,8 @@
-﻿#include "ui/UIObjects.h"
+#include "ui/UIObjects.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 #include <exception>
 #include <stdexcept>
 
@@ -30,7 +31,7 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 					break;
 				}
 
-				ancestor = object->parentId;
+				ancestor = object->GetParentId();
 			}
 
 			if (!selectedParent)
@@ -62,10 +63,10 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 			        candidate.CreateObject(kind == Kind::BUTTON ? "Button"
 			                               : kind == Kind::TEXT ? "Text"
 			                                                    : "Image");
-			    if (!created)
+			    if (!created ||
+			        !SceneHierarchy::SetParent(candidate, created, selectedParent, false))
 				    return false;
 			    auto &object = *candidate.FindObject(created);
-			    object.parentId = selectedParent;
 			    object.rectTransform = RectTransformComponent{};
 
 			    if (kind == Kind::BUTTON) {

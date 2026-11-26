@@ -57,7 +57,8 @@ bool ScenePatchCommand::Apply(Scene &scene, const Values &expected,
 
 		for (const auto &[id, value] : values) {
 			if (value) {
-				objects.insert_or_assign(id, *value);
+				objects.erase(id);
+				objects.try_emplace(id, *value);
 			} else {
 				objects.erase(id);
 			}

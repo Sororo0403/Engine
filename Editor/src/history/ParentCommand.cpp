@@ -19,14 +19,15 @@ bool Apply(Scene &scene, SceneObjectId id, SceneObjectId expectedParent,
            SceneObjectId parent, const Transform &expected,
            const Transform &local) {
 	const auto *object = scene.FindObject(id);
-	if (!object || object->parentId != expectedParent ||
+	if (!object || object->GetParentId() != expectedParent ||
 	    !TransformUtils::AreEqual(object->transform, expected) ||
 	    !TransformUtils::IsValid(local))
 		return false;
 	return scene.ApplyTransaction([&](Scene &working) {
 		auto *candidate = working.FindObject(id);
-		candidate->parentId = parent;
 		candidate->transform = local;
+		if (!SceneHierarchy::SetParent(working, id, parent, false))
+			return false;
 		SceneHierarchy::WorldTransforms transforms;
 		return SceneHierarchy::BuildWorldTransforms(working, transforms);
 	});

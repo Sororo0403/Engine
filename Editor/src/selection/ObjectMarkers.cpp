@@ -13,7 +13,7 @@
 
 bool ObjectMarkers::GetBounds(const SceneObject &object, Corners &corners,
                               bool missingModel) {
-	if (object.parentId != 0 ||
+	if (object.GetParentId() != 0 ||
 	    (object.HasMesh() && object.meshRenderer && !missingModel) ||
 	    !TransformUtils::IsValid(object.transform)) {
 		return false;
@@ -48,8 +48,7 @@ bool ObjectMarkers::GetBounds(const Scene &scene, SceneObjectId id,
 	if (!object || !SceneHierarchy::GetWorldTransform(scene, id, world))
 		return false;
 	// 目印は拡縮に依存しない固定サイズなので、合成後の原点だけを使用する。
-	auto marker = *object;
-	marker.parentId = 0;
+	SceneObject marker{*object, 0};
 	marker.transform.translation = world.GetPosition();
 	return GetBounds(marker, corners, missingModel);
 }
@@ -154,8 +153,7 @@ bool ObjectMarkers::Update(SceneRenderer &renderer, const Scene &scene,
 		SceneWorldTransform world;
 		if (!SceneHierarchy::GetWorldTransform(scene, id, world))
 			continue;
-		auto marker = object;
-		marker.parentId = 0;
+		SceneObject marker{object, 0};
 		marker.transform.translation = world.GetPosition();
 		if (!BuildLines(marker,
 		                std::find(selected.begin(), selected.end(), id) !=

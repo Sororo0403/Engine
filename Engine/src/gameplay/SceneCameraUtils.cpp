@@ -63,7 +63,7 @@ SceneCameraUtils::FollowObstacleCache::GetWorld(SceneObjectId target) {
 			// カメラや主人公自身を除外しても、子のColliderは移動に追従する。
 			for (auto ancestor = id;
 			     ancestor && obstacleAncestors_.insert(ancestor).second;
-			     ancestor = scene_.FindObject(ancestor)->parentId) {
+			     ancestor = scene_.FindObject(ancestor)->GetParentId()) {
 			}
 		}
 	}
@@ -371,7 +371,7 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 		}
 
 		objects.emplace(current, *node);
-		pending.push_back(node->parentId);
+		pending.push_back(node->GetParentId());
 
 		if (node->followCamera && SceneActivity::IsActive(scene, current)) {
 			pending.push_back(node->followCamera->target);
@@ -467,7 +467,7 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 			return false;
 		}
 
-		pending.push_back(node->parentId);
+		pending.push_back(node->GetParentId());
 
 		if (node->followCamera) {
 			pending.push_back(node->followCamera->target);
@@ -479,8 +479,8 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 
 	for (const auto current : visited) {
 		const auto &node = *scene.FindObject(current);
-		if (node.parentId)
-			dependencies[current].insert(node.parentId);
+		if (node.GetParentId())
+			dependencies[current].insert(node.GetParentId());
 		if (node.followCamera && node.followCamera->target)
 			dependencies[current].insert(node.followCamera->target);
 		dependencies.try_emplace(current);
@@ -532,10 +532,10 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 	for (const auto &[id, object] : scene.GetObjects()) {
 		auto &values = dependencies[id];
 
-		if (object.parentId) {
-			if (!scene.Contains(object.parentId))
+		if (object.GetParentId()) {
+			if (!scene.Contains(object.GetParentId()))
 				return fail(id, "The parent does not exist.");
-			values.insert(object.parentId);
+			values.insert(object.GetParentId());
 		}
 
 		if (active.at(id) && object.followCamera) {

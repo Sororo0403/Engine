@@ -234,7 +234,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			call.returnText = std::to_string(id);
 			break;
 		case Op::PARENT:
-			result.id = object->parentId;
+			result.id = object->GetParentId();
 			break;
 		case Op::SET_PARENT:
 			if (!SceneHierarchy::SetParent(*call.scene, id, parent, flag))
@@ -293,7 +293,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			const std::string_view name(text, length);
 
 			for (const auto &[childId, child] : call.scene->GetObjects()) {
-				if (child.parentId == id && child.name == name) {
+				if (child.GetParentId() == id && child.name == name) {
 					result.id = childId;
 					break;
 				}
@@ -758,7 +758,7 @@ int GetChildren(lua_State *state) {
 	std::size_t count = 0;
 
 	for (const auto &[childId, object] : scene->GetObjects()) {
-		if (object.parentId != id)
+		if (object.GetParentId() != id)
 			continue;
 		if (count == children.size())
 			return PushObjectResults(state, children, true);

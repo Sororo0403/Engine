@@ -498,7 +498,7 @@ bool SceneRenderer::SynchronizeObjects() {
 			return false;
 		// 親子の合成結果を、描画・選択・外接ボックスで共通に使用する。
 		const bool transformed =
-		    object.parentId == 0
+		    object.GetParentId() == 0
 		        ? world_->SetTransform(renderObject.handle, object.transform)
 		        : world_->SetWorldMatrix(renderObject.handle,
 		                                 transforms.at(id).matrix);

@@ -49,8 +49,8 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 				    object.collider->isTrigger)
 					continue;
 				bool belowCharacter = false;
-				for (auto parent = object.parentId; parent;
-				     parent = scene.FindObject(parent)->parentId)
+				for (auto parent = object.GetParentId(); parent;
+				     parent = scene.FindObject(parent)->GetParentId())
 					belowCharacter |= bool(scene.FindObject(parent)->character);
 				if (belowCharacter)
 					continue;

@@ -61,18 +61,19 @@ bool EditorClipboard::Copy(const Scene &scene,
 			object.prefabLink.reset();
 		}
 
-		if (object.parentId != 0 && !seen.contains(object.parentId)) {
+		auto parent = object.GetParentId();
+		if (parent && !seen.contains(parent)) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(scene, id, world) ||
 			    !TransformUtils::TryFromWorldMatrix(world.matrix,
 			                                        object.transform))
 				return false;
-			object.parentId = 0;
+			parent = 0;
 		}
 
 		if (!TransformUtils::IsValid(object.transform))
 			return false;
-		objects.push_back(std::move(object));
+		objects.emplace_back(std::move(object), parent);
 	}
 
 	std::vector<std::size_t> externalReferences;

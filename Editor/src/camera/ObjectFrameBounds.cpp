@@ -9,7 +9,7 @@
 
 bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners,
                             bool missingModel) {
-	if (object.parentId != 0 || !TransformUtils::IsValid(object.transform))
+	if (object.GetParentId() != 0 || !TransformUtils::IsValid(object.transform))
 		return false;
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMStoreFloat4x4(&world,

@@ -45,8 +45,7 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
 
 			    for (auto id : order) {
 				    auto object = *prefab.FindObject(id);
-				    object.parentId =
-				        object.parentId ? remap.at(object.parentId) : 0;
+				    const auto parent = object.GetParentId();
 				    if (id == root)
 					    object.transform.translation = position;
 				    if (object.respawn) {
@@ -58,7 +57,10 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
 				    }
 
 				    const auto added =
-				        candidate.CreateObject(std::move(object));
+				        candidate.CreateObject(SceneObject{std::move(object), 0});
+				    if (parent && !SceneHierarchy::SetParent(candidate, added,
+				                                             remap.at(parent), false))
+					    return false;
 				    remap.emplace(id, added);
 			    }
 

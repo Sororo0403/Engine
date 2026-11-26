@@ -427,7 +427,7 @@ void ValidatePrefabLinks(const Scene &scene) {
 		Scene original;
 		if (!ApplySceneDocument(original, baseline, false) ||
 		    !original.Contains(link.source) ||
-		    original.FindObject(link.source)->parentId != 0 ||
+		    original.FindObject(link.source)->GetParentId() != 0 ||
 		    original.GetObjects().size() != link.objects.size()) {
 			throw std::runtime_error(
 			    "Prefab baseline or source map is invalid.");
@@ -517,7 +517,7 @@ bool SerializeScene(const Scene &scene, std::string &text,
 
 			objects.push_back({
 			    {"id", id},
-			    {"parent", object.parentId},
+			    {"parent", object.GetParentId()},
 			    {"active", object.active},
 			    {"name", object.name},
 			    {"tag", object.tag},
@@ -1096,6 +1096,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+			SceneObjectId parentId = 0;
 
 			if (version >= 17) {
 				object.active = item.at("active").get<bool>();
@@ -1108,7 +1109,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					throw std::runtime_error("親IDには0以上の整数が必要です。");
 				}
 
-				object.parentId = parent.get<SceneObjectId>();
+				parentId = parent.get<SceneObjectId>();
 			}
 
 			object.name = item.at("name").get<std::string>();
@@ -1990,7 +1991,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				throw std::runtime_error("衝突用ボックスが無効です。");
 			}
 
-			const bool inserted = objects.emplace(id, std::move(object)).second;
+			const bool inserted = objects.try_emplace(id, std::move(object), parentId).second;
 
 			if (!inserted) {
 				throw std::runtime_error("物体のIDが重複しています。");

@@ -92,7 +92,7 @@ bool SceneHierarchy::GetEvaluationOrder(const Scene &scene,
 			if (!node)
 				return false;
 			pending.emplace_back(current, &visit->second);
-			current = node->parentId;
+			current = node->GetParentId();
 		}
 
 		for (auto it = pending.rbegin(); it != pending.rend(); ++it) {
@@ -111,7 +111,7 @@ std::vector<SceneObjectId> SceneHierarchy::GetChildren(const Scene &scene,
 	std::vector<SceneObjectId> result;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (object.parentId == parent) {
+		if (object.GetParentId() == parent) {
 			result.push_back(id);
 		}
 	}
@@ -128,7 +128,7 @@ bool SceneHierarchy::GetSubtree(const Scene &scene, SceneObjectId id,
 
 	for (const auto current : order) {
 		if (current == id ||
-		    included.contains(scene.FindObject(current)->parentId)) {
+		    included.contains(scene.FindObject(current)->GetParentId())) {
 			result.push_back(current);
 			included.insert(current);
 		}
@@ -152,9 +152,9 @@ bool SceneHierarchy::GetSelectionRoots(const Scene &scene,
 	}
 
 	for (const auto id : ids) {
-		auto parent = scene.FindObject(id)->parentId;
+		auto parent = scene.FindObject(id)->GetParentId();
 		while (parent != 0 && !selected.contains(parent))
-			parent = scene.FindObject(parent)->parentId;
+			parent = scene.FindObject(parent)->GetParentId();
 		if (parent == 0)
 			result.push_back(id);
 	}
@@ -174,7 +174,7 @@ bool SceneHierarchy::ExpandSelection(const Scene &scene,
 
 	for (const auto id : order) {
 		if (included.contains(id) ||
-		    included.contains(scene.FindObject(id)->parentId)) {
+		    included.contains(scene.FindObject(id)->GetParentId())) {
 			included.insert(id);
 			result.push_back(id);
 		}
@@ -197,7 +197,7 @@ bool SceneHierarchy::BuildWorldTransforms(const Scene &scene,
 	for (const auto id : order) {
 		const auto &object = *scene.FindObject(id);
 		const auto *parent =
-		    object.parentId == 0 ? nullptr : &result.at(object.parentId);
+		    object.GetParentId() == 0 ? nullptr : &result.at(object.GetParentId());
 		SceneWorldTransform world;
 
 		if (!Compose(object.transform, parent, world)) {
@@ -230,7 +230,7 @@ bool SceneHierarchy::GetWorldTransform(const Scene &scene, SceneObjectId id,
 		}
 
 		pending.push_back(current);
-		current = object->parentId;
+		current = object->GetParentId();
 	}
 
 	SceneWorldTransform result;
@@ -259,12 +259,12 @@ bool SceneHierarchy::SetParent(Scene &scene, SceneObjectId id,
 		return false;
 	}
 
-	if (object->parentId == parent) {
+	if (object->GetParentId() == parent) {
 		return true;
 	}
 
 	for (auto ancestor = parent; ancestor != 0;
-	     ancestor = scene.FindObject(ancestor)->parentId) {
+	     ancestor = scene.FindObject(ancestor)->GetParentId()) {
 		if (ancestor == id) {
 			return false;
 		}
@@ -304,7 +304,7 @@ bool SceneHierarchy::SetParent(Scene &scene, SceneObjectId id,
 	}
 
 	object->transform = local;
-	object->parentId = parent;
+	object->parentId_ = parent;
 	return true;
 }
 
@@ -314,7 +314,7 @@ bool SceneHierarchy::SetWorldTransform(Scene &scene, SceneObjectId id,
 	SceneWorldTransform parent;
 	DirectX::XMFLOAT4X4 inverse, relative;
 
-	if (!object || !GetParentTransform(scene, object->parentId, parent) ||
+	if (!object || !GetParentTransform(scene, object->GetParentId(), parent) ||
 	    !TransformUtils::TryInverseWorldMatrix(parent.matrix, inverse)) {
 		return false;
 	}
@@ -340,7 +340,7 @@ bool SceneHierarchy::SetWorldPosition(Scene &scene, SceneObjectId id,
 	DirectX::XMFLOAT4X4 inverse;
 
 	if (!object || !MathUtils::IsFinite(position) ||
-	    !GetParentTransform(scene, object->parentId, parent) ||
+	    !GetParentTransform(scene, object->GetParentId(), parent) ||
 	    !TransformUtils::TryInverseWorldMatrix(parent.matrix, inverse)) {
 		return false;
 	}
@@ -367,7 +367,7 @@ bool SceneHierarchy::LookAt(Scene &scene, SceneObjectId id,
 	SceneWorldTransform world, parent;
 	XMFLOAT4X4 inverse;
 	if (!object || !MathUtils::IsFinite(target) ||
-	    !GetParentTransform(scene, object->parentId, parent) ||
+	    !GetParentTransform(scene, object->GetParentId(), parent) ||
 	    !Compose(object->transform, &parent, world) ||
 	    !TransformUtils::TryInverseWorldMatrix(parent.matrix, inverse))
 		return false;
@@ -422,7 +422,7 @@ bool SceneHierarchy::SetWorldPose(Scene &scene, SceneObjectId id,
 	XMFLOAT4 normalized;
 	if (!object || !MathUtils::IsFinite(position) ||
 	    !TransformUtils::TryNormalizeRotation(rotation, normalized) ||
-	    !GetParentTransform(scene, object->parentId, parent) ||
+	    !GetParentTransform(scene, object->GetParentId(), parent) ||
 	    !TransformUtils::TryInverseWorldMatrix(parent.matrix, inverse)) {
 		return false;
 	}

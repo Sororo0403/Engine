@@ -35,16 +35,32 @@
 #include <string>
 #include <string_view>
 
+class Scene;
+namespace SceneHierarchy {
+bool SetParent(Scene &, SceneObjectId, SceneObjectId, bool);
+}
+
 /// <summary>
 /// シーン上の物体の名前・変形情報・描画と衝突の設定を保持する
 /// </summary>
 struct SceneObject {
+	SceneObject() = default;
+	SceneObject(const SceneObject &) = default;
+	SceneObject(SceneObject &&) = default;
+	// シーン内の物体を丸ごと代入して親の検証を迂回できないようにする。
+	SceneObject &operator=(const SceneObject &) = delete;
+	SceneObject &operator=(SceneObject &&) = delete;
+
+	/// シーンに格納する前のデータに、復元先の親IDを設定する。
+	SceneObject(SceneObject object, SceneObjectId parent);
+
+	/// 親の物体IDを取得する。0はルートを表す。
+	SceneObjectId GetParentId() const { return parentId_; }
+
 	std::string name = "Object";
 	std::string tag;
 	// 自身の設定。実際の有効状態はSceneActivityで祖先と合わせて判定する
 	bool active = true;
-	// 親の変更にはSceneHierarchy::SetParentを使う。0はルートを表す
-	SceneObjectId parentId = 0;
 	// 親に対するローカル変形。ルートの場合はワールド変形と一致する
 	Transform transform{};
 
@@ -144,4 +160,9 @@ struct SceneObject {
 	/// 既存の姿勢制御と競合せず、指定トラックの値を適用できるか確認する
 	/// </summary>
 	bool CanAnimate(const AnimationClipTrack &track) const;
+
+  private:
+	friend bool SceneHierarchy::SetParent(Scene &, SceneObjectId, SceneObjectId,
+	                                      bool);
+	SceneObjectId parentId_ = 0;
 };

@@ -31,7 +31,7 @@ SceneObjectId Scene::CreateObject(SceneObject object) {
 		    "Scene::CreateObject: 変形情報が無効です。");
 	}
 
-	if (object.parentId != 0 && !Contains(object.parentId)) {
+	if (object.GetParentId() != 0 && !Contains(object.GetParentId())) {
 		throw std::invalid_argument(
 		    "Scene::CreateObject: 親の物体が存在しません。");
 	}
@@ -129,7 +129,7 @@ void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
 
 bool Scene::RestoreObject(SceneObjectId id, const SceneObject &object) {
 	if (id == 0 || id >= nextObjectId_ || objects_.contains(id) ||
-	    (object.parentId != 0 && !Contains(object.parentId))) {
+	    (object.GetParentId() != 0 && !Contains(object.GetParentId()))) {
 		return false;
 	}
 

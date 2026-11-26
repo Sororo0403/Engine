@@ -68,7 +68,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 			const auto includeAncestors = [&](SceneObjectId current) {
 				while (current && required.insert(current).second) {
 					const auto *object = candidate.FindObject(current);
-					current = object ? object->parentId : 0;
+					current = object ? object->GetParentId() : 0;
 				}
 			};
 			for (const auto &[objectId, object] : afterObjects) {
@@ -105,12 +105,12 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		                                                newObject.transform);
 		    const bool standaloneCamera =
 		        moved && after.first == camera_ && !cameraTransition_ &&
-		        newObject.camera && !newObject.parentId && !newObject.collider &&
+		        newObject.camera && !newObject.GetParentId() && !newObject.collider &&
 		        !newObject.rigidBody && !newObject.character && !newObject.followCamera &&
 		        !newObject.motionPath && !newObject.transformAnimation &&
 		        std::ranges::none_of(afterObjects, [&](const auto &entry) {
 			    const auto &object = entry.second;
-			    return object.parentId == camera_ ||
+			    return object.GetParentId() == camera_ ||
 			           (object.followCamera && object.followCamera->target == camera_);
 		        });
 		    if (moved) {

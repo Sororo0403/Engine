@@ -15,8 +15,8 @@ bool SceneActivity::BuildStates(const Scene &scene, States &states) {
 
 	for (const auto id : order) {
 		const auto &object = *scene.FindObject(id);
-		result.emplace(id, object.active && (object.parentId == 0 ||
-		                                     result.at(object.parentId)));
+		result.emplace(id, object.active && (object.GetParentId() == 0 ||
+		                                     result.at(object.GetParentId())));
 	}
 
 	states.swap(result);
@@ -39,7 +39,7 @@ bool SceneActivity::IsActive(const Scene &scene, SceneObjectId id) {
 		}
 
 		active &= object->active;
-		id = object->parentId;
+		id = object->GetParentId();
 	}
 
 	return active;

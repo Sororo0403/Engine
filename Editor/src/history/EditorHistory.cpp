@@ -109,13 +109,14 @@ bool EditorHistory::SetParent(std::span<const SceneObjectId> ids,
 
 	for (const auto id : roots) {
 		const auto &before = *scene_.FindObject(id);
-		if (before.parentId == parent)
+		if (before.GetParentId() == parent)
 			continue;
 		if (!SceneHierarchy::SetParent(working, id, parent, keepWorld))
 			return false;
 		const auto &after = *working.FindObject(id);
-		commands.emplace_back(ParentCommand{id, before.parentId, after.parentId,
-		                                    before.transform, after.transform});
+		commands.emplace_back(ParentCommand{id, before.GetParentId(),
+		                                    after.GetParentId(), before.transform,
+		                                    after.transform});
 	}
 
 	if (commands.empty())
@@ -349,9 +350,7 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 	                                              sourceIds](Scene &working) {
 		// 全IDが決まってから参照を解決し、入力順に依存しないようにする。
 		for (std::size_t i = 0; i < objects.size(); ++i) {
-			auto initial = objects[i];
-			initial.parentId = 0;
-			const auto id = working.CreateObject(std::move(initial));
+			const auto id = working.CreateObject(SceneObject{objects[i], 0});
 			createdIds.push_back(id);
 
 			if (!sourceIds.empty()) {
@@ -362,13 +361,12 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 		for (std::size_t i = 0; i < objects.size(); ++i) {
 			auto &object = objects[i];
 
-			if (const auto found = remap.find(object.parentId);
-			    found != remap.end()) {
-				object.parentId = found->second;
-			}
-			if (object.parentId != 0 && !working.Contains(object.parentId))
+			auto parent = object.GetParentId();
+			if (const auto found = remap.find(parent); found != remap.end())
+				parent = found->second;
+			if (parent &&
+			    !SceneHierarchy::SetParent(working, createdIds[i], parent, false))
 				return false;
-			working.FindObject(createdIds[i])->parentId = object.parentId;
 
 			SceneObjectReferences::Remap(object, remap);
 			working.FindObject(createdIds[i])->script = object.script;
@@ -425,7 +423,7 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 		if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
 			return false;
 		snapshots.push_back(
-		    TransformSnapshot{id, object->transform, object->parentId, world});
+		    TransformSnapshot{id, object->transform, object->GetParentId(), world});
 	}
 
 	pendingTransforms_ = std::move(snapshots);
@@ -545,7 +543,7 @@ bool EditorHistory::UpdateTransforms(const Transform &beforePivot,
 	    XMLoadFloat4x4(&inverse) * TransformUtils::MakeWorldMatrix(afterPivot);
 	for (const auto &snapshot : *pendingTransforms_) {
 		auto *object = working.FindObject(snapshot.objectId);
-		if (!object || object->parentId != snapshot.parentId)
+		if (!object || object->GetParentId() != snapshot.parentId)
 			return false;
 		object->transform = snapshot.before;
 
@@ -1891,8 +1889,9 @@ std::unique_ptr<EditorHistory> EditorHistory::PrepareAssetRewrite(
 		throw std::runtime_error("Finish the current edit before moving assets.");
 	}
 	auto prepared = std::make_unique<EditorHistory>(scene_);
-	prepared->entries_ = entries_;
-	for (auto &entry : prepared->entries_) {
+	prepared->entries_.reserve(entries_.size());
+	for (const auto &original : entries_) {
+		auto &entry = prepared->entries_.emplace_back(original);
 		std::visit([&](auto &command) {
 			if constexpr (requires { command.RewriteObjects(rewrite); }) {
 				command.RewriteObjects(rewrite);
@@ -1960,8 +1959,9 @@ void EditorHistory::AppendPrepared(Command command, std::uint64_t nextState,
 	assert(cursor_ < entries_.capacity());
 
 	// Undo後の新しい編集では、Redo側の履歴を取り除く
-	entries_.erase(entries_.begin() + static_cast<std::ptrdiff_t>(cursor_),
-	               entries_.end());
+	while (entries_.size() > cursor_) {
+		entries_.pop_back();
+	}
 
 	entries_.push_back(Entry{
 	    std::move(command),
