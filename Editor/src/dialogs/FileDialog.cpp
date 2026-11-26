@@ -114,7 +114,6 @@ void FileDialog::Show(FileDialogMode mode,
 	projectSearchChange_.reset();
 	error_.clear();
 	fileName_.clear();
-	folderName_.clear();
 	directoryText_.clear();
 	search_.clear();
 	destinationExists_ = false;
@@ -547,14 +546,6 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 
 		bool fileSubmitted = false;
-		if (mode_ != FileDialogMode::OPEN) {
-			ui.InputText("New Folder Name", folderName_);
-			ui.SameLine();
-			if (ui.Button("Create Folder")) {
-				CreateFolder();
-			}
-			ImGui::SetItemTooltip("Create a folder under the path in Folder and open it.");
-		}
 
 		if (mode_ != FileDialogMode::SELECT_DIRECTORY) {
 			const bool enterSubmits = mode_ == FileDialogMode::OPEN || requireNewFile_;
@@ -964,26 +955,4 @@ std::filesystem::path FileDialog::ReadFolderInput() const {
 		path = path.parent_path();
 	}
 	return path;
-}
-
-void FileDialog::CreateFolder() {
-	try {
-		const auto name = PathUtils::FromUtf8(folderName_);
-
-		if (!PathUtils::IsValidFileName(name)) {
-			throw std::invalid_argument("Enter a single valid folder name.");
-		}
-
-		const auto created = ReadDirectory() / name;
-
-		if (!std::filesystem::create_directory(created)) {
-			throw std::runtime_error(
-			    "That folder already exists. Choose another name.");
-		}
-
-		folderName_.clear();
-		ChangeDirectory(created);
-	} catch (const std::exception &error) {
-		error_ = error.what();
-	}
 }

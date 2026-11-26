@@ -180,11 +180,6 @@ class FileDialog {
 	/// </summary>
 	std::filesystem::path ReadFolderInput() const;
 
-	/// <summary>
-	/// Folder欄の下に単独の新規フォルダを作り、表示先を切り替える。既存項目は保持する
-	/// </summary>
-	void CreateFolder();
-
   private:
 	FileDialogMode mode_ = FileDialogMode::OPEN;
 	FileDialogFilter filter_ = FileDialogFilter::SCENE;
@@ -198,7 +193,6 @@ class FileDialog {
 	std::string directoryText_;
 	std::string search_;
 	std::string fileName_;
-	std::string folderName_;
 	std::string error_;
 	std::string failedProjectLocationError_;
 	std::string projectSceneRefreshError_;
