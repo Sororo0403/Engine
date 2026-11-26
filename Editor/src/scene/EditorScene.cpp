@@ -5511,6 +5511,12 @@ void EditorScene::UpdateDialogs() {
 
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
+			if (!errorPlayModelFile_.empty()) {
+				ImGui::TextWrapped("Model: %s", PathUtils::ToUtf8(errorPlayModelFile_).c_str());
+			}
+			if (errorTestSave_ && !errorTestSave_->empty()) {
+				ImGui::TextWrapped("Test save: %s", PathUtils::ToUtf8(*errorTestSave_).c_str());
+			}
 
 			if (!unavailablePasteAsset_.empty()) {
 				if (ui_.Button("Show Referenced File Location")) {
@@ -5891,18 +5897,6 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 			if (errorReplayPath_ && !playMode_.IsPlaying()) {
-				if (!errorPlayModelFile_.empty()) {
-					if (ui_.Button("Show Model Error Location")) {
-						ShellUtils::RevealLocationInExplorer(errorPlayModelFile_, errorActionMessage_);
-					}
-					ui_.SameLine();
-				}
-				if (errorTestSave_ && !errorTestSave_->empty()) {
-					if (ui_.Button("Show Test Save Location")) {
-						ShellUtils::RevealLocationInExplorer(*errorTestSave_, errorActionMessage_);
-					}
-					ui_.SameLine();
-				}
 				const bool withoutSave = errorTestSave_ && ui_.Button("Play Without Test Save");
 				if (errorTestSave_) {
 					ui_.SameLine();
