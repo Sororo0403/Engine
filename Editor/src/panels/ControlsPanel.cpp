@@ -1065,7 +1065,7 @@ void ControlsPanel::Draw() {
 	         "character or blocking its recovery point, reject the entire "
 	         "start/update and preserve the prior runtime state. The error "
 	         "identifies the problem; the editing scene is always kept."},
-	        {"Inspector > Active / Hierarchy > Enable or Disable Selected",
+	        {"Inspector > Active",
 	         "Enable or disable an object's drawing, collision, Trigger "
 	         "detection and gameplay components. The object also needs every "
 	         "ancestor enabled: Active in Hierarchy shows that effective "
@@ -1073,8 +1073,7 @@ void ControlsPanel::Draw() {
 	         "Inactive objects remain editable in Hierarchy and Inspector; "
 	         "Scene clicks and rectangle selection skip them. Explicit frame "
 	         "requests can use their Collider or origin, and selected debug "
-	         "outlines remain editing aids. The Hierarchy menu applies one "
-	         "Undo/Redo operation to the selected local flags. Copy, duplicate "
+	         "outlines remain editing aids. Copy, duplicate "
 	         "and saved scenes retain the flags. Older scenes start enabled. "
 	         "Play works without an active Character or Camera; inactive "
 	         "gameplay components do not block it. Active Follow Cameras may "

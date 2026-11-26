@@ -1074,16 +1074,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
 					break;
-				case HierarchyPanel::Action::ENABLE_OBJECTS:
-				case HierarchyPanel::Action::DISABLE_OBJECTS:
-					if (!document_.GetHistory().SetActive(
-					        selection_.GetIds(),
-					        hierarchyRequest.action ==
-					            HierarchyPanel::Action::ENABLE_OBJECTS)) {
-						ShowError("Could not change object activity.");
-					}
-
-					break;
 				case HierarchyPanel::Action::HIDE_OBJECTS:
 					ChangeVisibility(selection_.GetIds(), false);
 					break;

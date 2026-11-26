@@ -494,7 +494,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 				bool canHide = false;
 				bool canShow = false;
-				bool canEnable = false, canDisable = false;
 				bool canGround = false;
 
 				for (const auto selectedId : selection.GetIds()) {
@@ -502,18 +501,8 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 						canHide |=
 						    selected->meshRenderer && !selected->IsHidden();
 						canShow |= selected->IsHidden();
-						canEnable |= !selected->active;
-						canDisable |= selected->active;
 						canGround |= selected->IsRenderable();
 					}
-				}
-
-				if (ui.MenuItem("Enable Selected", nullptr, canEnable)) {
-					result.action = Action::ENABLE_OBJECTS;
-				}
-
-				if (ui.MenuItem("Disable Selected", nullptr, canDisable)) {
-					result.action = Action::DISABLE_OBJECTS;
 				}
 
 				if (ui.MenuItem("Hide Selected", nullptr, canHide)) {
