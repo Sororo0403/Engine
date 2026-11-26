@@ -11,15 +11,33 @@
 bool SpotLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                               SceneObject &object,
                               EditorHistory &history) const {
-	if (!object.spotLight || !ui.CollapsingHeader("Spot Light")) {
+	if (!object.spotLight) {
 		return false;
+	}
+
+	const bool open = ui.CollapsingHeader("Spot Light");
+	ImGui::SetItemTooltip("Right-click for light actions.");
+	bool changed = false;
+	if (ImGui::BeginPopupContextItem("SpotLightActions")) {
+		if (ui.MenuItem("Reset Spot Light")) {
+			const auto before = object.spotLight;
+			changed = history.SetSpotLight(id, SpotLightComponent{}) &&
+			          object.spotLight != before;
+		}
+		const bool remove = ui.MenuItem("Remove Spot Light");
+		ImGui::EndPopup();
+		if (remove) {
+			return history.SetSpotLight(id, std::nullopt);
+		}
+	}
+	if (!open) {
+		return changed;
 	}
 
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("SpotLightInspector");
 	auto edited = *object.spotLight;
-	bool changed = false;
 	const auto apply = [&](bool valueChanged) {
 		const bool begin =
 		    !ImGui::IsItemActivated() || history.BeginSpotLight(id);
@@ -48,16 +66,6 @@ bool SpotLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	    (std::max)(SpotLightComponent::kMinOuterAngle, edited.innerAngle),
 	    SpotLightComponent::kMaxOuterAngle, "%.2f",
 	    ImGuiSliderFlags_AlwaysClamp));
-	if (ImGui::Button("Reset Spot Light")) {
-		const auto before = object.spotLight;
-		changed |= history.SetSpotLight(id, SpotLightComponent{}) &&
-		           object.spotLight != before;
-	}
-
-	if (ImGui::Button("Remove Spot Light")) {
-		changed |= history.SetSpotLight(id, std::nullopt);
-	}
-
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

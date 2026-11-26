@@ -10,15 +10,33 @@
 bool PointLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                SceneObject &object,
                                EditorHistory &history) const {
-	if (!object.pointLight || !ui.CollapsingHeader("Point Light")) {
+	if (!object.pointLight) {
 		return false;
+	}
+
+	const bool open = ui.CollapsingHeader("Point Light");
+	ImGui::SetItemTooltip("Right-click for light actions.");
+	bool changed = false;
+	if (ImGui::BeginPopupContextItem("PointLightActions")) {
+		if (ui.MenuItem("Reset Point Light")) {
+			const auto before = object.pointLight;
+			changed = history.SetPointLight(id, PointLightComponent{}) &&
+			          object.pointLight != before;
+		}
+		const bool remove = ui.MenuItem("Remove Point Light");
+		ImGui::EndPopup();
+		if (remove) {
+			return history.SetPointLight(id, std::nullopt);
+		}
+	}
+	if (!open) {
+		return changed;
 	}
 
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("PointLightInspector");
 	auto edited = *object.pointLight;
-	bool changed = false;
 	const auto apply = [&](bool valueChanged) {
 		const bool begin =
 		    !ImGui::IsItemActivated() || history.BeginPointLight(id);
@@ -39,16 +57,6 @@ bool PointLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	apply(ImGui::DragFloat("Range", &edited.range, 0.1f, 0.001f,
 	                       PointLightComponent::kMaxRange, "%.3f",
 	                       ImGuiSliderFlags_AlwaysClamp));
-	if (ImGui::Button("Reset Point Light")) {
-		const auto before = object.pointLight;
-		changed |= history.SetPointLight(id, PointLightComponent{}) &&
-		           object.pointLight != before;
-	}
-
-	if (ImGui::Button("Remove Point Light")) {
-		changed |= history.SetPointLight(id, std::nullopt);
-	}
-
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
