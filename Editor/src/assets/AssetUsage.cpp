@@ -635,12 +635,6 @@ std::vector<AssetUsage::Reference> AssetUsage::Find(
 	return {};
 }
 
-AssetUsage::Paths AssetUsage::Duplicate(std::span<const fs::path> sources,
-                                        const fs::path &assetRoot,
-                                        std::string &error) {
-	return CopyTo(sources, {}, assetRoot, {}, error);
-}
-
 AssetUsage::Paths AssetUsage::CopyTo(std::span<const fs::path> sources,
                                     const fs::path &destination,
                                     const fs::path &assetRoot,

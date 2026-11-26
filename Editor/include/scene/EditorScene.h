@@ -483,7 +483,7 @@ class EditorScene final : public IScene {
 	    std::string &error, std::filesystem::path *failurePath = nullptr);
 
 	/// <summary>
-	/// 素材を複製または貼り付けし、成功時に一覧を更新する
+	/// 素材を貼り付けし、成功時に一覧を更新する
 	/// </summary>
 	bool CopyAssets(std::span<const std::filesystem::path> sources,
 	                const std::filesystem::path &directory, std::string &error);

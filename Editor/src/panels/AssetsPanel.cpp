@@ -218,7 +218,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	recyclePaths_.clear();
 	referencePaths_.clear();
 	renamePath_.clear();
-	duplicatePaths_.clear();
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
@@ -384,7 +383,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	modelReloadPath_.clear();
 	recyclePaths_.clear();
 	renamePath_.clear();
-	duplicatePaths_.clear();
 	moveRequest_ = {};
 	pasteRequest_ = {};
 	meshReplacementPath_.clear();
@@ -929,15 +927,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				trackExplorer();
 			}
 		}
-		if (ui.MenuItem("Copy Full Path")) {
-			try {
-				const auto absolute = PathUtils::ResolveFromExecutable(path);
-				ImGui::SetClipboardText(PathUtils::ToUtf8(absolute).c_str());
-				revealMessage_.clear();
-			} catch (const std::exception &error) {
-				revealMessage_ = error.what();
-			}
-		}
 	};
 
 	if (!assets.GetError().empty()) {
@@ -1056,10 +1045,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 						renamePath_ = directory;
 					}
 
-					if (ui.MenuItem("Duplicate", "Ctrl+D")) {
-						duplicatePaths_ = SelectedAssetRoots(selectedItems_);
-					}
-
 					if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
 						recyclePaths_ = SelectedAssetRoots(selectedItems_);
 					}
@@ -1135,11 +1120,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Rename...", "F2",
 				                selectedItems_.size() == 1 && canManageFiles)) {
 					renamePath_ = assetPath;
-				}
-
-				if (ui.MenuItem("Duplicate", "Ctrl+D",
-				                canManageFiles)) {
-					duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
 				if (ui.MenuItem("Find References...", nullptr,
@@ -1276,9 +1256,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
 				requestPaste(currentFolder());
-			} else if (!selectedItems_.empty() &&
-			           ImGui::IsKeyPressed(ImGuiKey_D, false)) {
-				duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 			}
 		} else if (canManageFiles && !io.KeyCtrl && selectedItems_.size() == 1 &&
 		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
@@ -1561,7 +1538,6 @@ void AssetsPanel::Clear() {
 	recyclePaths_.clear();
 	referencePaths_.clear();
 	renamePath_.clear();
-	duplicatePaths_.clear();
 	moveRequest_ = {};
 	pasteRequest_ = {};
 	clipboardItems_.clear();
@@ -1618,10 +1594,6 @@ const std::vector<std::filesystem::path> &AssetsPanel::GetReferenceRequest() con
 
 const std::filesystem::path &AssetsPanel::GetRenameRequest() const {
 	return renamePath_;
-}
-
-const std::vector<std::filesystem::path> &AssetsPanel::GetDuplicateRequest() const {
-	return duplicatePaths_;
 }
 
 const AssetsPanel::MoveRequest &AssetsPanel::GetMoveRequest() const {

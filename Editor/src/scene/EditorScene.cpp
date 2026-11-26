@@ -827,17 +827,13 @@ bool EditorScene::Update(float deltaTime) {
 			stage_ = DialogStage::RENAME_ASSET;
 		}
 
-		const bool copyPaste = !paste.sources.empty() && !cutPaste;
-		const auto &duplicate =
-		    copyPaste ? paste.sources : assetsPanel_.GetDuplicateRequest();
-
-		if (!duplicate.empty() && !IsBusy() && action == EditorAction::NONE &&
+		if (!paste.sources.empty() && !cutPaste && !IsBusy() &&
+		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			std::string error;
-			const auto directory = copyPaste ? paste.directory : std::filesystem::path{};
-			if (!CopyAssets(duplicate, directory, error)) {
+			if (!CopyAssets(paste.sources, paste.directory, error)) {
 				ShowError(std::move(error));
-				failedAssetCopy_ = {duplicate, directory};
+				failedAssetCopy_ = {paste.sources, paste.directory};
 			}
 		}
 
@@ -4683,11 +4679,8 @@ void EditorScene::RevealReferenceObject(SceneObjectId id) {
 bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,
                              const std::filesystem::path &directory,
                              std::string &error) {
-	const auto &root = assets_.GetRootDirectory();
-	auto copies = directory.empty()
-	                        ? AssetUsage::Duplicate(sources, root, error)
-	                        : AssetUsage::CopyTo(sources, directory, root,
-	                                             project_.GetRoot(), error);
+	auto copies = AssetUsage::CopyTo(sources, directory, assets_.GetRootDirectory(),
+	                                project_.GetRoot(), error);
 
 	if (copies.empty()) {
 		return false;
@@ -6005,7 +5998,7 @@ void EditorScene::UpdateDialogs() {
 					return;
 				}
 				ui_.SameLine();
-				if (ui_.Button(failedAssetCopy_.directory.empty() ? "Retry Duplicate" : "Retry Copy")) {
+				if (ui_.Button("Retry Copy")) {
 					std::string error;
 					if (CopyAssets(failedAssetCopy_.sources, failedAssetCopy_.directory, error)) {
 						failedAssetCopy_ = {};

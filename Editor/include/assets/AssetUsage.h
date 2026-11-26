@@ -55,13 +55,6 @@ Find(std::span<const std::filesystem::path> targets,
      const EditorHistory *history = nullptr);
 
 /// <summary>
-/// Assets内でファイルまたはフォルダを同じ場所に複製する
-/// </summary>
-/// <returns>成功時に複製先を返す。失敗時は空で、errorに理由を返す</returns>
-Paths Duplicate(std::span<const std::filesystem::path> sources,
-                const std::filesystem::path &assetRoot, std::string &error);
-
-/// <summary>
 /// 指定フォルダに素材をコピーし、同名項目には複製名を割り当てる
 /// </summary>
 Paths CopyTo(std::span<const std::filesystem::path> sources,

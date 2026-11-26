@@ -220,11 +220,6 @@ class AssetsPanel {
 	const std::filesystem::path &GetRenameRequest() const;
 
 	/// <summary>
-	/// 複製が要求された素材ファイルまたはフォルダを取得する
-	/// </summary>
-	const std::vector<std::filesystem::path> &GetDuplicateRequest() const;
-
-	/// <summary>
 	/// フォルダへのドロップで要求された移動元と移動先
 	/// </summary>
 	struct MoveRequest {
@@ -377,7 +372,6 @@ class AssetsPanel {
 	std::vector<std::filesystem::path> recyclePaths_;
 	std::vector<std::filesystem::path> referencePaths_;
 	std::filesystem::path renamePath_;
-	std::vector<std::filesystem::path> duplicatePaths_;
 	MoveRequest moveRequest_;
 	MoveRequest pasteRequest_;
 	std::vector<std::filesystem::path> clipboardItems_;
