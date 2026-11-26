@@ -207,22 +207,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		selectedId_ = jumpError->id;
 	}
 
-	const bool canShowContext =
-	    (!filter_.empty() || !showInfo_ || !showWarnings_ || !showErrors_) &&
-	    std::ranges::any_of(entries_, [&](const auto &entry) {
-		    return entry.id == selectedId_ && MatchesFilter(entry, searchPath);
-	    });
-	ui.SameLine();
-	ui.BeginDisabled(!canShowContext);
-	const bool showContext = ui.Button("Show Surrounding Logs");
-	ui.EndDisabled();
-	ImGui::SetItemTooltip("Clear text and level filters and return to the selected message.");
-	if (showContext) {
-		filter_.clear();
-		searchPath.clear();
-		showInfo_ = showWarnings_ = showErrors_ = true;
-	}
-	const bool jumpToSelection = jumpError || showContext ||
+	const bool jumpToSelection = jumpError ||
 	                             (clearedSearch && selectedId_ != 0);
 
 	ImGui::SameLine();
