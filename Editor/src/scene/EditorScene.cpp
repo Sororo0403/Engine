@@ -3078,13 +3078,13 @@ void EditorScene::RevealGameExportObject(SceneObjectId object) {
 		return;
 	}
 
-	const bool canSaveAndCheck =
+	const bool hasUnsavedLinkedScene =
 	    document_.IsModified() && !document_.GetFilePath().empty() &&
 	    !UsesEditingSceneForStartup(project_.GetStartupScene());
 	CheckGameExport(true);
 	exportDialog_.Reopen(
-	    canSaveAndCheck
-	        ? "This object is absent from the editing scene. Use Save Scene and Check "
+	    hasUnsavedLinkedScene
+	        ? "This object is absent from the editing scene. Save the scene before checking "
 	          "to include your edits."
 	        : "The reported object is no longer in the scene. The results were refreshed.");
 	stage_ = DialogStage::EXPORT_GAME;
@@ -3262,7 +3262,6 @@ void EditorScene::CancelPendingAction() {
 		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
 		                                            : DialogStage::OPEN_PROJECT;
 	} else if (action == EditorAction::WRITE_GAME_EXPORT ||
-	    action == EditorAction::SAVE_AND_CHECK_EXPORT ||
 	    action == EditorAction::OPEN_EXPORT_ISSUE) {
 		exportDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_GAME;
@@ -3279,12 +3278,6 @@ void EditorScene::ExecutePendingAction() {
 	case EditorAction::WRITE_GAME_EXPORT:
 		WriteGameExport();
 		return;
-	case EditorAction::SAVE_AND_CHECK_EXPORT:
-		CheckGameExport(true);
-		exportDialog_.Reopen();
-		stage_ = DialogStage::EXPORT_GAME;
-		return;
-
 	case EditorAction::OPEN_PROJECT_PATH:
 		SwitchProject(pendingOpenPath_, false, true);
 		return;
@@ -4757,8 +4750,7 @@ void EditorScene::UpdateDialogs() {
 				ClearRecovery();
 				assets_.Refresh();
 				const bool continuingExport =
-				    pendingAction_ == EditorAction::WRITE_GAME_EXPORT ||
-				    pendingAction_ == EditorAction::SAVE_AND_CHECK_EXPORT;
+				    pendingAction_ == EditorAction::WRITE_GAME_EXPORT;
 				if (continuingExport && !startup.empty() &&
 				    !PathUtils::IsSameFile(startup, document_.GetFilePath()) &&
 				    (previousPath.empty() ||
@@ -5434,10 +5426,10 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 	case DialogStage::EXPORT_GAME: {
-		const bool canSaveAndCheck =
+		const bool hasUnsavedLinkedScene =
 		    document_.IsModified() && !document_.GetFilePath().empty() &&
 		    !UsesEditingSceneForStartup(project_.GetStartupScene());
-		const auto result = exportDialog_.Draw(ui_, canSaveAndCheck);
+		const auto result = exportDialog_.Draw(ui_, hasUnsavedLinkedScene);
 		const auto &root = project_.GetRoot();
 		if (result != GameExportResult::NONE) {
 			bool changed = false;
@@ -5459,11 +5451,6 @@ void EditorScene::UpdateDialogs() {
 			} else {
 				stage_ = DialogStage::IDLE;
 			}
-			return;
-		}
-		if (result == GameExportResult::SAVE_AND_CHECK) {
-			pendingAction_ = EditorAction::SAVE_AND_CHECK_EXPORT;
-			StartSave(false);
 			return;
 		}
 		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {

@@ -441,7 +441,7 @@ void GameExportDialog::CompleteExport() {
 }
 
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
-                                        bool canSaveAndCheck) {
+                                        bool hasUnsavedLinkedScene) {
 	constexpr const char *title = "Export Game###GameExportDialog";
 
 	if (opening_) {
@@ -458,9 +458,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	ImGui::TextWrapped("Startup Scene: %s", startupScene_.c_str());
 	if (includesUnsavedEdits_) {
 		ui.Text("Includes unsaved changes to the startup scene.");
-	} else if (canSaveAndCheck) {
-		ImGui::TextWrapped("The editing scene has unsaved changes. Use Save Scene and Check "
-		                   "to include them, or Check Export to use the saved files.");
+	} else if (hasUnsavedLinkedScene) {
+		ImGui::TextWrapped("The editing scene has unsaved changes. Save the scene before checking "
+		                   "to include them.");
 	}
 	const bool wasBrowsing = browsing_;
 	ui.BeginDisabled(wasBrowsing);
@@ -723,11 +723,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
 	const bool checkRequested = ui.Button("Check Export");
-	bool saveAndCheckRequested = false;
-	if (canSaveAndCheck) {
-		ui.SameLine();
-		saveAndCheckRequested = ui.Button("Save Scene and Check");
-	}
 	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
 	                             result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
@@ -775,7 +770,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	if (result != GameExportResult::CANCELLED &&
-	    (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
+	    (chooseStartup || exportRequested || checkRequested ||
 	     navigatingIssue || keepDraft)) {
 		error_.clear();
 		try {
@@ -843,7 +838,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				result = keepDraft              ? GameExportResult::CANCELLED
 				         : chooseStartup         ? GameExportResult::CHOOSE_STARTUP_SCENE
 				         : exportRequested      ? GameExportResult::ACCEPTED
-				         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
 				         : checkRequested        ? GameExportResult::CHECK
 				                                 : result;
 			}
@@ -854,7 +848,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
-	    result == GameExportResult::SAVE_AND_CHECK ||
 	    result == GameExportResult::CHOOSE_STARTUP_SCENE ||
 	    result == GameExportResult::OPEN_ISSUE ||
 	    result == GameExportResult::OPEN_TRANSITION_SOURCE ||

@@ -1477,8 +1477,8 @@ void ControlsPanel::Draw() {
 	         "The exported game can also run directly from its folder."},
 	        {"File > Return to Export Check",
 	         "After opening a reported scene or asset, return to the same "
-	         "export settings and check again. Use Save Scene and Check to "
-	         "include unsaved changes to a linked scene."},
+	         "export settings and check again. Save linked scenes before checking "
+	         "to include their edits."},
 	        {"Export Result > Source Scenes",
 	         "Open a scene from the current project's export in the Editor. "
 	         "Use File > Return to Export Result to see its logs or choose "
