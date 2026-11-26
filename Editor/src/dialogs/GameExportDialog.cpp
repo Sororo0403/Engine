@@ -659,17 +659,13 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						selectedIssue_ = i;
 						result = GameExportResult::EDIT_ISSUE_CLIP;
 					}
-					ui.BeginDisabled(missing);
-					if (ui.Button("Show in Assets")) {
-						selectedIssue_ = i;
-						result = GameExportResult::REVEAL_ISSUE_ASSET;
+					if (!missing) {
+						if (ui.Button("Show in Assets")) {
+							selectedIssue_ = i;
+							result = GameExportResult::REVEAL_ISSUE_ASSET;
+						}
+						ui.SameLine();
 					}
-					ui.EndDisabled();
-					if (missing &&
-					    ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-						ImGui::SetTooltip("The referenced file is missing.");
-					}
-					ui.SameLine();
 					if (ui.Button(missing ? "Open Folder in Explorer" : "Show in Explorer")) {
 						selectedIssue_ = i;
 						ShellUtils::RevealLocationInExplorer(issue.assetPath, error_);
