@@ -470,26 +470,6 @@ void GameExportDialog::CompleteExport() {
 	resumeDraft_ = false;
 }
 
-bool GameExportDialog::SuggestOutputName() {
-	try {
-		const auto output = ReadDestination(output_);
-		if (!output.is_absolute() ||
-		    !PathUtils::IsValidFileName(output.filename())) {
-			throw std::runtime_error("Enter a valid output folder name.");
-		}
-		const auto suggested = FindAvailableDestination(output);
-		error_.clear();
-		if (suggested != output) {
-			output_ = PathUtils::ToUtf8(suggested);
-			checkResultStale_ = !checkResult_.empty();
-			return true;
-		}
-	} catch (const std::exception &e) {
-		error_ = e.what();
-	}
-	return false;
-}
-
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
                                         bool canSaveAndCheck) {
 	constexpr const char *title = "Export Game###GameExportDialog";
@@ -566,12 +546,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	if (ui.Button("Browse...")) {
 		browseForOutput(false);
 	}
-	ui.SameLine();
-	ui.BeginDisabled(output_.empty());
-	if (ui.Button("Suggest Name")) {
-		SuggestOutputName();
-	}
-	ui.EndDisabled();
 	changed |= drawField(GameExportField::TITLE, [&] {
 		return ui.InputText("Game Title", title_);
 	});
@@ -619,7 +593,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 	GameExportResult result = GameExportResult::NONE;
-	bool recheckIssue = false;
 	if (checkResultStale_) {
 		ui.Text("Run a new check to update these results.");
 	}
@@ -776,29 +749,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						browseForOutput(true);
 					}
 				}
-				if (issue.field == GameExportField::OUTPUT_FOLDER &&
-				    !issue.locationPath.empty()) {
-					bool stillOccupied = false;
-					try {
-						const auto output = ReadDestination(output_);
-						std::error_code status;
-						stillOccupied = output.is_absolute() &&
-						                PathUtils::IsSameFile(output, issue.locationPath) &&
-						                std::filesystem::exists(
-						                    std::filesystem::symlink_status(output, status));
-					} catch (const std::invalid_argument &) {
-						// 出力先の入力が完了するまで連番の提案は表示しない。
-					}
-					if (stillOccupied) {
-						ui.SameLine();
-						if (ui.Button("Use Next Available Name") && SuggestOutputName()) {
-							selectedIssue_ = i;
-							focusField_ = GameExportField::OUTPUT_FOLDER;
-							recheckIssue = true;
-						}
-						ImGui::SetItemTooltip("Choose an unused output name and check again.");
-					}
-				}
 				ImGui::PopID();
 				ImGui::Spacing();
 			}
@@ -828,7 +778,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
-	bool checkRequested = ui.Button("Check Export") || recheckIssue;
+	bool checkRequested = ui.Button("Check Export");
 	bool saveAndCheckRequested = false;
 	if (canSaveAndCheck) {
 		ui.SameLine();
