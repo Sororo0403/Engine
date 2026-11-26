@@ -157,7 +157,7 @@ class GameExportResultDialog {
 	/// </summary>
 	void RefreshLog();
 
-	enum class ErrorSearch { FIRST, PREVIOUS, NEXT, LATEST, CRASH_CAUSE };
+	enum class ErrorSearch { PREVIOUS, NEXT, LATEST, CRASH_CAUSE };
 
 	/// <summary>
 	/// 選択中の実行範囲で、指定方向のエラーから表示する

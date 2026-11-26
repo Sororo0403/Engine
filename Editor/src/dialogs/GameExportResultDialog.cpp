@@ -460,7 +460,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 			} else {
 				match = position;
 			}
-			if (search == ErrorSearch::FIRST || nextError)
+			if (nextError)
 				break;
 		}
 		const auto next = static_cast<std::streamoff>(input.tellg());
@@ -1197,11 +1197,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ImGui::SetItemTooltip("Find the next line matching the same search.");
 		}
 		ui.BeginDisabled(log_.empty() || jumpToLatest);
-		if (ui.Button("First Log Error")) {
-			jumpToBeginning |= OpenLogAtError(ErrorSearch::FIRST);
-		}
-		ImGui::SetItemTooltip("Find the first error across the selected log range.");
-		ui.SameLine();
 		if (ui.Button("Latest Log Error")) {
 			jumpToBeginning |= OpenLogAtError(ErrorSearch::LATEST);
 		}
