@@ -1243,36 +1243,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		const auto byLevel = filterByLevel ? FilterLogLevel(matching, run.minimumLogLevel)
 		                                   : std::string{};
 		const auto &displayedLog = filterByLevel ? byLevel : matching;
-		const bool errorsOnly = run.minimumLogLevel == LogLevel::LOG_ERROR;
-		const auto displayedErrors = errorsOnly ? std::string{}
-		                                        : FilterLogLevel(displayedLog, LogLevel::LOG_ERROR);
-		const auto &errors = errorsOnly ? displayedLog : displayedErrors;
-		ui.BeginDisabled(errors.empty());
-		if (ui.Button("Copy Displayed Errors") && !errors.empty()) {
-			ImGui::SetClipboardText(errors.c_str());
-		}
-		ui.EndDisabled();
-		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
 		if (!run.logFilter.empty() || filterByLevel) {
-			ui.SameLine();
 			ui.BeginDisabled(displayedLog.empty());
 			if (ui.Button("Copy Filtered Log") && !displayedLog.empty()) {
 				ImGui::SetClipboardText(displayedLog.c_str());
 			}
 			ui.EndDisabled();
 			ImGui::SetItemTooltip("Copy entries on this page that match the current filters.");
-		}
-		if (run.showLogBeginning) {
-			const auto firstError = LeadingLogError(log_);
-			if (!firstError.empty() &&
-			    FindLogText(firstError, run.logFilter, PathUtils::FromPathSearch(run.logFilter)) !=
-			        std::string_view::npos) {
-				ui.SameLine();
-				if (ui.Button("Copy First Error on Page")) {
-					ImGui::SetClipboardText(std::string(firstError).c_str());
-				}
-				ImGui::SetItemTooltip("Copy the error at the top of the page and its details.");
-			}
 		}
 
 		if (!logError_.empty()) {
