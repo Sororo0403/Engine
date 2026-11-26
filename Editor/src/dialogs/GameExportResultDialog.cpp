@@ -803,10 +803,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 
 	if (!run.launchFailurePath.empty()) {
 		const auto path = PathUtils::ToUtf8(run.launchFailurePath);
-		if (ui.Button("Show Startup Error Location")) {
-			ShellUtils::RevealLocationInExplorer(run.launchFailurePath, error_);
-		}
-		ImGui::SetItemTooltip("%s", path.c_str());
+		ImGui::TextWrapped("Startup error path: %s", path.c_str());
 	}
 
 	const bool destinationFailed = !run.destinationFailurePath.empty();
@@ -814,10 +811,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	                                                  : run.runningSceneFailurePath;
 	if (!failedRuntimeScene.empty()) {
 		const auto path = PathUtils::ToUtf8(failedRuntimeScene);
-		if (ui.Button(destinationFailed ? "Show Destination Scene Location" : "Show Running Scene Location")) {
-			ShellUtils::RevealLocationInExplorer(failedRuntimeScene, error_);
-		}
-		ImGui::SetItemTooltip("%s", path.c_str());
+		ImGui::TextWrapped(destinationFailed ? "Destination scene: %s" : "Running scene: %s",
+		                   path.c_str());
 	}
 
 	requestedSourceScene_.clear();
