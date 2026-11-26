@@ -5566,11 +5566,7 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!failedOpenScenePath_.empty()) {
-				if (ui_.Button("Show Scene Location")) {
-					ShellUtils::RevealLocationInExplorer(failedOpenScenePath_,
-					                                     errorActionMessage_);
-				}
-				ui_.SameLine();
+				ImGui::TextWrapped("Scene: %s", PathUtils::ToUtf8(failedOpenScenePath_).c_str());
 				if (!reloadBackupPath_.empty()) {
 					if (ui_.Button("Open Saved Copy")) {
 						pendingOpenPath_ = reloadBackupPath_;
