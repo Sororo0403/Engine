@@ -494,7 +494,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	bool changed = drawField(GameExportField::OUTPUT_FOLDER, [&] {
 		return ui.InputText("##OutputFolder", output_);
 	});
-	const auto browseForOutput = [&](bool recheck) {
+	const auto browseForOutput = [&] {
 		auto output = options_.destination;
 		browseOutputName_ = defaultOutputName_;
 		try {
@@ -520,11 +520,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 		folderDialog_.Show(FileDialogMode::SELECT_DIRECTORY, parent);
 		browsing_ = true;
-		recheckAfterBrowse_ = recheck;
 	};
 	ui.SameLine();
 	if (ui.Button("Browse...")) {
-		browseForOutput(false);
+		browseForOutput();
 	}
 	changed |= drawField(GameExportField::TITLE, [&] {
 		return ui.InputText("Game Title", title_);
@@ -719,12 +718,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				    !projectRoot_.empty() && ui.Button("Choose Replacement Startup Scene...")) {
 					chooseStartup = true;
 				}
-				if (issue.field == GameExportField::OUTPUT_FOLDER) {
-					if (ui.Button("Choose Output Folder and Recheck...")) {
-						selectedIssue_ = i;
-						browseForOutput(true);
-					}
-				}
 				ImGui::PopID();
 				ImGui::Spacing();
 			}
@@ -754,7 +747,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
-	bool checkRequested = ui.Button("Check Export");
+	const bool checkRequested = ui.Button("Check Export");
 	bool saveAndCheckRequested = false;
 	if (canSaveAndCheck) {
 		ui.SameLine();
@@ -794,7 +787,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				}
 				error_.clear();
 				browsing_ = false;
-				checkRequested |= recheckAfterBrowse_;
 			} catch (const std::invalid_argument &e) {
 				output_ = PathUtils::ToUtf8(candidate);
 				checkResultStale_ = !checkResult_.empty();
