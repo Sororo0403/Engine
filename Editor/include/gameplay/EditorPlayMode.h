@@ -54,8 +54,6 @@ class EditorPlayMode {
 	/// <param name="startupScenePath">プロジェクトの起動シーンのパス。未設定の場合は空</param>
 	/// <param name="playSourcePath">停止後に編集できる実行元シーン。なければ空</param>
 	/// <param name="canRevealPlayObject">選択中の物体が実行元シーンに存在するか</param>
-	/// <param name="lastPlayScenePath">直前に試遊したシーン。未保存なら空</param>
-	/// <param name="lastPlayCameraOverride">直前の試遊で指定したカメラ。通常の試遊なら0</param>
 	/// <param name="scriptToEdit">指定時は、再生中にユーザーが選んだスクリプトのパスを返す</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
@@ -65,8 +63,6 @@ class EditorPlayMode {
 	              const std::filesystem::path &startupScenePath = {},
 	              const std::filesystem::path &playSourcePath = {},
 	              bool canRevealPlayObject = false,
-	              const std::filesystem::path &lastPlayScenePath = {},
-	              SceneObjectId lastPlayCameraOverride = 0,
 	              std::filesystem::path *scriptToEdit = nullptr);
 
 	/// <summary>

@@ -60,8 +60,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               const std::filesystem::path &startupScenePath,
                                               const std::filesystem::path &playSourcePath,
                                               bool canRevealPlayObject,
-                                              const std::filesystem::path &lastPlayScenePath,
-                                              SceneObjectId lastPlayCameraOverride,
                                               std::filesystem::path *scriptToEdit) {
 	visible_ = false;
 	ready_ = false;
@@ -242,42 +240,22 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ui.Checkbox("Load Test Save", loadTestSave_);
 			ImGui::SetItemTooltip("Read the exported game's Editor test save at Play. Changes stay in memory.");
 
-			const auto drawPlayScene = [&](const char *label, Action requested,
-			                               const std::filesystem::path &path,
-			                               bool usesEditingScene,
-			                               bool usesLastCamera = false) {
+			if (!startupScenePath.empty()) {
 				std::error_code status;
-				const bool available = usesEditingScene ||
-				                       std::filesystem::is_regular_file(
-				                           PathUtils::ResolveFromExecutable(path), status);
-				ui.BeginDisabled(!available);
-				if (ui.MenuItem(label, nullptr, true)) {
-					action = requested;
+				const bool available =
+				    (!editingScenePath.empty() &&
+				     PathUtils::IsSameFile(startupScenePath, editingScenePath)) ||
+				    std::filesystem::is_regular_file(
+				        PathUtils::ResolveFromExecutable(startupScenePath), status);
+				if (ui.MenuItem("Play Startup Scene", nullptr, available)) {
+					action = Action::PLAY_STARTUP;
 				}
-				ui.EndDisabled();
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip |
 				                         ImGuiHoveredFlags_AllowWhenDisabled)) {
-					const auto name = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
-					const auto *tooltip = !available ? "Scene file is unavailable.\n%s"
-					                      : usesLastCamera ? "Play %s with the same camera as last time."
-					                                       : "Start a new play session in %s.";
-					ImGui::SetTooltip(tooltip, name.c_str());
+					ImGui::SetTooltip(available ? "Start a new play session in %s."
+					                            : "Scene file is unavailable.\n%s",
+					                  PathUtils::ToUtf8(startupScenePath).c_str());
 				}
-			};
-
-			if (!startupScenePath.empty()) {
-				drawPlayScene("Play Startup Scene", Action::PLAY_STARTUP, startupScenePath,
-				              !editingScenePath.empty() &&
-				                  PathUtils::IsSameFile(startupScenePath, editingScenePath));
-			}
-			const bool lastUsesEditingScene = lastPlayScenePath.empty() ||
-			    (!editingScenePath.empty() && PathUtils::IsSameFile(lastPlayScenePath, editingScenePath));
-			const bool lastUsesStartupScene = !lastPlayScenePath.empty() && !startupScenePath.empty() &&
-			    PathUtils::IsSameFile(lastPlayScenePath, startupScenePath);
-			if (lastPlayCameraOverride != 0 ||
-			    (!lastUsesEditingScene && !lastUsesStartupScene)) {
-				drawPlayScene("Play Last Scene", Action::PLAY_LAST_SCENE, lastPlayScenePath,
-				              lastUsesEditingScene, lastPlayCameraOverride != 0);
 			}
 
 			ImGui::EndPopup();

@@ -251,8 +251,7 @@ bool EditorScene::Update(float deltaTime) {
 	                                       playSelection_.GetCount() != 0,
 	                                   document_.GetFilePath(),
 	                                   project_.GetStartupScene(), sourceToOpen,
-	                                   canRevealPlayObject, lastPlayScenePath_,
-	                                   lastPlayCameraOverride_, &playScriptToEdit);
+	                                   canRevealPlayObject, &playScriptToEdit);
 	if (!playScriptToEdit.empty() && !IsBusy() && action == EditorAction::NONE) {
 		std::string error;
 		if (scriptEditorDialog_.ShowEdit(playScriptToEdit, error)) {
@@ -328,18 +327,12 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if ((playAction == EditorPlayMode::Action::PLAY ||
-	     playAction == EditorPlayMode::Action::PLAY_STARTUP ||
-	     playAction == EditorPlayMode::Action::PLAY_LAST_SCENE) &&
+	     playAction == EditorPlayMode::Action::PLAY_STARTUP) &&
 	    !IsBusy()) {
 		const auto path = playAction == EditorPlayMode::Action::PLAY_STARTUP
 		                      ? project_.GetStartupScene()
-		                  : playAction == EditorPlayMode::Action::PLAY_LAST_SCENE
-		                      ? lastPlayScenePath_
 		                      : std::filesystem::path{};
-		const bool replayLastScene = playAction == EditorPlayMode::Action::PLAY_LAST_SCENE;
-		const auto camera = replayLastScene ? lastPlayCameraOverride_
-		                                    : useRequestedCamera ? requestedCamera : 0;
-		StartPlay(path, camera, replayLastScene);
+		StartPlay(path, useRequestedCamera ? requestedCamera : 0);
 	}
 
 	const bool restartCurrentScene =

@@ -7,7 +7,6 @@ enum class EditorPlayAction {
 	NONE,
 	PLAY,
 	PLAY_STARTUP,
-	PLAY_LAST_SCENE,
 	RESTART,
 	RESTART_CURRENT_SCENE,
 	STOP,
