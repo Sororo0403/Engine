@@ -111,7 +111,6 @@ void AppendIssueDetails(std::string &report, const GameExportIssue &issue) {
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
                             const std::filesystem::path &projectRoot,
-                            const std::filesystem::path &lastExport,
                             const std::filesystem::path &windowSource) {
 	const bool resume = std::exchange(resumeDraft_, false) &&
 	                    windowSource.empty() &&
@@ -125,29 +124,20 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 		options.config.height = height_;
 	}
 	projectRoot_ = projectRoot;
-	lastSuccessfulWindow_.reset();
-	const auto &settingsSource = windowSource.empty() ? lastExport : windowSource;
-	if (!settingsSource.empty() && (!projectRoot.empty() || !windowSource.empty())) {
+	if (!windowSource.empty()) {
 		GameConfig previous;
 		std::string error;
-		if (previous.Load(settingsSource / L"game.json", error)) {
-			lastSuccessfulWindow_ = WindowSettings{
-			    std::move(previous.title), previous.width, previous.height};
+		if (previous.Load(windowSource / L"game.json", error)) {
+			options.config.title = std::move(previous.title);
+			options.config.width = previous.width;
+			options.config.height = previous.height;
 		}
-	}
-	if (!windowSource.empty() && lastSuccessfulWindow_) {
-		options.config.title = lastSuccessfulWindow_->title;
-		options.config.width = lastSuccessfulWindow_->width;
-		options.config.height = lastSuccessfulWindow_->height;
-	}
-	if (!windowSource.empty()) {
 		std::error_code status;
 		if (windowSource.is_absolute() &&
 		    PathUtils::IsValidFileName(windowSource.filename()) &&
 		    std::filesystem::is_directory(windowSource, status)) {
 			options.destination = windowSource;
 		}
-		lastSuccessfulWindow_.reset();
 	}
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();
@@ -534,17 +524,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	changed |= drawField(GameExportField::HEIGHT, [&] {
 		return ImGui::InputInt("Height", &height_);
 	});
-	if (lastSuccessfulWindow_) {
-		const auto &last = *lastSuccessfulWindow_;
-		ui.BeginDisabled(title_ == last.title && width_ == last.width && height_ == last.height);
-		if (ui.Button("Use Last Export Window Settings")) {
-			title_ = last.title;
-			width_ = last.width;
-			height_ = last.height;
-			changed = true;
-		}
-		ui.EndDisabled();
-	}
 	if (changed) {
 		error_.clear();
 		checkResultStale_ = !checkResult_.empty();

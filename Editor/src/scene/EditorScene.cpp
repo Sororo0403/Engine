@@ -2960,7 +2960,7 @@ void EditorScene::ShowGameExport(const std::filesystem::path &windowSource,
 		    isCurrentScene ? document_.GetFilePath() : startup;
 		if (exportDialog_.Show(std::move(options),
 		                       isCurrentScene && document_.IsModified(),
-		                       project_.GetRoot(), lastExport, windowSource)) {
+		                       project_.GetRoot(), windowSource)) {
 			if (returningToCheck && !isCurrentScene && document_.IsModified() &&
 			    !document_.GetFilePath().empty()) {
 				// 参照先シーンは保存済みの内容を検査するので、保存の選択を先に表示する。
