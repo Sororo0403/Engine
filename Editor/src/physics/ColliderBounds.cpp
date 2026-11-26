@@ -41,16 +41,6 @@ bool GetCorners(const AxisAlignedBox &box,
 }
 } // namespace
 
-bool ColliderBounds::GetFrameBounds(const SceneObject &object,
-                                    std::array<DirectX::XMFLOAT3, 8> &corners) {
-	AxisAlignedBox box;
-
-	return object.parentId == 0 && object.collider &&
-	       ColliderUtils::GetWorldBounds(*object.collider, object.transform,
-	                                     box) &&
-	       GetCorners(box, corners);
-}
-
 bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
                             std::span<const SceneObjectId> selected,
                             Mode mode) const {
@@ -81,60 +71,6 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 	default:
 		return false;
 	}
-}
-
-bool ColliderBounds::BuildLines(const SceneObject &object, Lines &lines) const {
-	if (object.parentId != 0 || !object.collider ||
-	    object.collider->shape != Collider::Shape::BOX) {
-		return false;
-	}
-
-	AxisAlignedBox box;
-
-	if (!ColliderUtils::GetWorldBounds(*object.collider, object.transform,
-	                                   box)) {
-		return false;
-	}
-
-	return BuildLines(box, lines);
-}
-
-bool ColliderBounds::BuildLines(const AxisAlignedBox &box, Lines &lines) const {
-	std::array<DirectX::XMFLOAT3, 8> corners;
-
-	if (!GetCorners(box, corners)) {
-		return false;
-	}
-
-	Lines result;
-	std::size_t index = 0;
-
-	for (unsigned int i = 0; i < 8; ++i) {
-		for (unsigned int axis : {1u, 2u, 4u}) {
-			if ((i & axis) == 0) {
-				result[index++] = {corners[i], corners[i | axis], color_};
-			}
-		}
-	}
-
-	lines = result;
-	return true;
-}
-
-bool ColliderBounds::Update(SceneRenderer &renderer,
-                            const SceneObject &object) const {
-	if (object.parentId != 0 || !object.collider)
-		return true;
-	DirectX::XMFLOAT4X4 matrix;
-	DirectX::XMStoreFloat4x4(&matrix,
-	                         TransformUtils::MakeWorldMatrix(object.transform));
-	std::vector<DebugLine> lines;
-	if (!BuildLines(*object.collider, matrix, lines))
-		return false;
-	for (const auto &line : lines)
-		if (!renderer.AddDebugLine(line))
-			return false;
-	return true;
 }
 
 bool ColliderBounds::GetFrameBounds(const Scene &scene, SceneObjectId id,
