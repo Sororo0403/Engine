@@ -39,13 +39,10 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	std::optional<std::size_t> requested;
-	std::optional<std::size_t> savedIndex;
-	bool savedIsCurrent = false;
 	bool afterCurrent = false;
 	ImGui::BeginDisabled(!enabled || history.IsEditing());
 	const bool drawStates = ImGui::BeginChild(
-	    "HistoryStates", {0.0f, -ImGui::GetFrameHeightWithSpacing()},
-	    ImGuiChildFlags_Borders);
+	    "HistoryStates", {0.0f, 0.0f}, ImGuiChildFlags_Borders);
 
 	if (drawStates) {
 		for (std::size_t i = 0; i < history.GetStateCount(); ++i) {
@@ -53,11 +50,6 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 
 			if (!state) {
 				continue;
-			}
-
-			if (state->saved) {
-				savedIndex = i;
-				savedIsCurrent = state->current;
 			}
 
 			if (afterCurrent) {
@@ -101,17 +93,6 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 
 	ImGui::EndChild();
 	ImGui::EndDisabled();
-
-	if (savedIndex) {
-		ui.BeginDisabled(!enabled || history.IsEditing() || savedIsCurrent);
-		if (ui.Button("Go to Saved State")) {
-			requested = savedIndex;
-		}
-		ui.EndDisabled();
-		ImGui::SetItemTooltip("Undo or redo to the last saved state.");
-	} else if (drawStates) {
-		ImGui::TextDisabled("The saved state is outside this history.");
-	}
 
 	ImGui::End();
 	return requested;
