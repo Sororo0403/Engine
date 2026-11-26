@@ -825,10 +825,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ShellUtils::RevealLocationInExplorer(run.launchFailurePath, error_);
 		}
 		ImGui::SetItemTooltip("%s", path.c_str());
-		ui.SameLine();
-		if (ui.Button("Copy Startup Error Path")) {
-			ImGui::SetClipboardText(path.c_str());
-		}
 	}
 
 	const bool destinationFailed = !run.destinationFailurePath.empty();
@@ -1015,10 +1011,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			ShellUtils::RevealLocationInExplorer(run.testSavePath, error_);
 		}
 		ImGui::SetItemTooltip("%s", path.c_str());
-		ui.SameLine();
-		if (ui.Button("Copy Test Save Path")) {
-			ImGui::SetClipboardText(path.c_str());
-		}
 	}
 
 	if (!run.status.empty() && ui.Button("Copy Run Report")) {
