@@ -942,13 +942,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	}
 	ui.EndDisabled();
 
-	if (run.process.IsTracking()) {
-		ui.SameLine();
-		if (ui.Button("Close Running Game") && run.process.RequestClose(error_)) {
-			run.status = "Requested game exit. Waiting for the process to finish.";
-		}
-	}
-
 	ui.SameLine();
 	const auto *logButton = run.showLog ? "Hide Game Log"
 	                       : run.launchFailed ? "View Previous Game Log"

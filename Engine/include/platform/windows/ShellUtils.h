@@ -35,11 +35,6 @@ class ExecutableProcess {
 	bool Poll(std::optional<std::uint32_t> &exitCode, std::string &error) const;
 
 	/// <summary>
-	/// ゲームのウィンドウへ通常の終了を要求する。終了結果はPollで確認する
-	/// </summary>
-	bool RequestClose(std::string &error) const;
-
-	/// <summary>
 	/// 起動したプロセスの参照を保持しているか確認する
 	/// </summary>
 	bool IsTracking() const { return handle_ != nullptr; }
@@ -50,7 +45,6 @@ class ExecutableProcess {
 	void Reset();
 
   private:
-	void *FindRunningWindow(std::string &error) const;
 	void *handle_ = nullptr;
 };
 

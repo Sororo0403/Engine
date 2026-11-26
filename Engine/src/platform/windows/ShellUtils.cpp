@@ -12,26 +12,6 @@
 #include <wrl/client.h>
 
 namespace {
-struct ProcessWindow {
-	DWORD processId;
-	HWND window = nullptr;
-};
-
-/// <summary>
-/// 指定プロセスの表示中のメインウィンドウを探す
-/// </summary>
-BOOL CALLBACK FindProcessWindow(HWND window, LPARAM parameter) {
-	auto &target = *reinterpret_cast<ProcessWindow *>(parameter);
-	DWORD processId = 0;
-	GetWindowThreadProcessId(window, &processId);
-	if (processId != target.processId || !IsWindowVisible(window) ||
-	    GetWindow(window, GW_OWNER)) {
-		return TRUE;
-	}
-	target.window = window;
-	return FALSE;
-}
-
 /// <summary>
 /// シェルへ渡す参照を、存在する絶対パスへ揃える
 /// </summary>
@@ -256,42 +236,6 @@ bool ShellUtils::ExecutableProcess::Poll(
 		return false;
 	}
 	exitCode = code;
-	error.clear();
-	return true;
-}
-
-void *ShellUtils::ExecutableProcess::FindRunningWindow(std::string &error) const {
-	std::optional<std::uint32_t> exitCode;
-	if (!Poll(exitCode, error)) {
-		return nullptr;
-	}
-	if (exitCode) {
-		error = "The game process has already exited.";
-		return nullptr;
-	}
-
-	ProcessWindow target{GetProcessId(handle_)};
-	if (target.processId == 0) {
-		error = "Could not identify the running game process.";
-		return nullptr;
-	}
-	EnumWindows(FindProcessWindow, reinterpret_cast<LPARAM>(&target));
-	if (!target.window) {
-		error = "The running game has no visible window yet.";
-	}
-	return target.window;
-}
-
-bool ShellUtils::ExecutableProcess::RequestClose(std::string &error) const {
-	const auto window = static_cast<HWND>(FindRunningWindow(error));
-	if (!window) {
-		return false;
-	}
-	if (!PostMessageW(window, WM_CLOSE, 0, 0)) {
-		error = std::format("Could not request game exit (Windows error {}).",
-		                    GetLastError());
-		return false;
-	}
 	error.clear();
 	return true;
 }
