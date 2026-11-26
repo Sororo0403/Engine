@@ -23,7 +23,6 @@
 #include "dialogs/TextureImportDialog.h"
 #include "files/SceneRecovery.h"
 #include "gameplay/EditorPlayMode.h"
-#include "gameplay/RespawnPreview.h"
 #include "gizmo/TransformGizmo.h"
 #include "graphics/camera/CameraSettings.h"
 #include "history/AlignmentAxis.h"
@@ -923,7 +922,6 @@ class EditorScene final : public IScene {
 	bool showGrid_ = true;
 	bool showSelectionBounds_ = true;
 	bool showCameraGuides_ = true;
-	bool showRespawnGuides_ = true;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
@@ -1070,7 +1068,6 @@ class EditorScene final : public IScene {
 	ObjectMarkers objectMarkers_;
 	ColliderBounds colliderBounds_;
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
-	RespawnPreview respawnPreview_;
 	CameraFrustum cameraFrustum_;
 
 	SceneGrid sceneGrid_;

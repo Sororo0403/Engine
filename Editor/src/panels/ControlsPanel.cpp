@@ -1332,28 +1332,13 @@ void ControlsPanel::Draw() {
 	         "preserved. Follow Camera needs a target, a view not straight up "
 	         "or down, and offsets within its allowed range."},
 
-	        {"View > Camera Guides / Respawn Guides",
-	         "Toggle selected Camera frustums, or Respawn "
-	         "position and fall-height markers. Each setting is saved for "
-	         "the next Editor session. These settings affect only Scene "
-	         "guides; they do not change Game rendering or gameplay."},
+	        {"View > Camera Guides",
+	         "Toggle the frustums of selected cameras in the Scene view. This "
+	         "setting is saved for the next Editor session."},
 	        {"Selected Camera in Scene",
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
-
-
-	        {"Selected Respawn in Scene",
-	         "The cross marks the recovery position and the wire box shows "
-	         "the character's collider there, including rotation and scale. "
-	         "Cyan means the recovery position is on the safe side of the Fall Boundary, has "
-	         "valid Character Controller settings and is clear of solid "
-	         "colliders; red means it cannot be used. Hidden colliders count "
-	         "and the character's own collider is ignored. Face contact is "
-	         "allowed. Invalid shapes show only the red position marker. "
-	         "The orange plane marks Fall Boundary across the whole scene, "
-	         "not only inside the square. These guides check the recovery "
-	         "position, not every condition required for Play."},
 
 	        {"Edit / Hierarchy > Snap Positions to Grid",
 	         "Round each selected object's world position using Scene > Snap "

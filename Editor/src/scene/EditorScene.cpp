@@ -126,7 +126,6 @@ bool EditorScene::Initialize() {
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	showCameraGuides_ = preferences_.showCameraGuides;
-	showRespawnGuides_ = preferences_.showRespawnGuides;
 	playMode_.SetMaximizeOnPlay(preferences_.maximizeGameOnPlay);
 	playMode_.SetStartPaused(preferences_.startPlayPaused);
 	showObjectMarkers_ = preferences_.showObjectMarkers;
@@ -1526,14 +1525,6 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	for (const SceneObjectId id : selection_.GetIds()) {
-		if (const auto *object = scene.FindObject(id);
-		    showRespawnGuides_ && object &&
-		    !respawnPreview_.Update(renderer_, scene, id)) {
-			Logger::Error(
-			    "EditorScene: 落下復帰のプレビューを登録できませんでした。");
-			return false;
-		}
-
 		if (showCameraGuides_ &&
 		    !cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
 		                           exportConfig_.height)) {
@@ -1597,7 +1588,6 @@ void EditorScene::Finalize() {
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
 		current.showCameraGuides = showCameraGuides_;
-		current.showRespawnGuides = showRespawnGuides_;
 		current.maximizeGameOnPlay = playMode_.GetMaximizeOnPlay();
 		current.startPlayPaused = playMode_.GetStartPaused();
 		current.showObjectMarkers = showObjectMarkers_;
@@ -2289,8 +2279,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
 		                !IsBusy());
 		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
-		                !IsBusy());
-		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());

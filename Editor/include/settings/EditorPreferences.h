@@ -27,7 +27,6 @@ class EditorPreferences {
 	bool showGrid = true;
 	bool showSelectionBounds = true;
 	bool showCameraGuides = true;
-	bool showRespawnGuides = true;
 	bool maximizeGameOnPlay = false;
 	bool startPlayPaused = false;
 	bool searchProjectScenes = false;

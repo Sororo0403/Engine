@@ -596,7 +596,6 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
 		// 補助線の表示設定がない旧ファイルでは、従来どおり表示する。
 		loaded.showCameraGuides = json.value("showCameraGuides", true);
-		loaded.showRespawnGuides = json.value("showRespawnGuides", true);
 		loaded.maximizeGameOnPlay = json.value("maximizeGameOnPlay", false);
 		loaded.startPlayPaused = json.value("startPlayPaused", false);
 		loaded.searchProjectScenes = json.value("searchProjectScenes", false);
@@ -1200,7 +1199,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
 		    {"showCameraGuides", showCameraGuides},
-		    {"showRespawnGuides", showRespawnGuides},
 		    {"maximizeGameOnPlay", maximizeGameOnPlay},
 		    {"startPlayPaused", startPlayPaused},
 		    {"searchProjectScenes", searchProjectScenes},
@@ -1288,7 +1286,6 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       showCameraGuides == other.showCameraGuides &&
-	       showRespawnGuides == other.showRespawnGuides &&
 	       maximizeGameOnPlay == other.maximizeGameOnPlay &&
 	       startPlayPaused == other.startPlayPaused &&
 	       searchProjectScenes == other.searchProjectScenes &&
