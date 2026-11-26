@@ -753,10 +753,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ShellUtils::RevealLocationInExplorer(issue.assetPath, error_);
 					}
 					ImGui::SetItemTooltip("%s", assetPath.c_str());
-					ui.SameLine();
-					if (ui.Button("Copy Asset Path")) {
-						ImGui::SetClipboardText(assetPath.c_str());
-					}
 				}
 				if (!issue.locationPath.empty()) {
 					const auto path = PathUtils::ToUtf8(issue.locationPath);
@@ -765,10 +761,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ShellUtils::RevealLocationInExplorer(issue.locationPath, error_);
 					}
 					ImGui::SetItemTooltip("%s", path.c_str());
-					ui.SameLine();
-					if (ui.Button("Copy Path")) {
-						ImGui::SetClipboardText(path.c_str());
-					}
 				}
 				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
@@ -823,19 +815,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			ImGui::SetClipboardText(report.c_str());
 		}
 		ImGui::SetItemTooltip("Copy the result summary and all issues, including those hidden by search.");
-		if (!issueFilter_.empty()) {
-			ui.SameLine();
-			ui.BeginDisabled(matching.empty());
-			if (ui.Button("Copy Matching Issues")) {
-				std::string report;
-				for (const auto i : matching) {
-					AppendIssueDetails(report, checkIssues_[i]);
-				}
-				ImGui::SetClipboardText(report.c_str());
-			}
-			ImGui::SetItemTooltip("Copy matching issues from all pages.");
-			ui.EndDisabled();
-		}
 	} else if (!checkResult_.empty() && !checkResultStale_) {
 		if (ImGui::BeginChild("ExportCheckSummary",
 		                      {0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing()})) {
