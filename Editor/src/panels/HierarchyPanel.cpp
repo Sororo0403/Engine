@@ -130,15 +130,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	    "Search by name, tag:Player for an exact tag, or id:42 for an exact ID.");
 
 	if (ImGui::BeginPopup("HierarchyOptions")) {
-		ui.BeginDisabled(filter_.text.empty());
-
-		if (ui.MenuItem("Clear Search", nullptr, true)) {
-			// 検索だけを解除し、範囲選択の基準は保持する
-			filter_.text.clear();
-		}
-
-		ui.EndDisabled();
-
 		ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
 		if (previousFilters_) {
 			if (ui.MenuItem("Restore Filters", nullptr, true)) {

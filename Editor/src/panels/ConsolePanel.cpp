@@ -155,15 +155,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	}
 	ImGui::SetItemTooltip("Show messages since the most recent Play or Restart attempt.");
 	ui.EndDisabled();
-	ui.InputText("Search", filter_);
+	const bool clearedSearch = ui.InputText("Search", filter_) && filter_.empty();
 	ImGui::SetItemTooltip("Search message text or paste a source file path.");
-	ui.SameLine();
-	ui.BeginDisabled(filter_.empty());
-	const bool clearedSearch = ui.Button("Clear Search");
-	ui.EndDisabled();
-	if (clearedSearch) {
-		filter_.clear();
-	}
 	auto searchPath = PathUtils::FromPathSearch(filter_);
 	Logger::ReadEntries(revision_, entries_);
 	const auto latestPlayError = Logger::GetLatestPlayError();

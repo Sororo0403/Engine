@@ -1122,21 +1122,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		constexpr std::array levelLabels{"All Messages", "Warnings and Errors", "Errors Only"};
 		auto levelIndex = static_cast<int>(run.minimumLogLevel);
 		ImGui::SetNextItemWidth(190.0f);
-		bool changedFilter = ImGui::Combo("Log Level", &levelIndex, levelLabels.data(),
+		const bool changedLevel = ImGui::Combo("Log Level", &levelIndex, levelLabels.data(),
 		                                  static_cast<int>(levelLabels.size()));
 		run.minimumLogLevel = static_cast<LogLevel>(levelIndex);
 		ImGui::SetItemTooltip("Filter the log page and search results by severity.");
-		changedFilter |= ui.InputText("Search Log Page", run.logFilter);
+		const bool changedSearch = ui.InputText("Search Log Page", run.logFilter);
 		ImGui::SetItemTooltip("Filter the current page by text or paste an absolute file path.");
-		ui.SameLine();
-		const bool canClearSearch = !run.logFilter.empty() || run.lastMatch.has_value();
-		ui.BeginDisabled(!canClearSearch);
-		if (ui.Button("Clear Search") && canClearSearch) {
-			run.logFilter.clear();
-			run.lastMatch.reset();
+		if (changedSearch && run.logFilter.empty()) {
 			error_.clear();
 		}
-		ui.EndDisabled();
+		const bool changedFilter = changedLevel || changedSearch;
 		if (changedFilter) {
 			run.lastMatch.reset();
 		}
