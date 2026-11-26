@@ -591,8 +591,19 @@ bool InspectorPanel::Draw(
 		assetRevealPath_ = audioInspector_.GetRevealRequest();
 
 	std::optional<std::optional<AnimationClipComponent>> animationClipChange;
-	if (object->animationClip && object->animationClip->usesAsset &&
-	    ui.CollapsingHeader("Animation Player")) {
+	bool animationClipOpen = false;
+	if (object->animationClip) {
+		const bool usesAsset = object->animationClip->usesAsset;
+		animationClipOpen = ui.CollapsingHeader(
+		    usesAsset ? "Animation Player" : "Legacy Animation Clip");
+		ImGui::SetItemTooltip("Right-click for animation component actions.");
+		if (ImGui::BeginPopupContextItem("AnimationClipActions")) {
+			if (ui.MenuItem(usesAsset ? "Remove Animation Player" : "Remove Animation Clip"))
+				animationClipChange.emplace(std::nullopt);
+			ImGui::EndPopup();
+		}
+	}
+	if (animationClipOpen && object->animationClip->usesAsset) {
 		auto player = *object->animationClip;
 		const auto label = player.asset.empty() ? std::string("(None)")
 		                                        : PathUtils::ToUtf8(player.asset.filename());
@@ -702,12 +713,9 @@ bool InspectorPanel::Draw(
 			}
 			ImGui::TreePop();
 		}
-		if (ui.Button("Remove Animation Player"))
-			animationClipChange.emplace(std::nullopt);
-		else if (player != *object->animationClip)
+		if (!animationClipChange && player != *object->animationClip)
 			animationClipChange.emplace(std::move(player));
-	} else if (object->animationClip && !object->animationClip->usesAsset &&
-	           ui.CollapsingHeader("Legacy Animation Clip")) {
+	} else if (animationClipOpen) {
 		ImGui::Text("%.2f s  /  %zu tracks", object->animationClip->duration,
 		            object->animationClip->tracks.size());
 		if (ui.Button("Edit Timeline...")) {
@@ -744,9 +752,6 @@ bool InspectorPanel::Draw(
 				ui.CloseCurrentPopup();
 			ui.EndPopup();
 		}
-		ui.SameLine();
-		if (ui.Button("Remove Animation Clip"))
-			animationClipChange.emplace(std::nullopt);
 	}
 
 	std::optional<std::optional<DirectionalLightComponent>> directionalLightChange;
