@@ -595,7 +595,6 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		loaded.showGrid = json.at("showGrid").get<bool>();
 		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
 		loaded.maximizeGameOnPlay = json.value("maximizeGameOnPlay", false);
-		loaded.startPlayPaused = json.value("startPlayPaused", false);
 		loaded.searchProjectScenes = json.value("searchProjectScenes", false);
 		loaded.showObjectMarkers = json.value("showObjectMarkers", true);
 
@@ -1194,7 +1193,6 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
 		    {"maximizeGameOnPlay", maximizeGameOnPlay},
-		    {"startPlayPaused", startPlayPaused},
 		    {"searchProjectScenes", searchProjectScenes},
 		    {"showObjectMarkers", showObjectMarkers},
 		    {"colliderDisplay",
@@ -1278,7 +1276,6 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       maximizeGameOnPlay == other.maximizeGameOnPlay &&
-	       startPlayPaused == other.startPlayPaused &&
 	       searchProjectScenes == other.searchProjectScenes &&
 	       showObjectMarkers == other.showObjectMarkers &&
 	       snapping == other.snapping && operation == other.operation &&

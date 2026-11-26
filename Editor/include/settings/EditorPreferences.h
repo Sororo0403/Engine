@@ -27,7 +27,6 @@ class EditorPreferences {
 	bool showGrid = true;
 	bool showSelectionBounds = true;
 	bool maximizeGameOnPlay = false;
-	bool startPlayPaused = false;
 	bool searchProjectScenes = false;
 	bool showObjectMarkers = true;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;

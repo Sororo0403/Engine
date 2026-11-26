@@ -126,7 +126,6 @@ bool EditorScene::Initialize() {
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	playMode_.SetMaximizeOnPlay(preferences_.maximizeGameOnPlay);
-	playMode_.SetStartPaused(preferences_.startPlayPaused);
 	showObjectMarkers_ = preferences_.showObjectMarkers;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
@@ -1535,7 +1534,6 @@ void EditorScene::Finalize() {
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
 		current.maximizeGameOnPlay = playMode_.GetMaximizeOnPlay();
-		current.startPlayPaused = playMode_.GetStartPaused();
 		current.showObjectMarkers = showObjectMarkers_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();

@@ -240,7 +240,6 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ImGui::OpenPopup("GameOptions");
 		if (ImGui::BeginPopup("GameOptions")) {
 			ui.Checkbox("Maximize on Play", maximizeOnPlay_);
-			ui.Checkbox("Start Paused", startPaused_);
 			ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
 			ui.Checkbox("Load Test Save", loadTestSave_);
 			ImGui::SetItemTooltip("Read the exported game's Editor test save at Play. Changes stay in memory.");
@@ -401,7 +400,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	session_.SetLegacyLighting(config.lighting);
 	session_.SetRigidBodyGravity(config.rigidBodyGravity);
 	if (!session_.Start(scene, error, fallbackPose, invalidObject,
-	                    cameraOverride, startPaused_, std::move(initialScriptData))) {
+	                    cameraOverride, std::move(initialScriptData))) {
 		return false;
 	}
 

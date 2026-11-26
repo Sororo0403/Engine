@@ -12,7 +12,7 @@
 bool EditorPlaySession::Start(const Scene &scene, std::string &error,
                               const CameraPose &fallbackPose,
                               SceneObjectId *invalidObject,
-                              SceneObjectId cameraOverride, bool startPaused,
+                              SceneObjectId cameraOverride,
                               std::string initialScriptData) {
 	if (invalidObject) {
 		*invalidObject = 0;
@@ -71,9 +71,6 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		initialFallback_ = fallbackPose;
 		initialScriptData_ = std::move(initialScriptData);
 		clock_.Reset();
-		if (startPaused) {
-			clock_.TogglePause();
-		}
 		elapsedSeconds_ = 0.0;
 		simulationFrameCount_ = 0;
 		firstFrame_ = true;
