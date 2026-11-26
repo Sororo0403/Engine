@@ -111,12 +111,6 @@ class AssetsPanel {
 	bool IsPrefabCreateRequested() const;
 
 	/// <summary>
-	/// このフレームに、ゲーム設定の下書きへ読み込むことを要求したパスを取得する
-	/// </summary>
-	/// <returns>設定ファイル。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
-	const std::filesystem::path &GetGameSettingsRequest() const;
-
-	/// <summary>
 	/// このフレームに再読み込みを要求したモデルを取得する
 	/// </summary>
 	/// <returns>モデルの相対パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
@@ -300,7 +294,6 @@ class AssetsPanel {
 	std::filesystem::path selectionAnchor_;
 	std::filesystem::path sceneOpenPath_;
 	std::filesystem::path scenePlayPath_;
-	std::filesystem::path gameSettingsPath_;
 	std::filesystem::path sceneAppendPath_;
 	std::filesystem::path prefabAppendPath_;
 	std::filesystem::path modelReloadPath_;

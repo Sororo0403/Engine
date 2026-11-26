@@ -566,7 +566,7 @@ bool EditorScene::Update(float deltaTime) {
 	if (consoleScript.editInput && replay && consoleScript.logId == replay->logId &&
 	    !replay->inputAction.empty() && !playMode_.IsPlaying()) {
 		FinishEdit();
-		gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {}, replay->inputAction);
+		gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), replay->inputAction);
 		stage_ = DialogStage::EDIT_CONSOLE_PLAY_INPUT;
 		UpdateDialogs();
 		return true;
@@ -881,22 +881,14 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
-		const auto &requestedSettings = assetsPanel_.GetGameSettingsRequest();
 		if (!checkedRequest.inputAction.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FinishEdit();
-			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(),
 			                         std::move(checkedRequest.inputAction));
 			stage_ = DialogStage::GAME_SETTINGS;
 		}
-		if (!requestedSettings.empty() && !IsBusy() &&
-		    action == EditorAction::NONE &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			pendingOpenPath_ = requestedSettings;
-			action = EditorAction::LOAD_GAME_SETTINGS;
-		}
-
 		const auto &inspectorScript = inspectorPanel_.GetScriptEditRequest();
 		const auto &scriptEdit = !checkedRequest.scriptPath.empty() ? checkedRequest.scriptPath
 		                         : !consoleScript.path.empty() ? consoleScript.path
@@ -2618,7 +2610,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::OPEN_RECOVERY_PROJECT ||
-	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
 	      action == EditorAction::RESTORE_RECOVERY) &&
 	     (playMode_.IsPlaying() || IsBusy()))) {
@@ -2726,13 +2717,9 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 
 	case EditorAction::GAME_SETTINGS:
-	case EditorAction::LOAD_GAME_SETTINGS:
 		gameSettingsDialog_.Show(exportConfig_,
 		                         assets_.GetRootDirectory() /
-		                             assetsPanel_.GetOpenDirectory(),
-		                         action == EditorAction::LOAD_GAME_SETTINGS
-		                             ? pendingOpenPath_
-		                             : std::filesystem::path{});
+		                             assetsPanel_.GetOpenDirectory());
 		stage_ = DialogStage::GAME_SETTINGS;
 		return;
 	case EditorAction::EXPORT_GAME:
@@ -5427,7 +5414,7 @@ void EditorScene::UpdateDialogs() {
 				exportResultDialog_.SetSceneSources(root, preferences_.ExportSceneSources(root, directory, id), id);
 				stage_ = DialogStage::EXPORT_RESULT;
 			} else if (result == GameExportResultAction::EDIT_INPUT_BINDING) {
-				gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+				gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(),
 				                         exportResultDialog_.GetRequestedInputAction());
 				stage_ = DialogStage::EDIT_EXPORT_RESULT_INPUT;
 			} else if (result == GameExportResultAction::OPEN_SOURCE_SCENE) {
@@ -5728,7 +5715,7 @@ void EditorScene::UpdateDialogs() {
 			return;
 		}
 		if (result == GameExportResult::EDIT_ISSUE_INPUT) {
-			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(),
 			                         exportDialog_.GetSelectedIssue().inputAction);
 			stage_ = DialogStage::EDIT_EXPORT_INPUT;
 			return;
@@ -6065,7 +6052,7 @@ void EditorScene::UpdateDialogs() {
 
 			if (!errorInputAction_.empty() && errorReplayPath_ && !playMode_.IsPlaying()) {
 				if (ui_.Button("Edit Input Binding")) {
-					gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+					gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(),
 					                         errorInputAction_);
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();

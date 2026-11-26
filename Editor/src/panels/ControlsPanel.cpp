@@ -380,20 +380,10 @@ void ControlsPanel::Draw() {
 	         "list refreshes when you return to Editor. Use Refresh to update "
 	         "the list after other external changes. For moves and renames "
 	         "that need to update existing references, use the Assets panel."},
-	        {"Assets > Game Settings",
-	         "Files named *.settings.json appear in Game Settings. Select a "
-	         "file and use Load Game Settings, double-click it or use its "
-	         "context menu to open a draft. Apply adopts its title, "
-	         "dimensions, "
-	         "keys, movement basis and lighting; Cancel keeps applied "
-	         "settings. "
-	         "Scene data, selection, Inspector locks and undo history are "
-	         "kept. "
-	         "Malformed files show an error without applying partial values. "
-	         "Saving writes only after explicit overwrite confirmation. The "
-	         "list refreshes when a dialog that saved a configuration closes. "
-	         "Other JSON names remain available through Load Game "
-	         "Configuration."},
+	        {"Game Settings > Load Game Configuration",
+	         "Open a game configuration file as a draft. Apply adopts its "
+	         "settings. Malformed files show an error before applying values. "
+	         "Files named *.settings.json are listed in Assets."},
 	        {"Game Settings > Save Game Configuration",
 	         "Save the valid draft to a game configuration JSON without "
 	         "exporting "

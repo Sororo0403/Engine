@@ -211,7 +211,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
-	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -374,7 +373,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	exportCheckRequested_ = false;
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
-	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -1073,10 +1071,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					sceneOpenPath_ = assetPath;
 				}
 
-				if (assetType == AssetType::GAME_SETTINGS && canEditAssets &&
-				    doubleClicked) {
-					gameSettingsPath_ = assetPath;
-				}
 
 				if (assetType == AssetType::TEXTURE && canSetTexture &&
 				    textureSlot_ >= 0 && doubleClicked) {
@@ -1155,10 +1149,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					modelReloadPath_ = assetPath;
 				}
 
-				if (assetType == AssetType::GAME_SETTINGS &&
-				    ui.MenuItem("Load Game Settings", nullptr, canEditAssets)) {
-					gameSettingsPath_ = assetPath;
-				}
 
 				ImGui::EndPopup();
 			}
@@ -1412,14 +1402,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				ui.EndDisabled();
-			} else if (selectedType == AssetType::GAME_SETTINGS) {
-				ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
-
-				if (ui.MenuItem("Load Game Settings", nullptr, true)) {
-					gameSettingsPath_ = selectedPath_;
-				}
-
-				ui.EndDisabled();
 			}
 
 		}
@@ -1474,7 +1456,6 @@ void AssetsPanel::Clear() {
 	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
-	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	modelReloadPath_.clear();
@@ -1584,10 +1565,6 @@ bool AssetsPanel::IsPrefabCreateRequested() const {
 
 const std::filesystem::path &AssetsPanel::GetSceneAppendRequest() const {
 	return sceneAppendPath_;
-}
-
-const std::filesystem::path &AssetsPanel::GetGameSettingsRequest() const {
-	return gameSettingsPath_;
 }
 
 bool AssetsPanel::IsAudioImportRequested() const {

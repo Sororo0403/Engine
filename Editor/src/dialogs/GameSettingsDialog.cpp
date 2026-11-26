@@ -11,7 +11,6 @@
 
 void GameSettingsDialog::Show(const GameConfig &config,
                               const std::filesystem::path &directory,
-                              const std::filesystem::path &configuration,
                               std::string inputAction) {
 	config_ = config;
 	title_ = config.title;
@@ -33,22 +32,12 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	error_.clear();
 	failedProjectFile_.clear();
 	locationError_.clear();
-	source_ = configuration;
+	source_.clear();
 	lastSavedPath_.clear();
 	destination_ = directory / L"Game.settings.json";
 	saving_ = false;
 	opening_ = true;
 	selecting_ = false;
-
-	if (!source_.empty()) {
-		try {
-			source_ = PathUtils::ResolveFromExecutable(source_);
-			destination_ = source_;
-			LoadConfiguration(source_);
-		} catch (const std::exception &error) {
-			error_ = error.what();
-		}
-	}
 }
 
 void GameSettingsDialog::Reopen(std::string error, std::filesystem::path projectFile) {
