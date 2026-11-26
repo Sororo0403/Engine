@@ -2,7 +2,6 @@
 #include "assets/AssetDatabase.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
-#include "platform/windows/ShellUtils.h"
 #include <exception>
 #include <imgui.h>
 
@@ -45,13 +44,6 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 		picker_.ShowImportSource(options_.source, FileDialogFilter::MODEL);
 		selecting_ = true;
 	}
-
-	ui.SameLine();
-	ui.BeginDisabled(options_.source.empty());
-	if (ui.Button("Show Source in Explorer")) {
-		ShellUtils::RevealLocationInExplorer(options_.source, error_);
-	}
-	ui.EndDisabled();
 
 	ui.Text(PathUtils::ToUtf8(options_.source));
 	ui.Text("Source Folder");
