@@ -15,26 +15,6 @@ namespace {
 constexpr std::size_t kIssuesPerPage = 25;
 
 /// <summary>
-/// 配布前検査の結果から入力欄へ移動するボタンの表示名を返す
-/// </summary>
-const char *EditFieldLabel(GameExportField field) {
-	switch (field) {
-	case GameExportField::OUTPUT_FOLDER:
-		return "Edit Output Folder";
-	case GameExportField::TITLE:
-		return "Edit Game Title";
-	case GameExportField::WIDTH:
-		return "Edit Width";
-	case GameExportField::HEIGHT:
-		return "Edit Height";
-	case GameExportField::STARTUP_SCENE:
-	case GameExportField::NONE:
-		return nullptr;
-	}
-	return nullptr;
-}
-
-/// <summary>
 /// 出力欄の入力を読み取り、ルート以外の末尾の区切りを取り除く
 /// </summary>
 std::filesystem::path ReadDestination(const std::string &input) {
@@ -734,10 +714,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ShellUtils::RevealLocationInExplorer(issue.locationPath, error_);
 					}
 					ImGui::SetItemTooltip("%s", path.c_str());
-				}
-				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
-					selectedIssue_ = i;
-					focusField_ = issue.field;
 				}
 				if (issue.field == GameExportField::STARTUP_SCENE &&
 				    !projectRoot_.empty() && ui.Button("Choose Replacement Startup Scene...")) {
