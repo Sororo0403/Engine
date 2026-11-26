@@ -31,11 +31,6 @@ class RecentScenes {
 	void Clear();
 
 	/// <summary>
-	/// 存在しないシーンの履歴だけを取り除く。読み取りエラーの項目は保持する
-	/// </summary>
-	void RemoveMissing();
-
-	/// <summary>
 	/// 移動前に見つからず、移動先で見つかるプロジェクト内シーンの履歴を更新する
 	/// </summary>
 	void FollowProjectMove(const std::filesystem::path &previousRoot,

@@ -36,14 +36,6 @@ void RecentScenes::Clear() {
 	paths_.clear();
 }
 
-void RecentScenes::RemoveMissing() {
-	std::erase_if(paths_, [](const auto &path) {
-		std::error_code error;
-		return std::filesystem::status(path, error).type() ==
-		       std::filesystem::file_type::not_found;
-	});
-}
-
 void RecentScenes::FollowProjectMove(const std::filesystem::path &previousRoot,
                                      const std::filesystem::path &root) {
 	namespace fs = std::filesystem;
