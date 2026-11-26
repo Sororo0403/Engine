@@ -1481,9 +1481,8 @@ void ControlsPanel::Draw() {
 	         "include unsaved changes to a linked scene."},
 	        {"Export Result > Source Scenes",
 	         "Open a scene from the current project's export in the Editor. "
-	         "Use File > Return to Export Result to see the same logs, or "
-	         "File > New Export from Result to prepare a new output folder "
-	         "with the previous window settings."},
+	         "Use File > Return to Export Result to see its logs or choose "
+	         "New Export there to reuse its window settings."},
 	        {"Export Result > Switch Export",
 	         "After exporting again from a result, switch between the two "
 	         "output folders. Each keeps its own log view. Use Run Without "
